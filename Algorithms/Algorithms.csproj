@@ -7,8 +7,8 @@
     <ProjectGuid>{DE566F79-3D2F-4AA7-9937-A25AFEFAA12D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Algorithms</RootNamespace>
-    <AssemblyName>Algorithms</AssemblyName>
+    <RootNamespace>Networks.Algorithms</RootNamespace>
+    <AssemblyName>Networks.Algorithms</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

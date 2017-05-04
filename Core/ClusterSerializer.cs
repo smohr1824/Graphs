@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core
+namespace Networks.Core
 {
     public class ClusterSerializer
     {
@@ -39,16 +39,17 @@ namespace Core
             return retVal;
         }
 
-        public static void WriteClustersToFile(HashSet<HashSet<string>> clusters, string filename, char delimiter = '|')
+        public static void WriteClustersToFile(IEnumerable<HashSet<string>> clusters, string filename, char delimiter = '|')
         {
             StreamWriter writer = new StreamWriter(filename);
             WriteClusters(clusters, writer, delimiter);
             writer.Close();
         }
 
-        public static void WriteClusters(HashSet<HashSet<string>> clusters, TextWriter writer, char delimiter = '|')
+        public static void WriteClusters(IEnumerable<HashSet<string>> clusters, TextWriter writer, char delimiter = '|')
         {
             // write each cluster to a separate line, delimited on the line by the delimiter character
+
             foreach(HashSet<string> cluster in clusters)
             {
                 WriteCluster(cluster, writer, delimiter);

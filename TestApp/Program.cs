@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Core;
-using Algorithms;
+using Networks.Core;
+using Networks.Algorithms;
 
 namespace TestApp
 {
@@ -34,7 +34,7 @@ namespace TestApp
 
             /* try
              {
-                 seeds = ClusterSerializer.ReadClustersFromFile(@"..\..\work\displays1seeds3.dat");
+                 seeds = ClusterSerializer.ReadClustersFromFile(@"..\..\work\displays1seeds4.dat");
              }
              catch (FileNotFoundException)
              {
@@ -62,7 +62,8 @@ namespace TestApp
                 Partitioning.ExpandSeed(ref seed, G, 0.5);
             }
 
-            ClusterSerializer.WriteClustersToFile(seeds, @"..\..\work\displays1clusters2.out");
+            IEnumerable<HashSet<string>> best = seeds.Distinct<HashSet<string>>(new SetEqualityComparer());
+            ClusterSerializer.WriteClustersToFile(best, @"..\..\work\displays1clusters_test.out");
         }
     }
 }
