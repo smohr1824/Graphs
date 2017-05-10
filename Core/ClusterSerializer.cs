@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright 2017 -- Stephen T. Mohr, OSIsoft, LLC
+// Licensed under the MIT license
+
+// Methods to read/write graphs in textual adjacency list format into/out of a Network instance
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;

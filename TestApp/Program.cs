@@ -13,11 +13,12 @@ namespace TestApp
     {
         static void Main(string[] args)
         {
-            Network G;
+            Network G = new Network();
+
             HashSet<HashSet<string>> seeds = null;
             try
             {
-                G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\displays1.dat", false);
+                G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\displays2.dat", false);
             }
             catch (FileNotFoundException)
             {
@@ -49,6 +50,12 @@ namespace TestApp
                  return;
              }*/
 
+            List<HashSet<string>> communities = Partitioning.SLPA(G, 20, 0.3, DateTime.Now.Millisecond);
+            IEnumerable<HashSet<string>> unique = communities.Distinct(new SetEqualityComparer());
+            Console.WriteLine($"Found {unique.Count()} communities in a graph of {G.Order} vertices, writing to displays2SLPA.out");
+            Console.ReadLine();
+            ClusterSerializer.WriteClustersToFile(unique, @"..\..\work\displays2SLPA.out");
+            return;
             seeds = new HashSet<HashSet<string>>();
             foreach (string vertex in G.Vertices)
             {
@@ -59,7 +66,7 @@ namespace TestApp
             for (int i = 0; i < seeds.Count(); i++)
             {
                 HashSet<string> seed = seeds.ElementAt(i);
-                Partitioning.ExpandSeed(ref seed, G, 0.5);
+                Partitioning.CISExpandSeed(ref seed, G, 0.5);
             }
 
             IEnumerable<HashSet<string>> best = seeds.Distinct<HashSet<string>>(new SetEqualityComparer());

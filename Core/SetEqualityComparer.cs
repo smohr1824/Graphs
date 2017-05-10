@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright 2017 -- Stephen T. Mohr, OSIsoft, LLC
+// Licensed under the MIT license
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +9,10 @@ using System.Threading.Tasks;
 
 namespace Networks.Core
 {
+
+    /// <summary>
+    ///  Used with LINQ Distinct to compare two sets and determine if they have the same members
+    /// </summary>
     public class SetEqualityComparer : IEqualityComparer<HashSet<string>>
     {
         bool  IEqualityComparer<HashSet<string>>.Equals(HashSet<string> x, HashSet<string> y)
