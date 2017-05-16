@@ -429,8 +429,9 @@ namespace Networks.Algorithms
         /// <param name="G">graph</param>
         /// <param name="communityLabels">Dictionary of labels and the number of times the label was seen</param>
         /// <param name="threshold">Threshold [0..1.0] such that if a label's ratio of occurences to total label occurences is less than threshold, the labeled community is dropped. Threshold >= 0.5 results in disjoint communities.</param>
+        /// <param name="minCommunitySize">Minimum size community to return (default is 2)</param>
         /// <returns>List of communities</returns>
-        private static List<HashSet<string>> PostProcess(Network G, Dictionary<string, Dictionary<int, int>> communityLabels, double threshold)
+        private static List<HashSet<string>> PostProcess(Network G, Dictionary<string, Dictionary<int, int>> communityLabels, double threshold, int minCommunitySize = 2)
         {
             foreach (Dictionary<int, int> dict in communityLabels.Values)
                 ApplyThreshold(dict, threshold);
@@ -454,7 +455,7 @@ namespace Networks.Algorithms
                     }
                 }
             }
-            return communities.Values.ToList<HashSet<string>>();
+            return communities.Values.Where(p=>p.Count >= minCommunitySize).ToList<HashSet<string>>();
         }
 
         /// <summary>
