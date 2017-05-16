@@ -50,6 +50,13 @@ namespace Networks.Core
             writer.Close();
         }
 
+        public static void WriteClustersToFileByLine(IEnumerable<HashSet<string>> clusters, string filename)
+        {
+            StreamWriter writer = new StreamWriter(filename);
+            WriteClustersByLine(clusters, writer);
+            writer.Close();
+        }
+
         public static void WriteClusters(IEnumerable<HashSet<string>> clusters, TextWriter writer, char delimiter = '|')
         {
             // write each cluster to a separate line, delimited on the line by the delimiter character
@@ -60,6 +67,17 @@ namespace Networks.Core
             }
         }
 
+        public static void WriteClustersByLine(IEnumerable<HashSet<string>> clusters, TextWriter writer)
+        {
+            // write each cluster to a separate line, delimited on the line by the delimiter character
+
+            foreach (HashSet<string> cluster in clusters)
+            {
+                WriteClusterByLine(cluster, writer);
+                writer.WriteLine(Environment.NewLine);
+            }
+        }
+
         public static void WriteCluster(HashSet<string> cluster, TextWriter writer, char delimiter = '|')
         {
             for (int i = 0; i < cluster.Count() - 1; i++)
@@ -67,6 +85,14 @@ namespace Networks.Core
                 writer.Write(cluster.ElementAt(i) + delimiter);
             }
             writer.WriteLine(cluster.ElementAt(cluster.Count() - 1));
+        }
+
+        public static void WriteClusterByLine(HashSet<string> cluster, TextWriter writer)
+        {
+            for (int i = 0; i < cluster.Count(); i++)
+            {
+                writer.Write(cluster.ElementAt(i) + Environment.NewLine);
+            }
         }
     }
 }

@@ -50,11 +50,15 @@ namespace TestApp
                  return;
              }*/
 
+            //TestConstructor();
+            //return;
+
+            NetworkSerializer.WriteNetworkToFile(G, @"..\..\work\nettest.out");
             List<HashSet<string>> communities = Partitioning.SLPA(G, 20, 0.3, DateTime.Now.Millisecond);
             IEnumerable<HashSet<string>> unique = communities.Distinct(new SetEqualityComparer());
             Console.WriteLine($"Found {unique.Count()} communities in a graph of {G.Order} vertices, writing to displays2SLPA.out");
             Console.ReadLine();
-            ClusterSerializer.WriteClustersToFile(unique, @"..\..\work\displays2SLPA.out");
+            ClusterSerializer.WriteClustersToFileByLine(unique, @"..\..\work\chartest.out");
             return;
             seeds = new HashSet<HashSet<string>>();
             foreach (string vertex in G.Vertices)
@@ -71,6 +75,25 @@ namespace TestApp
 
             IEnumerable<HashSet<string>> best = seeds.Distinct<HashSet<string>>(new SetEqualityComparer());
             ClusterSerializer.WriteClustersToFile(best, @"..\..\work\displays1clusters_test.out");
+        }
+
+        private static void TestConstructor()
+        {
+            double[, ] weights = { { 0.0, 1.0, 2.0, 0.0 }, { 0.0, 0.0, 1.0, 3.5 }, { 1.0, 2.1, 0.0, 2.0 }, { 1.0, 0.0, 0.0, 0.0 } };
+            string[] nodes = { "A", "B", "C", "D" };
+            List<string> vertices = new List<string>(nodes);
+
+            Network G = new Network(vertices, weights);
+
+            double[,] ewts = G.AdjacencyMatrix;
+            List<string> outV = G.Vertices;
+
+            bool test = G.HasEdge("B", "C");
+
+            double dtest = G.EdgeWeight("B", "D");
+
+            dtest = G.EdgeWeight("D", "C");
+
         }
     }
 }

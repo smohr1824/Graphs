@@ -247,6 +247,7 @@ namespace Networks.Algorithms
 
             for (int i = 0; i < iterations; i++)
             {
+                // shuffle the vertex order to avoid bias toward later vertices
                 int[] order = Combinatorics.GeneratePermutation(G.Order, randSrc);
 
                 foreach(int nodeIdx in order)

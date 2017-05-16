@@ -25,6 +25,36 @@ namespace Networks.Core
             EdgeList = new Dictionary<string, Dictionary<string, double>>();
         }
 
+        public Network(List<string> vertices, double[,] weights)
+        {
+            if (vertices == null)
+                throw new ArgumentNullException("Vertex list must be non-null");
+
+            if (weights == null)
+                throw new ArgumentNullException("Adjacency matrix must be non-null");
+
+            int vertexCount = vertices.Count();
+            if (vertexCount != weights.GetLength(0) || vertexCount != weights.GetLength(1) || vertexCount == 0)
+                throw new ArgumentException($"Adjacency matrix must be square, have the same dimensions as the vertex list, and be non-zero; vertices count: {vertices.Count()}, weights row count: {weights.GetLength(0)}, weights column count: {weights.GetLength(1)}");
+
+            EdgeList = new Dictionary<string, Dictionary<string, double>>();
+
+            for (int i = 0; i < vertexCount; i++)
+            {
+                Dictionary<string, double> adjacencyList = new Dictionary<string, double>();
+                for (int k = 0; k < vertexCount; k++)
+                {
+                    if (k == i)
+                        continue;
+
+                    if (weights[i, k] != 0)
+                        adjacencyList.Add(vertices[k], weights[i, k]);
+                }
+
+                EdgeList.Add(vertices[i], adjacencyList);
+            }
+        }
+
         #region public properties
 
         /// <summary>
@@ -169,7 +199,23 @@ namespace Networks.Core
 
         public bool HasEdge(string from, string to)
         {
+            Dictionary<string, double> adjList;
+            if (EdgeList.TryGetValue(from, out adjList))
+            {
+                double wt = 0.0;
+                if (adjList.TryGetValue(to, out wt))
+                    return true;
+            }
+
             return false;
+        }
+
+        public double EdgeWeight(string from, string to)
+        {
+            if (HasEdge(from, to))
+                return EdgeList[from][to];
+            else
+                return 0.0;
         }
 
         public int Degree(string node)
@@ -182,17 +228,6 @@ namespace Networks.Core
 
         }
 
-        public double EdgeWeight(string from, string to)
-        {
-            Dictionary<string, double> neighbors = null;
-            if (HasEdge(from, to))
-            {
-                EdgeList.TryGetValue(from, out neighbors);
-                return neighbors[to];
-            }
-            else
-                return 0;
-        }
 
         public void List(TextWriter writer, char delimiter)
         {
@@ -201,7 +236,7 @@ namespace Networks.Core
                 Dictionary<string, double> targets = EdgeList[key];
                 foreach (string to in targets.Keys)
                 {
-                    writer.Write(key + delimiter + to + delimiter + targets[to].ToString());
+                    writer.Write(key + delimiter + to + delimiter + targets[to].ToString() + Environment.NewLine);
                 }
             }
         }

@@ -55,6 +55,13 @@ namespace Networks.Core
             writer.Close();
         }
 
+        /// <summary>
+        /// Serializes the network with all edges shown, i.e., an undirected graph will have edges in both directions even if it was read
+        /// from a file with directed == false to create the back edges
+        /// </summary>
+        /// <param name="net"></param>
+        /// <param name="writer"></param>
+        /// <param name="delimiter"></param>
         public static void WriteNetwork(Network net, TextWriter writer, char  delimiter = '|')
         {
             net.List(writer, delimiter);
