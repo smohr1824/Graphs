@@ -27,7 +27,13 @@ namespace Networks.Core
             {
                 fields = SplitAndClean(line, delimiter);
                 int ct = fields.Count();
-                if (ct < 2 || ct > 3)
+                if (ct == 1)
+                {
+                    // vertex only, so just add it
+                    retVal.AddVertex(fields[0]);
+                    continue;
+                }
+                if (ct > 3)
                     continue;
 
                 int wt = 1;

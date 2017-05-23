@@ -22,6 +22,7 @@ namespace Networks.Algorithms
         #region CIS
         // ported from http://www.cs.rpi.edu/~magdon/LFDlabpublic.html/software/CIS/CIS.tar.gz
         // based on "Finding Overlapping Communities in Social Networks", Goldberg, Kelley, Magdon-Ismail, Mertsalov, Wallace, 2010
+        // Takes a seed community (may be a single vertex) and expands it by neighboring vertices if doing so improves the community metric
         public static void CISExpandSeed(ref HashSet<string> seed, Network G, double lambda)
         {
             HashSet<string> fringe = new HashSet<string>();
@@ -236,7 +237,15 @@ namespace Networks.Algorithms
 
         #region SLPA
         // algorithm from "Towards Linear Time Overlapping Community Detection in Social Networks", 2012, Jierui Xie and Boleslaw Szymanski
-
+        // 
+        /// <summary>
+        /// Identifies overlapping or disjoint communities of a graph using the SLPA.
+        /// </summary>
+        /// <param name="G">Network in which to find communities</param>
+        /// <param name="iterations">number of speaker-listener iterations to perform -- 20 has shown good convergence</param>
+        /// <param name="inclusionThreshold">decimal percentage of the overall total number of labels heard below which a given label will be excluded from the returned set of communities</param>
+        /// <param name="seed">Random seed -- passing the same seed leads to the same set of communities</param>
+        /// <returns></returns>
         static public List<HashSet<string>> SLPA(Network G, int iterations, double inclusionThreshold, int seed)
         {
             Random randSrc = new Random(seed);
@@ -245,11 +254,13 @@ namespace Networks.Algorithms
 
             InitLabels(G, ref nodeLabelMemory);
 
+            // perform the requested number of passes
             for (int i = 0; i < iterations; i++)
             {
                 // shuffle the vertex order to avoid bias toward later vertices
                 int[] order = Combinatorics.GeneratePermutation(G.Order, randSrc);
 
+                // each pass has each vertex function as a listener
                 foreach(int nodeIdx in order)
                 {
                     Dictionary<string, double> adjacencyList = G.GetNeighbors(vertices[nodeIdx]);

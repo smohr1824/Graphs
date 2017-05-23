@@ -52,6 +52,7 @@ namespace Networks.Core
                 }
 
                 EdgeList.Add(vertices[i], adjacencyList);
+
             }
         }
 
@@ -62,7 +63,7 @@ namespace Networks.Core
         /// </summary>
         public List<string> Vertices
         {
-             get { return EdgeList.Keys.ToList(); }
+             get { return EdgeList.Keys.ToList<string>(); }
         }
 
         /// <summary>
@@ -197,6 +198,10 @@ namespace Networks.Core
             }
         }
 
+        public bool HasVertex(string node)
+        {
+            return EdgeList.Keys.Contains(node);
+        }
         public bool HasEdge(string from, string to)
         {
             Dictionary<string, double> adjList;
@@ -228,15 +233,31 @@ namespace Networks.Core
 
         }
 
-
+        public Network Clone()
+        {
+            Network retVal = new Network();
+            foreach (string key in EdgeList.Keys)
+            {
+                Dictionary<string, double> value = new Dictionary<string, double>(EdgeList[key]);
+                retVal.EdgeList.Add(key, value);
+            }
+            return retVal;
+        }
         public void List(TextWriter writer, char delimiter)
         {
             foreach (string key in EdgeList.Keys)
             {
                 Dictionary<string, double> targets = EdgeList[key];
-                foreach (string to in targets.Keys)
+                if (targets.Count() == 0)
                 {
-                    writer.Write(key + delimiter + to + delimiter + targets[to].ToString() + Environment.NewLine);
+                    writer.WriteLine(key);
+                }
+                else
+                {
+                    foreach (string to in targets.Keys)
+                    {
+                        writer.Write(key + delimiter + to + delimiter + targets[to].ToString() + Environment.NewLine);
+                    }
                 }
             }
         }
