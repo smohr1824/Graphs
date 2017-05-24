@@ -14,8 +14,11 @@ namespace TestApp
         static void Main(string[] args)
         {
 
-            TestBasicMultiLayer();
-            return;
+            //TestBasicMultiLayer();
+            //return;
+
+            //TestNetworkVertex();
+            //return;
 
             Network G = new Network();
 
@@ -79,6 +82,18 @@ namespace TestApp
 
             IEnumerable<HashSet<string>> best = seeds.Distinct<HashSet<string>>(new SetEqualityComparer());
             ClusterSerializer.WriteClustersToFile(best, @"..\..\work\displays1clusters_test.out");
+        }
+
+        private static void TestNetworkVertex()
+        {
+            Network G = new Network();
+            G.AddEdge("A", "B", 1, false);
+            G.AddEdge("A", "C", 1, false);
+            G.AddEdge("B", "C", 2, false);
+
+            G.RemoveVertex("B");
+
+            Console.WriteLine("Done");
         }
 
         private static void TestBasicMultiLayer()
@@ -169,6 +184,8 @@ namespace TestApp
             }
             double edgeWt = Q.EdgeWeight(new NodeTensor("D", "flow,SLTC"), new NodeTensor("E", "flow,SLTC"));
             edgeWt = Q.EdgeWeight(new NodeTensor("C", "control,PHL"), new NodeTensor("A", "control,SLTC"));
+            string[] coord = { "electrical", "SLTC" };
+            //Q.RemoveElementaryLayer(coord);
             MultilayerNetworkSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\work\multilayer_test.dat");
         }
 

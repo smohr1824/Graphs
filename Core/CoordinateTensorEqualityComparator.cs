@@ -8,7 +8,7 @@ namespace Networks.Core
 {
     public class CoordinateTensorEqualityComparer : IEqualityComparer<List<int>>
     {
-        bool IEqualityComparer<List<int>>.Equals(List<int> a, List<int> b)
+         bool IEqualityComparer<List<int>>.Equals(List<int> a, List<int> b)
         {
             if (a.Count() == b.Count())
             {

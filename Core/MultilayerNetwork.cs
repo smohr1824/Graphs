@@ -141,6 +141,36 @@ namespace Networks.Core
                 return false;
         }
 
+        /*public bool RemoveElementaryLayer(IEnumerable<string> coordinates)
+        {
+            List<int> resolvedCoords = ResolveCoordinates(coordinates.ToList<string>());
+
+            
+            if (resolvedCoords == null)
+                return false;
+
+            if (RemoveElementaryNetworkFromMultiLayerNetwork(resolvedCoords))
+                return true;
+            else
+                return false;
+
+        }
+
+        private bool RemoveElementaryNetworkFromMultiLayerNetwork(List<int> resolved)
+        {
+            int foo;
+            foreach (ResolvedNodeTensor key in interLayerEdgeList.Keys)
+            {
+                if (CoordinateTensorEqualityComparer.Equals(key.coordinates, resolved))
+                    foo = 5;
+                else
+                    foo = 2;
+            }
+
+
+            return true;
+        }*/
+
         public void List(TextWriter writer, char delimiter)
         {
             if (categoricalEdges)
@@ -202,17 +232,18 @@ namespace Networks.Core
                 {
                     if (interLayerEdgeList[rFrom].ContainsKey(rTo))
                     {
+                        // contains the edge, update the weight
                         interLayerEdgeList[rFrom][rTo] = wt;
                     }
                     else
                     {
-                        Dictionary<ResolvedNodeTensor, double> rtDict = new Dictionary<ResolvedNodeTensor, double>(new NodeTensorEqualityComparer());
-                        rtDict.Add(rTo, wt);
-                        interLayerEdgeList.Add(rFrom, rtDict);
+                        // contains from, add the weight
+                        interLayerEdgeList[rFrom].Add(rTo, wt);
                     }
                 }
                 else
                 {
+                    // to and from are new, create the inner dictionary, create the inner dictionary and add the from vertex entry
                     Dictionary<ResolvedNodeTensor, double> rtDict = new Dictionary<ResolvedNodeTensor, double>(new NodeTensorEqualityComparer());
                     rtDict.Add(rTo, wt);
                     interLayerEdgeList.Add(rFrom, rtDict);
@@ -228,9 +259,7 @@ namespace Networks.Core
                         }
                         else
                         {
-                            Dictionary<ResolvedNodeTensor, double> rtDict = new Dictionary<ResolvedNodeTensor, double>(new NodeTensorEqualityComparer());
-                            rtDict.Add(rFrom, wt);
-                            interLayerEdgeList.Add(rTo, rtDict);
+                            interLayerEdgeList[rTo].Add(rFrom, wt);
                         }
                     }
                     else
@@ -270,7 +299,8 @@ namespace Networks.Core
                     List<List<int>> tensors;
                     if (nodeIdsAndLayers.TryGetValue(vertex, out tensors))
                     {
-                        tensors.Add(coords);
+                        if (!tensors.Contains(coords))
+                            tensors.Add(coords);
                     }
                     else
                         return false;
