@@ -57,6 +57,35 @@ namespace Networks.Core
             G.AddVertex(vertex);
         }
 
+        public void RemoveVertex(string vertex)
+        {
+            // remove from the network
+            G.RemoveVertex(vertex);
+
+            // remove any interlayer edges
+            ResolvedNodeTensor nodeT = new ResolvedNodeTensor();
+            nodeT.nodeId = vertex;
+            nodeT.coordinates = layerCoordinates;
+
+            if (EdgeList.Keys.Contains(nodeT))
+            {
+                EdgeList.Remove(nodeT);
+            }
+
+        }
+
+        public void RemoveAnyEdgesTo(ResolvedNodeTensor target)
+        {
+            foreach (ResolvedNodeTensor from in EdgeList.Keys)
+            {
+                if (EdgeList[from].Keys.Contains(target))
+                {
+                    EdgeList[from].Remove(target);
+                    M.DecrementEdgesFrom(target.coordinates, layerCoordinates);
+                }
+            }
+        }
+
         public double EdgeWeight(ResolvedNodeTensor rFrom, ResolvedNodeTensor rTo)
         {
             if (rFrom.IsSameElementaryLayer(rTo))

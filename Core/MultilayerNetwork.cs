@@ -170,7 +170,30 @@ namespace Networks.Core
                         layers.Add(rVertex.coordinates);
                 }
             }
+        }
 
+        public void RemoveVertex(NodeTensor vertex)
+        {
+            ResolvedNodeTensor rVertex = ResolveNodeTensor(vertex);
+            if (rVertex == null)
+                throw new ArgumentException($"Aspect coordinates could not be resolved for {vertex}.");
+
+            if (!ElementaryLayerExists(rVertex.coordinates))
+                throw new ArgumentException($"Elementary layer does not exist at {vertex.aspectCoordinates}");
+
+            ElementaryLayer layer = elementaryLayers[rVertex.coordinates];
+            if (layer.HasVertex(rVertex.nodeId))
+            {
+                // remove from elementary layer
+                layer.RemoveVertex(rVertex.nodeId);
+
+                // notify all other layers to check for edges to this vertex
+                foreach (List<int> lyr in elementaryLayers.Keys)
+                {
+                    if (!lyr.SequenceEqual(rVertex.coordinates))
+                        elementaryLayers[lyr].RemoveAnyEdgesTo(rVertex);
+                }
+            }
         }
 
         public void AddEdge(NodeTensor from, NodeTensor to, double wt, bool directed)
@@ -227,6 +250,19 @@ namespace Networks.Core
             }
         }
 
+        internal void RemoveAnyEdgesTo(List<int> layer, ResolvedNodeTensor vertex)
+        {
+            if (ElementaryLayerExists(layer))
+            {
+                elementaryLayers[layer].RemoveAnyEdgesTo(vertex);
+            }
+        }
+
+        internal void DecrementEdgesFrom(List<int> targetLayer, List<int> srcLayer)
+        {
+            if (ElementaryLayerExists(targetLayer))
+                elementaryLayers[targetLayer].DecrementEdgeFrom(srcLayer);
+        }
         #endregion
 
         #region private methods
