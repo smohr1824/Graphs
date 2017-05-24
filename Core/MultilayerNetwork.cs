@@ -13,9 +13,9 @@ namespace Networks.Core
         private List<List<string>> axes;
 
         // Network-centric with interlayer edges
-        private Dictionary<List<int>, Network> elementaryLayers;
-        private Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, double>> interLayerEdgeList;
+        private Dictionary<List<int>, ElementaryLayer> elementaryLayers;
 
+        // concordance of vertex ids and the elementary layers in which they appear
         private Dictionary<string, List<List<int>>> nodeIdsAndLayers;
         private bool categoricalEdges;
 
@@ -24,8 +24,8 @@ namespace Networks.Core
             aspects = new List<string>();
             axes = new List<List<string>>();
             nodeIdsAndLayers = new Dictionary<string, List<List<int>>>();
-            elementaryLayers = new Dictionary<List<int>, Network>(new CoordinateTensorEqualityComparer());
-            interLayerEdgeList = new Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, double>>(new NodeTensorEqualityComparer());
+            elementaryLayers = new Dictionary<List<int>, ElementaryLayer>(new CoordinateTensorEqualityComparer());
+
             categoricalEdges = isCategoricallyConnected;
 
             int index = 0;
@@ -49,6 +49,10 @@ namespace Networks.Core
 
         #region public methods
 
+        public bool NodeAligned
+        {
+            get { return categoricalEdges; }
+        }
         public bool HasVertex(NodeTensor vertex)
         {
             ResolvedNodeTensor rVertex = ResolveNodeTensor(vertex);
@@ -74,23 +78,7 @@ namespace Networks.Core
             if (rFrom == null || rTo == null)
                 return false;
 
-            if (rFrom.IsSameElementaryLayer(rTo))
-            {
-                // get the elementary layer and check for the edge
-                return elementaryLayers[rFrom.coordinates].HasEdge(rFrom.nodeId, rTo.nodeId);
-            }
-            else
-            {
-                if (interLayerEdgeList.Keys.Contains(rFrom))
-                {
-                    if (interLayerEdgeList[rFrom].Keys.Contains(rTo))
-                        return true;
-                    else
-                        return false;
-                }
-                else
-                    return false;
-            }
+            return elementaryLayers[rFrom.coordinates].HasEdge(rFrom, rTo);
         }
 
         public double EdgeWeight(NodeTensor from, NodeTensor to)
@@ -101,27 +89,10 @@ namespace Networks.Core
             if (rFrom == null || rTo == null)
                 return 0;
 
-            if (rFrom.IsSameElementaryLayer(rTo))
-            {
-                // get the elementary layer and check for the edge
-                return elementaryLayers[rFrom.coordinates].EdgeWeight(rFrom.nodeId, rTo.nodeId);
-            }
+            if (ElementaryLayerExists(rFrom.coordinates))
+                return elementaryLayers[rFrom.coordinates].EdgeWeight(rFrom, rTo);
             else
-            {
-                if (interLayerEdgeList.Keys.Contains(rFrom))
-                {
-                    if (interLayerEdgeList[rFrom].Keys.Contains(rTo))
-                    {
-                        double retVal;
-                        interLayerEdgeList[rFrom].TryGetValue(rTo, out retVal);
-                        return retVal;
-                    }
-                    else
-                        return 0;
-                }
-                else
-                    return 0;
-            }
+                return 0;
         }
 
         public bool AddElementaryLayer(IEnumerable<string> coordinates, Network layer)
@@ -140,36 +111,6 @@ namespace Networks.Core
             else
                 return false;
         }
-
-        /*public bool RemoveElementaryLayer(IEnumerable<string> coordinates)
-        {
-            List<int> resolvedCoords = ResolveCoordinates(coordinates.ToList<string>());
-
-            
-            if (resolvedCoords == null)
-                return false;
-
-            if (RemoveElementaryNetworkFromMultiLayerNetwork(resolvedCoords))
-                return true;
-            else
-                return false;
-
-        }
-
-        private bool RemoveElementaryNetworkFromMultiLayerNetwork(List<int> resolved)
-        {
-            int foo;
-            foreach (ResolvedNodeTensor key in interLayerEdgeList.Keys)
-            {
-                if (CoordinateTensorEqualityComparer.Equals(key.coordinates, resolved))
-                    foo = 5;
-                else
-                    foo = 2;
-            }
-
-
-            return true;
-        }*/
 
         public void List(TextWriter writer, char delimiter)
         {
@@ -192,14 +133,44 @@ namespace Networks.Core
                 writer.WriteLine(@"");
             }
 
-            foreach (ResolvedNodeTensor from in interLayerEdgeList.Keys)
+
+        }
+
+        public void AddVertex(NodeTensor vertex)
+        {
+            ResolvedNodeTensor rVertex = ResolveNodeTensor(vertex);
+            if (rVertex == null)
+                throw new ArgumentException($"Aspect coordinates could not be resolved for {vertex}.");
+
+            if (!ElementaryLayerExists(rVertex.coordinates))
+                throw new ArgumentException($"Elementary layer does not exist at {vertex.aspectCoordinates}");
+
+            // elementary layer exists
+            ElementaryLayer layer = elementaryLayers[rVertex.coordinates];
+            if (!layer.HasVertex(rVertex.nodeId))
             {
-                Dictionary<ResolvedNodeTensor, double> targets = interLayerEdgeList[from];
-                foreach (ResolvedNodeTensor to in targets.Keys)
+                elementaryLayers[rVertex.coordinates].AddVertex(rVertex.nodeId);
+                List<List<int>> layers;
+                if (!nodeIdsAndLayers.TryGetValue(rVertex.nodeId, out layers))
                 {
-                    writer.WriteLine(from.nodeId + ":" + string.Join(",", UnaliasCoordinates(from.coordinates)) + delimiter + to.nodeId + ":" + string.Join(",", UnaliasCoordinates(to.coordinates)) + delimiter + targets[to].ToString());
+                    List<List<int>> coords = new List<List<int>>();
+                    coords.Add(rVertex.coordinates);
+                    nodeIdsAndLayers.Add(rVertex.nodeId, coords);
+                }
+                else
+                {
+                    // The vertex exists somewhere in the multilayer network.
+                    // search to see if it is already in the concordance
+                    bool found = false;
+                    int i = 0;
+                    while (i < layers.Count() && !layers[i].SequenceEqual(rVertex.coordinates))
+                        i++;
+
+                    if (!found)
+                        layers.Add(rVertex.coordinates);
                 }
             }
+
         }
 
         public void AddEdge(NodeTensor from, NodeTensor to, double wt, bool directed)
@@ -208,73 +179,51 @@ namespace Networks.Core
             ResolvedNodeTensor rTo = ResolveNodeTensor(to);
 
             // if the tensor cannot be resolved, one or both elementary layers does not exist
-            if (rFrom == null || rTo == null)
+            if (rFrom == null || rTo == null || !ElementaryLayerExists(rFrom.coordinates) || !ElementaryLayerExists(rTo.coordinates))
                 throw new ArgumentException($"The elementary layer for one or more vertices does not exist (vertices passed {from.ToString()}, {to.ToString()}");
 
+            // ensure the vertices exist in their respective elementary layers; if not, create
+            ElementaryLayer fromLayer = elementaryLayers[rFrom.coordinates];
+            ElementaryLayer toLayer = elementaryLayers[rTo.coordinates];
+
+            if (!fromLayer.HasVertex(from.nodeId) || !toLayer.HasVertex(to.nodeId))
+                throw new ArgumentException($"Edge cannot be added unless both vertices exist (from: {from}, to: {to}).");
+
+            elementaryLayers[rFrom.coordinates].AddEdge(rFrom, rTo, wt, directed);
             if (!rFrom.IsSameElementaryLayer(rTo))
+                elementaryLayers[rTo.coordinates].IncrementEdgeFrom(rFrom.coordinates);
+
+            if (!directed)
             {
-                // interlayer edge
-
-                // ensure the vertices exist in their respective elementary layers; if not, create
-                Network fromNetwork = elementaryLayers[rFrom.coordinates];
-                Network toNetwork = elementaryLayers[rTo.coordinates];
-
-                if (!fromNetwork.HasVertex(from.nodeId))
-                {
-                    fromNetwork.AddVertex(from.nodeId);
-                }
-                if (!toNetwork.HasVertex(to.nodeId))
-                {
-                    toNetwork.AddVertex(to.nodeId);
-                }
-
-                if (interLayerEdgeList.ContainsKey(rFrom))
-                {
-                    if (interLayerEdgeList[rFrom].ContainsKey(rTo))
-                    {
-                        // contains the edge, update the weight
-                        interLayerEdgeList[rFrom][rTo] = wt;
-                    }
-                    else
-                    {
-                        // contains from, add the weight
-                        interLayerEdgeList[rFrom].Add(rTo, wt);
-                    }
-                }
-                else
-                {
-                    // to and from are new, create the inner dictionary, create the inner dictionary and add the from vertex entry
-                    Dictionary<ResolvedNodeTensor, double> rtDict = new Dictionary<ResolvedNodeTensor, double>(new NodeTensorEqualityComparer());
-                    rtDict.Add(rTo, wt);
-                    interLayerEdgeList.Add(rFrom, rtDict);
-                }
-
-                if (!directed)
-                {
-                    if (interLayerEdgeList.ContainsKey(rTo))
-                    {
-                        if (interLayerEdgeList[rTo].ContainsKey(rFrom))
-                        {
-                            interLayerEdgeList[rFrom][rTo] = wt;
-                        }
-                        else
-                        {
-                            interLayerEdgeList[rTo].Add(rFrom, wt);
-                        }
-                    }
-                    else
-                    {
-                        Dictionary<ResolvedNodeTensor, double> rtDict = new Dictionary<ResolvedNodeTensor, double>(new NodeTensorEqualityComparer());
-                        rtDict.Add(rFrom, wt);
-                        interLayerEdgeList.Add(rTo, rtDict);
-                    }
-                }
+                elementaryLayers[rTo.coordinates].AddEdge(rTo, rFrom, wt, true);
+                if (!rFrom.IsSameElementaryLayer(rTo))
+                    elementaryLayers[rFrom.coordinates].IncrementEdgeFrom(rTo.coordinates);
             }
-            else
+        }
+
+
+        public void RemoveEdge(NodeTensor from, NodeTensor to, bool directed)
+        {
+            ResolvedNodeTensor rFrom = ResolveNodeTensor(from);
+            ResolvedNodeTensor rTo = ResolveNodeTensor(to);
+
+            // if the tensor cannot be resolved, one or both elementary layers does not exist
+            if (rFrom == null || rTo == null || !ElementaryLayerExists(rFrom.coordinates) || !ElementaryLayerExists(rTo.coordinates))
+                throw new ArgumentException($"The elementary layer for one or more vertices does not exist (vertices passed {from.ToString()}, {to.ToString()}");
+
+            ElementaryLayer fromLayer = elementaryLayers[rFrom.coordinates];
+            ElementaryLayer toLayer = elementaryLayers[rTo.coordinates];
+            if (fromLayer.HasEdge(rFrom, rTo))
             {
-                // within the same elementary layer
-                Network G = elementaryLayers[rFrom.coordinates];
-                G.AddEdge(rFrom.nodeId, rTo.nodeId, wt, directed);
+                fromLayer.RemoveEdge(rFrom, rTo, directed);
+                toLayer.DecrementEdgeFrom(rFrom.coordinates);
+            }
+
+            // if this is an undirected edge, remove the reciprocal edge
+            if (!directed && toLayer.HasEdge(rTo, rFrom))
+            {
+                toLayer.RemoveEdge(rTo, rFrom, directed);
+                fromLayer.DecrementEdgeFrom(rTo.coordinates);
             }
         }
 
@@ -296,14 +245,7 @@ namespace Networks.Core
             {
                 if (nodeIdsAndLayers.ContainsKey(vertex))
                 {
-                    List<List<int>> tensors;
-                    if (nodeIdsAndLayers.TryGetValue(vertex, out tensors))
-                    {
-                        if (!tensors.Contains(coords))
-                            tensors.Add(coords);
-                    }
-                    else
-                        return false;
+                    nodeIdsAndLayers[vertex].Add(coords);
                 }
                 else
                 {
@@ -314,7 +256,7 @@ namespace Networks.Core
             }
             try
             {
-                elementaryLayers.Add(coords, G);
+                elementaryLayers.Add(coords, new ElementaryLayer(this, G, coords));
             }
             catch (ArgumentNullException)
             {
@@ -327,25 +269,6 @@ namespace Networks.Core
             return true;
         }
 
-        private void AddInterlayerEdge(ResolvedNodeTensor from, ResolvedNodeTensor to, double wt)
-        {
-            if (!ElementaryLayerExists(from.coordinates) || !ElementaryLayerExists(to.coordinates))
-                return;
-
-            if (interLayerEdgeList.ContainsKey(from))
-            {
-                if (interLayerEdgeList[from].ContainsKey(to))
-                    interLayerEdgeList[from][to] = wt;
-                else
-                    interLayerEdgeList[from].Add(to, wt);
-            }
-            else
-            {
-                Dictionary<ResolvedNodeTensor, double> newWts = new Dictionary<ResolvedNodeTensor, double>(new NodeTensorEqualityComparer());
-                newWts.Add(to, wt);
-                interLayerEdgeList.Add(from, newWts);
-            }
-        }
         private ResolvedNodeTensor ResolveNodeTensor(NodeTensor tensor)
         {
             ResolvedNodeTensor retVal = new ResolvedNodeTensor();
@@ -377,7 +300,7 @@ namespace Networks.Core
             return retVal;
         }
 
-        private List<string> UnaliasCoordinates(List<int> coords)
+        internal List<string> UnaliasCoordinates(List<int> coords)
         {
             List<string> retVal = new List<string>();
 
@@ -393,7 +316,7 @@ namespace Networks.Core
             return retVal;
         }
 
-        private bool ElementaryLayerExists(List<int> coords)
+        internal bool ElementaryLayerExists(List<int> coords)
         {
             return elementaryLayers.Keys.Contains(coords);
         }

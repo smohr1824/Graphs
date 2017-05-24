@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="ClusterSerializer.cs" />
     <Compile Include="CoordinateTensorEqualityComparator.cs" />
+    <Compile Include="ElementaryLayer.cs" />
     <Compile Include="LayerSet.cs" />
     <Compile Include="MultilayerNetwork.cs" />
     <Compile Include="MultilayerNetworkSerializer.cs" />

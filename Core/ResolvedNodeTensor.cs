@@ -31,8 +31,14 @@ namespace Networks.Core
 
         public void List(TextWriter writer)
         {
-            writer.Write(nodeId + ":" + string.Join(",", coordinates));
+            writer.Write(this.ToString());
         }
+
+        public override string ToString()
+        {
+            return nodeId + ":" + string.Join(",", coordinates);
+        }
+
     }
 
 }

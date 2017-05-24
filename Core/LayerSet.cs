@@ -11,6 +11,13 @@ namespace Networks.Core
         private string aspect;
         private Dictionary<string, Network> elementaryLayers;
 
+
+        public LayerSet(string feature)
+        {
+            aspect = feature;
+            elementaryLayers = new Dictionary<string, Network>();
+        }
+
         public void AddLayer(string aspectValue, Network elementaryLayer)
         {
             try

@@ -14,8 +14,8 @@ namespace TestApp
         static void Main(string[] args)
         {
 
-            //TestBasicMultiLayer();
-            //return;
+            TestBasicMultiLayer();
+            return;
 
             //TestNetworkVertex();
             //return;
@@ -165,25 +165,27 @@ namespace TestApp
 
             try
             {
-                // interlayer, vertex does not exist
+                // interlayer, vertex does not exist -- vertex should NOT be added
                 Q.AddEdge(new NodeTensor("Z", "electrical,PHL"), new NodeTensor("A", "flow,PHL"), 2, true);
             }
-            catch (ArgumentException)
+            catch (ArgumentException ex)
             {
 
             }
 
             try
             {
-                // intralayer, vertex does not exist
+                // intralayer, vertex does not exist -- vertex should be added
                 Q.AddEdge(new NodeTensor("Z", "flow,SLTC"), new NodeTensor("B", "flow,SLTC"), 2, true);
             }
-            catch (ArgumentException)
+            catch (ArgumentException ex)
             {
 
             }
             double edgeWt = Q.EdgeWeight(new NodeTensor("D", "flow,SLTC"), new NodeTensor("E", "flow,SLTC"));
             edgeWt = Q.EdgeWeight(new NodeTensor("C", "control,PHL"), new NodeTensor("A", "control,SLTC"));
+
+            Q.RemoveEdge(new NodeTensor("C", "control,PHL"), new NodeTensor("A", "control,SLTC"), true);
             string[] coord = { "electrical", "SLTC" };
             //Q.RemoveElementaryLayer(coord);
             MultilayerNetworkSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\work\multilayer_test.dat");
