@@ -91,6 +91,11 @@ namespace Networks.Core
              get { return EdgeList.Keys.ToList<string>(); }
         }
 
+        public bool Directed
+        {
+            get { return directed; }
+        }
+
         /// <summary>
         /// Order (vertex count) of the graph
         /// </summary>

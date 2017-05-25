@@ -189,7 +189,11 @@ namespace TestApp
             edgeWt = Q.EdgeWeight(new NodeTensor("C", "control,PHL"), new NodeTensor("A", "control,SLTC"));
 
             Q.RemoveVertex(new NodeTensor("A", "control,SLTC"));
+            Q.AddVertex(new NodeTensor("S", "control,PHL"));
+            Q.RemoveVertex(new NodeTensor("S", "control,PHL"));
+
             Q.RemoveEdge(new NodeTensor("A", "electrical,SLTC"), new NodeTensor("B", "control,SLTC"));
+            Q.RemoveElementaryLayer(index); // remove (control, SLTC)
             string[] coord = { "electrical", "SLTC" };
             MultilayerNetworkSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\work\multilayer_test.dat");
         }

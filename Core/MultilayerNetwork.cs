@@ -18,14 +18,14 @@ namespace Networks.Core
         private Dictionary<List<int>, ElementaryLayer> elementaryLayers;
 
         // concordance of vertex ids and the elementary layers in which they appear
-        private Dictionary<string, List<List<int>>> nodeIdsAndLayers;
+        private Dictionary<string, List<ElementaryLayer>> nodeIdsAndLayers;
         private bool categoricalEdges;
 
         public MultilayerNetwork(IEnumerable<Tuple<string, IEnumerable<string>>> dimensions, bool isdirected, bool isCategoricallyConnected = true)
         {
             aspects = new List<string>();
             axes = new List<List<string>>();
-            nodeIdsAndLayers = new Dictionary<string, List<List<int>>>();
+            nodeIdsAndLayers = new Dictionary<string, List<ElementaryLayer>>();
             elementaryLayers = new Dictionary<List<int>, ElementaryLayer>(new CoordinateTensorEqualityComparer());
 
             categoricalEdges = isCategoricallyConnected;
@@ -98,15 +98,21 @@ namespace Networks.Core
                 return 0;
         }
 
-        public bool AddElementaryLayer(IEnumerable<string> coordinates, Network layer)
+        public bool AddElementaryLayer(IEnumerable<string> coordinates, Network G)
         {
-            if (coordinates == null || layer == null)
-                return false;
+            if (coordinates == null)
+                throw new ArgumentException(@"Layer coordinates cannot be null");
+
+            if (G == null)
+                throw new ArgumentException(@"Graph cannot be null.");
+
+            if (G.Directed != directed)
+                throw new ArgumentException($"Layers and the network must both be directed or undirected. Network directed is {directed}, layer directed is {G.Directed}");
 
             List<int> resolved = ResolveCoordinates(coordinates.ToList<string>());
             if (resolved != null)
             {
-                if (AddElementaryNetworkToMultiLayerNetwork(resolved, layer))
+                if (AddElementaryNetworkToMultiLayerNetwork(resolved, G))
                     return true;
                 else
                     return false;
@@ -114,6 +120,22 @@ namespace Networks.Core
             else
                 return false;
         }
+
+        public bool RemoveElementaryLayer(IEnumerable<string> coordinates)
+        {
+            if (coordinates == null)
+                throw new ArgumentException(@"Coordinates cannot be null");
+
+            List<int> resolved = ResolveCoordinates(coordinates.ToList());
+            if (resolved != null)
+            {
+                return RemoveElementaryNetworkFromMultiLayerNetwork(resolved);
+            }
+            else
+                return false;
+        }
+
+
 
         public void List(TextWriter writer, char delimiter)
         {
@@ -153,24 +175,20 @@ namespace Networks.Core
             if (!layer.HasVertex(rVertex.nodeId))
             {
                 elementaryLayers[rVertex.coordinates].AddVertex(rVertex.nodeId);
-                List<List<int>> layers;
+                List<ElementaryLayer> layers;
                 if (!nodeIdsAndLayers.TryGetValue(rVertex.nodeId, out layers))
                 {
-                    List<List<int>> coords = new List<List<int>>();
-                    coords.Add(rVertex.coordinates);
-                    nodeIdsAndLayers.Add(rVertex.nodeId, coords);
+                    List<ElementaryLayer> layerList = new List<ElementaryLayer>();
+                    layerList.Add(layer);
+                    nodeIdsAndLayers.Add(rVertex.nodeId, layerList);
                 }
                 else
                 {
                     // The vertex exists somewhere in the multilayer network.
                     // search to see if it is already in the concordance
-                    bool found = false;
-                    int i = 0;
-                    while (i < layers.Count() && !layers[i].SequenceEqual(rVertex.coordinates))
-                        i++;
 
-                    if (!found)
-                        layers.Add(rVertex.coordinates);
+                    if (!layers.Contains(layer))
+                        layers.Add(layer);
                 }
             }
         }
@@ -189,6 +207,12 @@ namespace Networks.Core
             {
                 // remove from elementary layer
                 layer.RemoveVertex(rVertex.nodeId);
+                if (nodeIdsAndLayers.Keys.Contains(rVertex.nodeId))
+                {
+                    nodeIdsAndLayers[rVertex.nodeId].Remove(elementaryLayers[rVertex.coordinates]);
+                    if (nodeIdsAndLayers[rVertex.nodeId].Count() == 0)
+                        nodeIdsAndLayers.Remove(rVertex.nodeId);
+                }
             }
         }
 
@@ -204,6 +228,34 @@ namespace Networks.Core
             // ensure the vertices exist in their respective elementary layers; if not, create
             ElementaryLayer fromLayer = elementaryLayers[rFrom.coordinates];
             ElementaryLayer toLayer = elementaryLayers[rTo.coordinates];
+
+            // intralayer add, special case -- network can add vertices and will handle in-edges
+            if (fromLayer == toLayer)
+            {
+                if (!fromLayer.HasVertex(rFrom.nodeId))
+                {
+                    if (nodeIdsAndLayers.Keys.Contains(rFrom.nodeId))
+                        nodeIdsAndLayers[rFrom.nodeId].Add(fromLayer);
+                    else
+                    {
+                        List<ElementaryLayer> layers = new List<ElementaryLayer>();
+                        layers.Add(fromLayer);
+                        nodeIdsAndLayers.Add(rFrom.nodeId, layers);
+                    }
+                }
+                if (!fromLayer.HasVertex(rTo.nodeId))
+                {
+                    if (nodeIdsAndLayers.Keys.Contains(rTo.nodeId))
+                        nodeIdsAndLayers[rTo.nodeId].Add(fromLayer);
+                    else
+                    {
+                        List<ElementaryLayer> layers = new List<ElementaryLayer>();
+                        layers.Add(fromLayer);
+                        nodeIdsAndLayers.Add(rTo.nodeId, layers);
+                    }
+                }
+                fromLayer.AddEdge(rFrom, rTo, wt);
+            }
 
             if (!fromLayer.HasVertex(from.nodeId) || !toLayer.HasVertex(to.nodeId))
                 throw new ArgumentException($"Edge cannot be added unless both vertices exist (from: {from}, to: {to}).");
@@ -265,23 +317,24 @@ namespace Networks.Core
         private bool AddElementaryNetworkToMultiLayerNetwork(List<int> coords, Network G)
         {
             List<string> inVertices = G.Vertices;
+            ElementaryLayer layer = new ElementaryLayer(this, G, coords);
 
             foreach (string vertex in inVertices)
             {
                 if (nodeIdsAndLayers.ContainsKey(vertex))
                 {
-                    nodeIdsAndLayers[vertex].Add(coords);
+                    nodeIdsAndLayers[vertex].Add(layer);
                 }
                 else
                 {
-                    List<List<int>> layerCoords = new List<List<int>>();
-                    layerCoords.Add(coords);
-                    nodeIdsAndLayers.Add(vertex, layerCoords);
+                    List<ElementaryLayer> layers = new List<ElementaryLayer>();
+                    layers.Add(layer);
+                    nodeIdsAndLayers.Add(vertex, layers);
                 }
             }
             try
             {
-                elementaryLayers.Add(coords, new ElementaryLayer(this, G, coords));
+                elementaryLayers.Add(coords, layer);
             }
             catch (ArgumentNullException)
             {
@@ -292,6 +345,33 @@ namespace Networks.Core
                 return false;
             }
             return true;
+        }
+
+        private bool RemoveElementaryNetworkFromMultiLayerNetwork(List<int> resolved)
+        {
+            if (ElementaryLayerExists(resolved))
+            {
+                ElementaryLayer layer = elementaryLayers[resolved];
+                List<string> vertices = layer.Vertices;
+
+                foreach (string vertex in vertices)
+                {
+                    if (nodeIdsAndLayers.Keys.Contains(vertex))
+                    {
+                        // this should always be true
+                        if (nodeIdsAndLayers[vertex].Contains(layer))
+                        {
+                            nodeIdsAndLayers[vertex].Remove(layer);
+                            if (nodeIdsAndLayers[vertex].Count() == 0)
+                                nodeIdsAndLayers.Remove(vertex);
+                        }
+                    }
+                }
+                elementaryLayers.Remove(resolved);
+                return true;
+            }
+            else
+                return false;
         }
 
         private ResolvedNodeTensor ResolveNodeTensor(NodeTensor tensor)

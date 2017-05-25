@@ -26,6 +26,10 @@ namespace Networks.Core
             layerCoordinates = coordinates;
         }
 
+        public List<string> Vertices
+        {
+            get { return G.Vertices;  }
+        }
         public bool HasEdge(ResolvedNodeTensor from, ResolvedNodeTensor to)
         {
             if (from.IsSameElementaryLayer(to))
