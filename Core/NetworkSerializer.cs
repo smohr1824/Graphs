@@ -20,7 +20,7 @@ namespace Networks.Core
 
         public static Network ReadNetwork(TextReader stIn, bool directed, char delimiter = '|' )
         {
-            Network retVal = new Network();
+            Network retVal = new Network(directed);
             string[] fields;
             string line = string.Empty;
             while ((line = stIn.ReadLine()) != null)
@@ -48,7 +48,7 @@ namespace Networks.Core
                         // default to 1
                     }
                 }
-                retVal.AddEdge(fields[0], fields[1], wt, directed);
+                retVal.AddEdge(fields[0], fields[1], wt);
             }
 
             return retVal;

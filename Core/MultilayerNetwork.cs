@@ -12,6 +12,8 @@ namespace Networks.Core
         private List<string> aspects;
         private List<List<string>> axes;
 
+        private bool directed;
+
         // Network-centric with interlayer edges
         private Dictionary<List<int>, ElementaryLayer> elementaryLayers;
 
@@ -19,7 +21,7 @@ namespace Networks.Core
         private Dictionary<string, List<List<int>>> nodeIdsAndLayers;
         private bool categoricalEdges;
 
-        public MultilayerNetwork(IEnumerable<Tuple<string, IEnumerable<string>>> dimensions, bool isCategoricallyConnected = true)
+        public MultilayerNetwork(IEnumerable<Tuple<string, IEnumerable<string>>> dimensions, bool isdirected, bool isCategoricallyConnected = true)
         {
             aspects = new List<string>();
             axes = new List<List<string>>();
@@ -27,6 +29,7 @@ namespace Networks.Core
             elementaryLayers = new Dictionary<List<int>, ElementaryLayer>(new CoordinateTensorEqualityComparer());
 
             categoricalEdges = isCategoricallyConnected;
+            directed = isdirected;
 
             int index = 0;
             foreach (Tuple<string, IEnumerable<string>> axisValue in dimensions)
@@ -186,17 +189,10 @@ namespace Networks.Core
             {
                 // remove from elementary layer
                 layer.RemoveVertex(rVertex.nodeId);
-
-                // notify all other layers to check for edges to this vertex
-                foreach (List<int> lyr in elementaryLayers.Keys)
-                {
-                    if (!lyr.SequenceEqual(rVertex.coordinates))
-                        elementaryLayers[lyr].RemoveAnyEdgesTo(rVertex);
-                }
             }
         }
 
-        public void AddEdge(NodeTensor from, NodeTensor to, double wt, bool directed)
+        public void AddEdge(NodeTensor from, NodeTensor to, double wt)
         {
             ResolvedNodeTensor rFrom = ResolveNodeTensor(from);
             ResolvedNodeTensor rTo = ResolveNodeTensor(to);
@@ -212,15 +208,13 @@ namespace Networks.Core
             if (!fromLayer.HasVertex(from.nodeId) || !toLayer.HasVertex(to.nodeId))
                 throw new ArgumentException($"Edge cannot be added unless both vertices exist (from: {from}, to: {to}).");
 
-            elementaryLayers[rFrom.coordinates].AddEdge(rFrom, rTo, wt, directed);
-            if (!rFrom.IsSameElementaryLayer(rTo))
-                elementaryLayers[rTo.coordinates].IncrementEdgeFrom(rFrom.coordinates);
+            elementaryLayers[rFrom.coordinates].AddEdge(rFrom, rTo, wt);
+            elementaryLayers[rTo.coordinates].AddInEdge(rTo, rFrom, wt);
 
             if (!directed)
             {
-                elementaryLayers[rTo.coordinates].AddEdge(rTo, rFrom, wt, true);
-                if (!rFrom.IsSameElementaryLayer(rTo))
-                    elementaryLayers[rFrom.coordinates].IncrementEdgeFrom(rTo.coordinates);
+                elementaryLayers[rTo.coordinates].AddEdge(rTo, rFrom, wt);
+                elementaryLayers[rFrom.coordinates].AddInEdge(rFrom, rTo, wt);
             }
         }
 
@@ -239,30 +233,25 @@ namespace Networks.Core
             if (fromLayer.HasEdge(rFrom, rTo))
             {
                 fromLayer.RemoveEdge(rFrom, rTo, directed);
-                toLayer.DecrementEdgeFrom(rFrom.coordinates);
+                toLayer.RemoveInEdge(rTo, rFrom);
             }
 
             // if this is an undirected edge, remove the reciprocal edge
             if (!directed && toLayer.HasEdge(rTo, rFrom))
             {
                 toLayer.RemoveEdge(rTo, rFrom, directed);
-                fromLayer.DecrementEdgeFrom(rTo.coordinates);
+                fromLayer.RemoveInEdge(rFrom, rTo);
             }
         }
 
-        internal void RemoveAnyEdgesTo(List<int> layer, ResolvedNodeTensor vertex)
+        internal void RemoveInEdge(ResolvedNodeTensor from, ResolvedNodeTensor to)
         {
-            if (ElementaryLayerExists(layer))
+            if (ElementaryLayerExists(from.coordinates))
             {
-                elementaryLayers[layer].RemoveAnyEdgesTo(vertex);
+                elementaryLayers[from.coordinates].RemoveInEdge(from, to);
             }
         }
 
-        internal void DecrementEdgesFrom(List<int> targetLayer, List<int> srcLayer)
-        {
-            if (ElementaryLayerExists(targetLayer))
-                elementaryLayers[targetLayer].DecrementEdgeFrom(srcLayer);
-        }
         #endregion
 
         #region private methods

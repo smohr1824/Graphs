@@ -13,7 +13,7 @@ namespace Networks.Core
         private Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, double>> EdgeList;
         
         // reference count of inbound interlayer edges
-        private Dictionary<List<int>, int> InLayers;
+        private Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, double>> InEdges;
         private Network G;
         private MultilayerNetwork M;
         private List<int> layerCoordinates;
@@ -22,7 +22,7 @@ namespace Networks.Core
             M = m;
             G = g;
             EdgeList = new Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, double>>(new NodeTensorEqualityComparer());
-            InLayers = new Dictionary<List<int>, int>(new CoordinateTensorEqualityComparer());
+            InEdges = new Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, double>>(new NodeTensorEqualityComparer());
             layerCoordinates = coordinates;
         }
 
@@ -72,18 +72,37 @@ namespace Networks.Core
                 EdgeList.Remove(nodeT);
             }
 
+            if (InEdges.Keys.Contains(nodeT))
+            {
+                foreach (ResolvedNodeTensor target in InEdges[nodeT].Keys)
+                {
+                    M.RemoveInEdge(target, nodeT);
+                }
+                InEdges.Remove(nodeT);
+            }
+
         }
 
-        public void RemoveAnyEdgesTo(ResolvedNodeTensor target)
+        public void AddInEdge(ResolvedNodeTensor from, ResolvedNodeTensor to, double wt)
         {
-            foreach (ResolvedNodeTensor from in EdgeList.Keys)
+            if (HasVertex(from.nodeId))
             {
-                if (EdgeList[from].Keys.Contains(target))
+                if (InEdges.Keys.Contains(from))
+                    InEdges[from].Add(to, wt);
+                else
                 {
-                    EdgeList[from].Remove(target);
-                    M.DecrementEdgesFrom(target.coordinates, layerCoordinates);
+                    Dictionary<ResolvedNodeTensor, double> dict = new Dictionary<ResolvedNodeTensor, double>();
+                    dict.Add(to, wt);
+                    InEdges.Add(from, dict);
                 }
             }
+
+        }
+        public void RemoveInEdge(ResolvedNodeTensor from, ResolvedNodeTensor to)
+        {
+            // Don't use RemoveEdge so as to avoid endless cycle of DeleteInEdge
+            if (InEdges.Keys.Contains(from))
+                InEdges[from].Remove(to);
         }
 
         public double EdgeWeight(ResolvedNodeTensor rFrom, ResolvedNodeTensor rTo)
@@ -111,14 +130,14 @@ namespace Networks.Core
             }
         }
 
-        public void AddEdge(ResolvedNodeTensor from, ResolvedNodeTensor to, double wt, bool directed)
+        public void AddEdge(ResolvedNodeTensor from, ResolvedNodeTensor to, double wt)
         {
             if (!from.coordinates.SequenceEqual(layerCoordinates))
                 throw new ArgumentException($"Trying to add an edge to the wrong elementary layer. Source vertex is {from.nodeId + ":" + string.Join(",", M.UnaliasCoordinates(from.coordinates))}, layer aspect coordinates are {string.Join(",", M.UnaliasCoordinates(layerCoordinates))}");
 
             if (from.IsSameElementaryLayer(to))
             {
-                G.AddEdge(from.nodeId, to.nodeId, wt, directed);
+                G.AddEdge(from.nodeId, to.nodeId, wt);
             }
             else
             {
@@ -146,7 +165,7 @@ namespace Networks.Core
 
             if (from.IsSameElementaryLayer(to))
             {
-                G.RemoveEdge(from.nodeId, to.nodeId, directed);
+                G.RemoveEdge(from.nodeId, to.nodeId);
             }
             else
             {
@@ -172,30 +191,5 @@ namespace Networks.Core
             }
         }
 
-        public void IncrementEdgeFrom(List<int> layerCoordinates)
-        {
-            // reference count the inlayers entry
-            if (M.ElementaryLayerExists(layerCoordinates))
-            {
-                if (InLayers.Keys.Contains(layerCoordinates))
-                    InLayers[layerCoordinates]++;
-                else
-                    InLayers.Add(layerCoordinates, 1);
-            }
-        }
-
-        public void DecrementEdgeFrom(List<int> layerCoordinates)
-        {
-            // reference count the inlayers entry
-            if (M.ElementaryLayerExists(layerCoordinates))
-            {
-                if (InLayers.Keys.Contains(layerCoordinates))
-                {
-                    InLayers[layerCoordinates]--;
-                    if (InLayers[layerCoordinates] == 0)
-                        InLayers.Remove(layerCoordinates);
-                }
-            }
-        }
     }
 }

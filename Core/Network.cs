@@ -20,17 +20,20 @@ namespace Networks.Core
         // May need to revisit if scaling becomes an issue.  Uniqueness of entries is paramount, but Dictionary is resource intensive.
         private Dictionary<string, Dictionary<string, double>> EdgeList;
 
-        // Adjacency list of vertices who have edges into the key vertex
-        private Dictionary<string, List<string>> InVertices;
+        // We need to keep track of edges into any given vertex so that we can handle in-edge deletion when deleting a vertex.  Since we are
+        // taking a memory and performance hit for this, keeping the edge weight allows us to cheaply calculate the weight of inbound edges.
+        private Dictionary<string, Dictionary<string, double>> InEdges;
 
+        private bool directed;
 
-        public Network()
+        public Network(bool bDirected)
         {
             EdgeList = new Dictionary<string, Dictionary<string, double>>();
-            InVertices = new Dictionary<string, List<string>>();
+            InEdges = new Dictionary<string, Dictionary<string, double>>();
+            directed = bDirected;
         }
 
-        public Network(List<string> vertices, double[,] weights)
+        public Network(List<string> vertices, double[,] weights, bool bDirected)
         {
             if (vertices == null)
                 throw new ArgumentNullException("Vertex list must be non-null");
@@ -43,12 +46,13 @@ namespace Networks.Core
                 throw new ArgumentException($"Adjacency matrix must be square, have the same dimensions as the vertex list, and be non-zero; vertices count: {vertices.Count()}, weights row count: {weights.GetLength(0)}, weights column count: {weights.GetLength(1)}");
 
             EdgeList = new Dictionary<string, Dictionary<string, double>>();
-            InVertices = new Dictionary<string, List<string>>();
+            InEdges = new Dictionary<string, Dictionary<string, double>>();
+            directed = bDirected;
 
             for (int i = 0; i < vertexCount; i++)
             {
                 Dictionary<string, double> adjacencyList = new Dictionary<string, double>();
-                List<string> inVertices = new List<string>();
+                Dictionary<string, double> inVertices = new Dictionary<string, double>();
                 for (int k = 0; k < vertexCount; k++)
                 {
                     if (k == i)
@@ -57,13 +61,22 @@ namespace Networks.Core
                     if (weights[i, k] != 0)
                     {
                         adjacencyList.Add(vertices[k], weights[i, k]);
-                        inVertices.Add(vertices[k]);
+                        if (InEdges.Keys.Contains(vertices[k]))
+                        {
+                            InEdges[vertices[k]].Add(vertices[i], weights[i, k]);
+                        }
+                        else
+                        {
+                            Dictionary<string, double> dict = new Dictionary<string, double>();
+                            dict.Add(vertices[i], weights[i, k]);
+                            InEdges.Add(vertices[k], dict);
+                        }
                     }
 
                 }
 
                 EdgeList.Add(vertices[i], adjacencyList);
-                InVertices.Add(vertices[i], inVertices);
+                //InEdges.Add(vertices[i], inVertices);
 
             }
         }
@@ -110,32 +123,30 @@ namespace Networks.Core
         public void RemoveVertex(string id)
         {
             // remove any edge to the vertex we are removing
-            List<string> referencingVertices;
-            List<string> nodes = EdgeList[id].Keys.ToList<string>();
-            foreach (string node in nodes)
+            if (InEdges.Keys.Contains(id))
             {
-                InVertices[node].Remove(id);
-            }
-            if (InVertices.TryGetValue(id, out referencingVertices))
-            {
-                foreach(string refVertex in referencingVertices)
+                foreach (string from in InEdges[id].Keys)
                 {
-                    Dictionary<string, double> edges;
-                    if (EdgeList.TryGetValue(refVertex, out edges))
+                    EdgeList[from].Remove(id);
+                    if (!directed)
                     {
-                        edges.Remove(id);
+                        if (EdgeList.Keys.Contains(id))
+                            EdgeList[id].Remove(from);
+
+                        if (InEdges.Keys.Contains(from))
+                            InEdges[from].Remove(id);
                     }
-                    InVertices[refVertex].Remove(id);
                 }
+                InEdges.Remove(id);
             }
+
+            // remove any out edges, and coincidentally remove any awareness of this vertex from the network
             EdgeList.Remove(id);
-            InVertices.Remove(id);
         }
 
-        public void AddEdge(string from, string to, double weight, bool directed)
+        public void AddEdge(string from, string to, double weight)
         {
             Dictionary<string, double> neighbors;
-            List<string> nodes;
 
             // multiple edges between the same two vertices are not permitted
             if (HasEdge(from, to))
@@ -146,8 +157,7 @@ namespace Networks.Core
                 neighbors = new Dictionary<string, double>(); 
                 neighbors.Add(to, weight);
                 EdgeList.Add(from, neighbors);
-                InVertices.Add(from, new List<string>());
-                InVertices[from].Add(to);
+                InEdges.Add(from, new Dictionary<string, double>());
             }
             else
             {
@@ -160,9 +170,6 @@ namespace Networks.Core
                 {
                     neighbors[to] = weight;
                 }
-                nodes = InVertices[from];
-                if (!nodes.Contains(to))
-                    nodes.Add(to);
             }
 
             // check for the existence of the to vertex and create if needed
@@ -170,12 +177,19 @@ namespace Networks.Core
             {
                 neighbors = new Dictionary<string, double>();
                 EdgeList.Add(to, neighbors);
-                InVertices.Add(to, new List<string>());
+                InEdges.Add(to, new Dictionary<string, double>());
             }
 
-            nodes = InVertices[to];
-            if (!nodes.Contains(from))
-                nodes.Add(from);
+            if (InEdges.Keys.Contains(to))
+            {
+                InEdges[to].Add(from, weight);
+            }
+            else
+            {
+                Dictionary<string, double> dict = new Dictionary<string, double>();
+                dict.Add(from, weight);
+                InEdges.Add(to, dict);
+            }
 
             // if this is an undirected edge, add the reciprocal edge as well
             if (!directed)
@@ -186,7 +200,6 @@ namespace Networks.Core
                     neighbors = new Dictionary<string, double>(); 
                     neighbors.Add(from, weight);
                     EdgeList.Add(to, neighbors);
-                    InVertices.Add(to, new List<string>());
                 }
                 else
                 {
@@ -199,13 +212,21 @@ namespace Networks.Core
                         neighbors[from] = weight;
                     }
                 }
-                nodes = InVertices[to];
-                if (!nodes.Contains(from))
-                    nodes.Add(from);
+
+                if (InEdges.Keys.Contains(from))
+                {
+                    InEdges[from].Add(to, weight);
+                }
+                else
+                {
+                    Dictionary<string, double> dict = new Dictionary<string, double>();
+                    dict.Add(to, weight);
+                    InEdges.Add(from, dict);
+                }
             }
         }
 
-        public void RemoveEdge(string from, string to, bool directed)
+        public void RemoveEdge(string from, string to)
         {
             Dictionary<string, double> neighbors = new Dictionary<string, double>();
 
@@ -213,13 +234,13 @@ namespace Networks.Core
             {
                 EdgeList.TryGetValue(from, out neighbors);
                 neighbors.Remove(to);
-                InVertices[to].Remove(from);
+                InEdges[to].Remove(from);
 
                 if (!directed)
                 {
                     if (EdgeList.TryGetValue(to, out neighbors))
                         neighbors.Remove(from);
-                    InVertices[from].Remove(to);
+                    InEdges[from].Remove(to);
                 }
             }
         }
@@ -274,13 +295,13 @@ namespace Networks.Core
 
         public Network Clone()
         {
-            Network retVal = new Network();
+            Network retVal = new Network(directed);
             foreach (string key in EdgeList.Keys)
             {
                 Dictionary<string, double> value = new Dictionary<string, double>(EdgeList[key]);
                 retVal.EdgeList.Add(key, value);
-                List<string> verts = new List<string>(InVertices[key]);
-                retVal.InVertices.Add(key, verts);
+                Dictionary<string, double> srcs = new Dictionary<string, double>(InEdges[key]);
+                retVal.InEdges.Add(key, srcs);
             }
             return retVal;
         }

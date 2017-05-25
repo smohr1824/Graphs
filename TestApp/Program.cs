@@ -14,13 +14,16 @@ namespace TestApp
         static void Main(string[] args)
         {
 
-            TestBasicMultiLayer();
-            return;
+            //TestBasicMultiLayer();
+            //return;
 
             //TestNetworkVertex();
             //return;
 
-            Network G = new Network();
+            TestConstructor();
+            return;
+
+            Network G = new Network(false);
 
             HashSet<HashSet<string>> seeds = null;
             try
@@ -57,8 +60,7 @@ namespace TestApp
                  return;
              }*/
 
-            //TestConstructor();
-            //return;
+
 
             NetworkSerializer.WriteNetworkToFile(G, @"..\..\work\nettest.out");
             List<HashSet<string>> communities = Partitioning.SLPA(G, 20, 0.3, DateTime.Now.Millisecond);
@@ -86,12 +88,13 @@ namespace TestApp
 
         private static void TestNetworkVertex()
         {
-            Network G = new Network();
-            G.AddEdge("A", "B", 1, false);
-            G.AddEdge("A", "C", 1, false);
-            G.AddEdge("B", "C", 2, false);
+            Network G = new Network(true);
+            G.AddEdge("A", "B", 1);
+            G.AddEdge("A", "C", 1);
+            G.AddEdge("B", "C", 2);
+            G.AddEdge("A", "D", 3);
 
-            G.RemoveVertex("B");
+            G.RemoveVertex("C");
 
             Console.WriteLine("Done");
         }
@@ -123,7 +126,7 @@ namespace TestApp
             string[] procIndices = { "electrical", "flow", "control" };
             string[] locIndices = { "PHL", "SLTC" };
             Tuple<string, IEnumerable<string>>[] aspect = { new Tuple<string, IEnumerable<string>>("process", procIndices), new Tuple<string, IEnumerable<string>>("site", locIndices) };
-            MultilayerNetwork Q = new MultilayerNetwork(aspect);
+            MultilayerNetwork Q = new MultilayerNetwork(aspect, true);
             List<string> index = new List<string>();
 
             // add PHL elementary layers
@@ -145,17 +148,17 @@ namespace TestApp
             Q.AddElementaryLayer(index, L); // control,SLTC
 
             // add interlayer edges
-            Q.AddEdge(new NodeTensor("A", "electrical,SLTC"), new NodeTensor("B", "control,SLTC"), 2, true);
-            Q.AddEdge(new NodeTensor("C", "control,PHL"), new NodeTensor("A", "control,SLTC"), 4, true);
+            Q.AddEdge(new NodeTensor("A", "electrical,SLTC"), new NodeTensor("B", "control,SLTC"), 2);
+            Q.AddEdge(new NodeTensor("C", "control,PHL"), new NodeTensor("A", "control,SLTC"), 4);
 
             // add intralayer edge
-            Q.AddEdge(new NodeTensor("D", "flow,SLTC"), new NodeTensor("E", "flow,SLTC"), 2, true);
+            Q.AddEdge(new NodeTensor("D", "flow,SLTC"), new NodeTensor("E", "flow,SLTC"), 2);
 
             // try to add edge with non-existent vertex
             try
             {
                 // layer does not exist
-                Q.AddEdge(new NodeTensor("G", "fusion,SLTC"), new NodeTensor("H", "fusion, SLTC"), 1, true);
+                Q.AddEdge(new NodeTensor("G", "fusion,SLTC"), new NodeTensor("H", "fusion, SLTC"), 1);
             }
             catch (ArgumentException)
             {
@@ -166,7 +169,7 @@ namespace TestApp
             try
             {
                 // interlayer, vertex does not exist -- vertex should NOT be added
-                Q.AddEdge(new NodeTensor("Z", "electrical,PHL"), new NodeTensor("A", "flow,PHL"), 2, true);
+                Q.AddEdge(new NodeTensor("Z", "electrical,PHL"), new NodeTensor("A", "flow,PHL"), 2);
             }
             catch (ArgumentException ex)
             {
@@ -176,7 +179,7 @@ namespace TestApp
             try
             {
                 // intralayer, vertex does not exist -- vertex should be added
-                Q.AddEdge(new NodeTensor("Z", "flow,SLTC"), new NodeTensor("B", "flow,SLTC"), 2, true);
+                Q.AddEdge(new NodeTensor("Z", "flow,SLTC"), new NodeTensor("B", "flow,SLTC"), 2);
             }
             catch (ArgumentException ex)
             {
@@ -185,10 +188,8 @@ namespace TestApp
             double edgeWt = Q.EdgeWeight(new NodeTensor("D", "flow,SLTC"), new NodeTensor("E", "flow,SLTC"));
             edgeWt = Q.EdgeWeight(new NodeTensor("C", "control,PHL"), new NodeTensor("A", "control,SLTC"));
 
-            //Q.RemoveEdge(new NodeTensor("C", "control,PHL"), new NodeTensor("A", "control,SLTC"), true);
             Q.RemoveVertex(new NodeTensor("A", "control,SLTC"));
             string[] coord = { "electrical", "SLTC" };
-            //Q.RemoveElementaryLayer(coord);
             MultilayerNetworkSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\work\multilayer_test.dat");
         }
 
@@ -198,7 +199,7 @@ namespace TestApp
             string[] nodes = { "A", "B", "C", "D" };
             List<string> vertices = new List<string>(nodes);
 
-            Network G = new Network(vertices, weights);
+            Network G = new Network(vertices, weights, true);
 
             double[,] ewts = G.AdjacencyMatrix;
             List<string> outV = G.Vertices;
