@@ -283,14 +283,76 @@ namespace Networks.Core
                 return 0.0;
         }
 
-        public int Degree(string node)
+        public int Degree(string vertex)
         {
-            Dictionary<string, double> neighbors = null;
-            if (!EdgeList.TryGetValue(node, out neighbors))
-                return 0;
-            else
-                return neighbors.Count();
+            if (directed)
+            {
+                // return the total of in and out edges
+                int retVal = 0;
+                if (EdgeList.Keys.Contains(vertex))
+                    retVal = EdgeList[vertex].Count();
+                if (InEdges.Keys.Contains(vertex))
+                    retVal += InEdges[vertex].Count();
 
+                return retVal;
+            }
+            else
+            {
+                // only return the number of neighbors, as the practice of adding a reciprocal, directed edge
+                // is an implementation decision; the actual degree is the number of edges incident on the vertex
+                Dictionary<string, double> neighbors = null;
+                if (!EdgeList.TryGetValue(vertex, out neighbors))
+                    return 0;
+                else
+                    return neighbors.Count();
+            }
+
+        }
+
+        public double InWeights(string vertex)
+        {
+            if (!HasVertex(vertex))
+                throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
+
+            double retVal = 0;
+            if (!directed)
+            {
+                foreach (KeyValuePair<string, double> edge in EdgeList[vertex])
+                    retVal += edge.Value;
+
+                return retVal;
+            }
+
+
+            foreach (KeyValuePair<string, double> inEdge in InEdges[vertex])
+            {
+                retVal += inEdge.Value;
+            }
+
+            return retVal;
+        }
+
+        public double OutWeights(string vertex)
+        {
+            double retVal = 0;
+
+            if (!HasVertex(vertex))
+                throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
+
+            if (!directed)
+            {
+                foreach (KeyValuePair<string, double> edge in EdgeList[vertex])
+                    retVal += edge.Value;
+
+                return retVal;
+            }
+
+            foreach (KeyValuePair<string, double> kvp in EdgeList[vertex])
+            {
+                retVal += kvp.Value;
+            }
+
+            return retVal;
         }
 
         public Network Clone()

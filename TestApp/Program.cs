@@ -171,7 +171,7 @@ namespace TestApp
                 // interlayer, vertex does not exist -- vertex should NOT be added
                 Q.AddEdge(new NodeTensor("Z", "electrical,PHL"), new NodeTensor("A", "flow,PHL"), 2);
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException)
             {
 
             }
@@ -181,7 +181,7 @@ namespace TestApp
                 // intralayer, vertex does not exist -- vertex should be added
                 Q.AddEdge(new NodeTensor("Z", "flow,SLTC"), new NodeTensor("B", "flow,SLTC"), 2);
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException)
             {
 
             }
