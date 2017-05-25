@@ -314,6 +314,22 @@ namespace Networks.Core
 
         }
 
+        public int OutDegree(string vertex)
+        {
+            if (!HasVertex(vertex))
+                throw new ArgumentException($"Vertex {vertex} is not a member of the network.");
+
+            return EdgeList[vertex].Count();
+        }
+
+        public int InDegree(string vertex)
+        {
+            if (!HasVertex(vertex))
+                throw new ArgumentException($"Vertex {vertex} is not a member of the network.");
+
+            return InEdges[vertex].Count();
+        }
+
         public double InWeights(string vertex)
         {
             if (!HasVertex(vertex))
