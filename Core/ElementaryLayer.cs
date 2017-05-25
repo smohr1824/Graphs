@@ -76,7 +76,7 @@ namespace Networks.Core
             {
                 foreach (ResolvedNodeTensor target in InEdges[nodeT].Keys)
                 {
-                    M.RemoveInEdge(target, nodeT);
+                    M.RemoveOutEdge(target, nodeT);
                 }
                 InEdges.Remove(nodeT);
             }
@@ -91,18 +91,25 @@ namespace Networks.Core
                     InEdges[from].Add(to, wt);
                 else
                 {
-                    Dictionary<ResolvedNodeTensor, double> dict = new Dictionary<ResolvedNodeTensor, double>();
+                    Dictionary<ResolvedNodeTensor, double> dict = new Dictionary<ResolvedNodeTensor, double>(new NodeTensorEqualityComparer());
                     dict.Add(to, wt);
                     InEdges.Add(from, dict);
                 }
             }
 
         }
-        public void RemoveInEdge(ResolvedNodeTensor from, ResolvedNodeTensor to)
+        public void RemoveOutEdge(ResolvedNodeTensor from, ResolvedNodeTensor to)
         {
             // Don't use RemoveEdge so as to avoid endless cycle of DeleteInEdge
-            if (InEdges.Keys.Contains(from))
-                InEdges[from].Remove(to);
+            if (EdgeList.Keys.Contains(from))
+                EdgeList[from].Remove(to);
+        }
+
+        public void RemoveInEdge(ResolvedNodeTensor tgt, ResolvedNodeTensor src)
+        {
+            // src is the from vertex with an edge to this layer's tgt vertex
+            if (InEdges.Keys.Contains(tgt))
+                InEdges[tgt].Remove(src);
         }
 
         public double EdgeWeight(ResolvedNodeTensor rFrom, ResolvedNodeTensor rTo)

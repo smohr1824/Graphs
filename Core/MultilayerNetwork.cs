@@ -219,7 +219,7 @@ namespace Networks.Core
         }
 
 
-        public void RemoveEdge(NodeTensor from, NodeTensor to, bool directed)
+        public void RemoveEdge(NodeTensor from, NodeTensor to)
         {
             ResolvedNodeTensor rFrom = ResolveNodeTensor(from);
             ResolvedNodeTensor rTo = ResolveNodeTensor(to);
@@ -244,11 +244,11 @@ namespace Networks.Core
             }
         }
 
-        internal void RemoveInEdge(ResolvedNodeTensor from, ResolvedNodeTensor to)
+        internal void RemoveOutEdge(ResolvedNodeTensor from, ResolvedNodeTensor to)
         {
             if (ElementaryLayerExists(from.coordinates))
             {
-                elementaryLayers[from.coordinates].RemoveInEdge(from, to);
+                elementaryLayers[from.coordinates].RemoveOutEdge(from, to);
             }
         }
 

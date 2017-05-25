@@ -14,14 +14,14 @@ namespace TestApp
         static void Main(string[] args)
         {
 
-            //TestBasicMultiLayer();
-            //return;
+            TestBasicMultiLayer();
+            return;
 
             //TestNetworkVertex();
             //return;
 
-            TestConstructor();
-            return;
+            //TestConstructor();
+            //return;
 
             Network G = new Network(false);
 
@@ -189,6 +189,7 @@ namespace TestApp
             edgeWt = Q.EdgeWeight(new NodeTensor("C", "control,PHL"), new NodeTensor("A", "control,SLTC"));
 
             Q.RemoveVertex(new NodeTensor("A", "control,SLTC"));
+            Q.RemoveEdge(new NodeTensor("A", "electrical,SLTC"), new NodeTensor("B", "control,SLTC"));
             string[] coord = { "electrical", "SLTC" };
             MultilayerNetworkSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\work\multilayer_test.dat");
         }
