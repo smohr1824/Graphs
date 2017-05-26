@@ -188,6 +188,11 @@ namespace TestApp
             double edgeWt = Q.EdgeWeight(new NodeTensor("D", "flow,SLTC"), new NodeTensor("E", "flow,SLTC"));
             edgeWt = Q.EdgeWeight(new NodeTensor("C", "control,PHL"), new NodeTensor("A", "control,SLTC"));
 
+            Dictionary<NodeTensor, double> neighbors = Q.GetNeighbors(new NodeTensor("A", "electrical,SLTC"));
+            neighbors = Q.GetNeighbors(new NodeTensor("Z", "flow,SLTC"));
+            neighbors = Q.GetNeighbors(new NodeTensor("D", "flow,SLTC"));
+            neighbors = Q.GetNeighbors(new NodeTensor("C", "electrical,PHL"));
+
             Q.RemoveVertex(new NodeTensor("A", "control,SLTC"));
             Q.AddVertex(new NodeTensor("S", "control,PHL"));
             Q.RemoveVertex(new NodeTensor("S", "control,PHL"));

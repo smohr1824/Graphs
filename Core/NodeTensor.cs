@@ -38,6 +38,12 @@ namespace Networks.Core
             aspectCoordinates = new List<string>(coords.Split(','));
         }
 
+        public NodeTensor(string id, List<string> coords)
+        {
+            nodeId = id;
+            aspectCoordinates = coords;
+        }
+
         public override string ToString()
         {
             return nodeId + ":" + string.Join(",", aspectCoordinates);

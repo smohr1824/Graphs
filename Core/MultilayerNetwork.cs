@@ -41,16 +41,14 @@ namespace Networks.Core
 
         // concordance of vertex ids and the elementary layers in which they appear
         private Dictionary<string, List<ElementaryLayer>> nodeIdsAndLayers;
-        private bool categoricalEdges;
 
-        public MultilayerNetwork(IEnumerable<Tuple<string, IEnumerable<string>>> dimensions, bool isdirected, bool isCategoricallyConnected = true)
+        public MultilayerNetwork(IEnumerable<Tuple<string, IEnumerable<string>>> dimensions, bool isdirected = true)
         {
             aspects = new List<string>();
             axes = new List<List<string>>();
             nodeIdsAndLayers = new Dictionary<string, List<ElementaryLayer>>();
             elementaryLayers = new Dictionary<List<int>, ElementaryLayer>(new CoordinateTensorEqualityComparer());
 
-            categoricalEdges = isCategoricallyConnected;
             directed = isdirected;
 
             int index = 0;
@@ -70,14 +68,86 @@ namespace Networks.Core
             get { return nodeIdsAndLayers.Keys.Count();  }
         }
 
+        public List<string> UniqueVertices()
+        {
+            return nodeIdsAndLayers.Keys.ToList<string>();
+        }
+
         #endregion
 
         #region public methods
 
-        public bool NodeAligned
+        /// <summary>
+        /// Finds the degree of a vertex in a specific elementary layer, to include interlayer edges
+        /// </summary>
+        /// <param name="vertex">Fully qualified node tensor denoting the vertex</param>
+        /// <returns>Zero or positive integer count of incident edges</returns>
+        /// <remarks>Throws ArgumentException if the referenced elementary layer does not exist or the vertex is not a member of that layer.</remarks>
+        public int Degree(NodeTensor vertex)
         {
-            get { return categoricalEdges; }
+            List<int> resolved = ResolveCoordinates(vertex.aspectCoordinates);
+            if (resolved == null)
+                throw new ArgumentException($"Elementary layer referenced by vertex {vertex} does not exist.");
+
+            ElementaryLayer layer = elementaryLayers[resolved];
+
+            int retVal = 0;
+            try
+            {
+                retVal = layer.Degree(vertex.nodeId);
+            }
+            catch (ArgumentException)
+            {
+                throw new ArgumentException($"Vertex {vertex} is not a member of this elementary layer.");
+            }
+
+            return retVal;
         }
+
+        public int InDegree(NodeTensor vertex)
+        {
+            List<int> resolved = ResolveCoordinates(vertex.aspectCoordinates);
+            if (resolved == null)
+                throw new ArgumentException($"Elementary layer referenced by vertex {vertex} does not exist.");
+
+            int retVal = 0;
+
+            ElementaryLayer layer = elementaryLayers[resolved];
+
+            try
+            {
+                retVal = layer.InDegree(vertex.nodeId);
+            }
+            catch (ArgumentException)
+            {
+                throw new ArgumentException($"Vertex {vertex} is not a member of this elementary layer.");
+            }
+
+            return retVal;
+        }
+
+        public int OutDegree(NodeTensor vertex)
+        {
+            List<int> resolved = ResolveCoordinates(vertex.aspectCoordinates);
+            if (resolved == null)
+                throw new ArgumentException($"Elementary layer referenced by vertex {vertex} does not exist.");
+
+            int retVal = 0;
+
+            ElementaryLayer layer = elementaryLayers[resolved];
+
+            try
+            {
+                retVal = layer.OutDegree(vertex.nodeId);
+            }
+            catch (ArgumentException)
+            {
+                throw new ArgumentException($"Vertex {vertex} is not a member of this elementary layer.");
+            }
+
+            return retVal;
+        }
+
         public bool HasVertex(NodeTensor vertex)
         {
             ResolvedNodeTensor rVertex = ResolveNodeTensor(vertex);
@@ -118,6 +188,40 @@ namespace Networks.Core
                 return elementaryLayers[rFrom.coordinates].EdgeWeight(rFrom, rTo);
             else
                 return 0;
+        }
+
+        /// <summary>
+        /// Returns a dictionary of resolved vertices and the weights to reach them that are adjacent to the given vertex, to include node-coupled neighbors.
+        /// In other words, the neighbors will include those vertices neighboring any vertex with the same id in other layers.
+        /// </summary>
+        /// <param name="vertex">Vertex qualified by aspect coordinates</param>
+        /// <returns>Dictionary of layer-qualified vertices and the weight of the edge from the given vertex to the neighboring vertex.</returns>
+        public Dictionary<NodeTensor, double> GetNeighbors(NodeTensor vertex)
+        {
+            if (!nodeIdsAndLayers.Keys.Contains(vertex.nodeId))
+                throw new ArgumentException($"Vertex {vertex.nodeId} does not exist anywhere in the multilayer network.");
+
+            List<int> resolvedCoords = ResolveCoordinates(vertex.aspectCoordinates);
+            if (resolvedCoords == null || !ElementaryLayerExists(resolvedCoords))
+                throw new ArgumentException($"Layer {string.Join(",", vertex.aspectCoordinates)} does not exist.");
+
+            // Get the neighbors in the elementary layer and those neighbors explicitly linked by an interlayer edge
+            Dictionary<NodeTensor, double> retVal = elementaryLayers[resolvedCoords].GetNeighbors(vertex.nodeId);
+
+            // Add node-coupled neighbors
+            foreach (ElementaryLayer layer in nodeIdsAndLayers[vertex.nodeId])
+            {
+                if (layer.ResolvedCoordinates.SequenceEqual(resolvedCoords))
+                    continue;
+
+                Dictionary<NodeTensor, double> nghrs = layer.GetNeighbors(vertex.nodeId);
+                foreach (KeyValuePair<NodeTensor, double> kvp in nghrs)
+                {
+                    retVal.Add(kvp.Key, kvp.Value);
+                }
+            }
+
+            return retVal;
         }
 
         public bool AddElementaryLayer(IEnumerable<string> coordinates, Network G)
@@ -161,11 +265,6 @@ namespace Networks.Core
 
         public void List(TextWriter writer, char delimiter)
         {
-            if (categoricalEdges)
-                writer.WriteLine(@"Categorically connected");
-            else
-                writer.WriteLine(@"Not categorically connected");
-
             for (int i = 0; i < aspects.Count(); i++)
             {
                 writer.Write(aspects[i] + ": ");
@@ -240,6 +339,14 @@ namespace Networks.Core
 
         public void AddEdge(NodeTensor from, NodeTensor to, double wt)
         {
+            // same vertex
+            if (from.nodeId == to.nodeId && from.aspectCoordinates.SequenceEqual(to.aspectCoordinates))
+                throw new ArgumentException($"Self-edges are not permitted (vertex {from}, {to}");
+
+            // same vertex, different layers -- layers are node-coupled
+            if (from.nodeId == to.nodeId)
+                throw new ArgumentException($"Categorical edges are implicit and have weight zero.");
+
             ResolvedNodeTensor rFrom = ResolveNodeTensor(from);
             ResolvedNodeTensor rTo = ResolveNodeTensor(to);
 
@@ -324,6 +431,25 @@ namespace Networks.Core
             {
                 elementaryLayers[from.coordinates].RemoveOutEdge(from, to);
             }
+        }
+
+        public Network GetLayer(string layerCoordinates)
+        {
+            List<string> coords = new List<string>(layerCoordinates.Split(','));
+            List<int> resolved = ResolveCoordinates(coords);
+            if (resolved == null || !ElementaryLayerExists(resolved))
+                throw new ArgumentException($"No elementary layer exists at {layerCoordinates}.");
+
+            return elementaryLayers[resolved].CopyGraph();
+        }
+
+        public Network GetLayer(List<string> layerCoordinates)
+        {
+            List<int> resolved = ResolveCoordinates(layerCoordinates);
+            if (resolved == null || !ElementaryLayerExists(resolved))
+                throw new ArgumentException($"No elementary layer exists at {string.Join(",", layerCoordinates)}.");
+
+            return elementaryLayers[resolved].CopyGraph();
         }
 
         #endregion

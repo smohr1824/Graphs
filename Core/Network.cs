@@ -171,6 +171,9 @@ namespace Networks.Core
 
         public void AddEdge(string from, string to, double weight)
         {
+            if (from == to)
+                throw new ArgumentException($"Self-edges are not permitted (vertex {from})");
+
             Dictionary<string, double> neighbors;
 
             // multiple edges between the same two vertices are not permitted
@@ -310,6 +313,9 @@ namespace Networks.Core
 
         public int Degree(string vertex)
         {
+            if (!HasVertex(vertex))
+                throw new ArgumentException($"Vertex {vertex} is not a member of this graph.");
+
             if (directed)
             {
                 // return the total of in and out edges

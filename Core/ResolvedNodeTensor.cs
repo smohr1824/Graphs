@@ -39,6 +39,12 @@ namespace Networks.Core
             coordinates = new List<int>();
         }
 
+        public ResolvedNodeTensor(string id, List<int> coords)
+        {
+            nodeId = id;
+            coordinates = coords;
+        }
+
         public bool IsSameElementaryLayer(ResolvedNodeTensor b)
         {
             for (int i = 0; i < coordinates.Count(); i++)
