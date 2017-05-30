@@ -104,6 +104,9 @@ namespace TestApp
         private static void TestReadMultilayer()
         {
             MultilayerNetwork Q = MultilayerNetworkSerializer.ReadMultilayerNetworkFromFile(@"..\..\work\multilayer_test.dat", true);
+            string[] aspects = Q.Aspects();
+            string[] indicesType = Q.Indices("process");
+            string[] indicesSite = Q.Indices("site");
             MultilayerNetworkSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\work\multitest_out.dat");
 
         }

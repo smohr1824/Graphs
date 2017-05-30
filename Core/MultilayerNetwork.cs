@@ -69,6 +69,22 @@ namespace Networks.Core
             get { return nodeIdsAndLayers.Keys.Count();  }
         }
 
+        public string[] Aspects()
+        {
+            return aspects.ToArray<string>();
+        }
+
+        public string[] Indices(string aspect)
+        {
+            int index = aspects.IndexOf(aspect);
+            if (index == -1)
+                throw new ArgumentException($"{aspect} is not one of the aspects of this network.");
+            else
+            {
+                return indices[index].ToArray<string>();
+            }
+
+        }
         // lists all the vertices in the multilayer network once, i.e., does not worry about how often a vertex appears in elementary layers
         public List<string> UniqueVertices()
         {
