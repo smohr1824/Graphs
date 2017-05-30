@@ -148,6 +148,14 @@ namespace Networks.Core
             return retVal;
         }
 
+        public bool HasElementaryLayer(List<string> coords)
+        {
+            List<int> rcoords = ResolveCoordinates(coords);
+            if (rcoords == null)
+                return false;
+            return ElementaryLayerExists(rcoords);
+        }
+
         public bool HasVertex(NodeTensor vertex)
         {
             ResolvedNodeTensor rVertex = ResolveNodeTensor(vertex);
@@ -265,6 +273,7 @@ namespace Networks.Core
 
         public void List(TextWriter writer, char delimiter)
         {
+            writer.WriteLine(@":Aspects");
             for (int i = 0; i < aspects.Count(); i++)
             {
                 writer.Write(aspects[i] + ": ");
@@ -273,10 +282,10 @@ namespace Networks.Core
 
             foreach (List<int> layerCoord in elementaryLayers.Keys)
             {
-                List<string> aspectCoords = UnaliasCoordinates(layerCoord);
-                writer.WriteLine(string.Join(",", aspectCoords));
-                elementaryLayers[layerCoord].List(writer, delimiter);
                 writer.WriteLine(@"");
+                List<string> aspectCoords = UnaliasCoordinates(layerCoord);
+                writer.WriteLine(@":Layer (" + string.Join(",", aspectCoords) + @")");
+                elementaryLayers[layerCoord].List(writer, delimiter);
             }
 
 
@@ -351,7 +360,7 @@ namespace Networks.Core
             ResolvedNodeTensor rTo = ResolveNodeTensor(to);
 
             // if the tensor cannot be resolved, one or both elementary layers does not exist
-            if (rFrom == null || rTo == null || !ElementaryLayerExists(rFrom.coordinates) || !ElementaryLayerExists(rTo.coordinates))
+            if (rFrom == null || rTo == null || !ElementaryLayerExists(rFrom.coordinates) && !ElementaryLayerExists(rTo.coordinates))
                 throw new ArgumentException($"The elementary layer for one or more vertices does not exist (vertices passed {from.ToString()}, {to.ToString()}");
 
             // ensure the vertices exist in their respective elementary layers; if not, create

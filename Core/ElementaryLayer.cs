@@ -346,6 +346,8 @@ namespace Networks.Core
         {
             G.List(writer, delimiter);
 
+            if (EdgeList.Keys.Count() > 0)
+                writer.WriteLine(@":Interlayer edges");
             foreach (ResolvedNodeTensor from in EdgeList.Keys)
             {
                 Dictionary<ResolvedNodeTensor, double> targets = EdgeList[from];

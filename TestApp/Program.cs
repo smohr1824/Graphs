@@ -13,9 +13,11 @@ namespace TestApp
     {
         static void Main(string[] args)
         {
-
-            TestBasicMultiLayer();
+            TestReadMultilayer();
             return;
+
+            //TestBasicMultiLayer();
+            //return;
 
             //TestNetworkVertex();
             //return;
@@ -99,6 +101,12 @@ namespace TestApp
             Console.WriteLine("Done");
         }
 
+        private static void TestReadMultilayer()
+        {
+            MultilayerNetwork Q = MultilayerNetworkSerializer.ReadMultilayerNetworkFromFile(@"..\..\work\multilayer_test.dat", true);
+            MultilayerNetworkSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\work\multitest_out.dat");
+
+        }
         private static void TestBasicMultiLayer()
         {
             Network G = null;
@@ -149,6 +157,7 @@ namespace TestApp
 
             // add interlayer edges
             Q.AddEdge(new NodeTensor("A", "electrical,SLTC"), new NodeTensor("B", "control,SLTC"), 2);
+            Q.AddEdge(new NodeTensor("B", "electrical,SLTC"), new NodeTensor("C", "control,SLTC"), 2);
             Q.AddEdge(new NodeTensor("C", "control,PHL"), new NodeTensor("A", "control,SLTC"), 4);
 
             // add intralayer edge
@@ -193,12 +202,14 @@ namespace TestApp
             neighbors = Q.GetNeighbors(new NodeTensor("D", "flow,SLTC"));
             neighbors = Q.GetNeighbors(new NodeTensor("C", "electrical,PHL"));
 
-            Q.RemoveVertex(new NodeTensor("A", "control,SLTC"));
-            Q.AddVertex(new NodeTensor("S", "control,PHL"));
-            Q.RemoveVertex(new NodeTensor("S", "control,PHL"));
+            List<string> verts = Q.UniqueVertices();
 
-            Q.RemoveEdge(new NodeTensor("A", "electrical,SLTC"), new NodeTensor("B", "control,SLTC"));
-            Q.RemoveElementaryLayer(index); // remove (control, SLTC)
+           // Q.RemoveVertex(new NodeTensor("A", "control,SLTC"));
+            Q.AddVertex(new NodeTensor("S", "control,PHL"));
+            //Q.RemoveVertex(new NodeTensor("S", "control,PHL"));
+
+            //Q.RemoveEdge(new NodeTensor("A", "electrical,SLTC"), new NodeTensor("B", "control,SLTC"));
+           // Q.RemoveElementaryLayer(index); // remove (control, SLTC)
             string[] coord = { "electrical", "SLTC" };
             MultilayerNetworkSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\work\multilayer_test.dat");
         }
