@@ -31,8 +31,11 @@ namespace Networks.Core
 {
     public partial class MultilayerNetwork
     {
+        // list of aspect names
         private List<string> aspects;
-        private List<List<string>> axes;
+
+        // each inner list is a list of the indices along one aspect, hence the list of list contains all the indices in aspect order
+        private List<List<string>> indices;
 
         private bool directed;
 
@@ -45,18 +48,16 @@ namespace Networks.Core
         public MultilayerNetwork(IEnumerable<Tuple<string, IEnumerable<string>>> dimensions, bool isdirected = true)
         {
             aspects = new List<string>();
-            axes = new List<List<string>>();
+            indices = new List<List<string>>();
             nodeIdsAndLayers = new Dictionary<string, List<ElementaryLayer>>();
             elementaryLayers = new Dictionary<List<int>, ElementaryLayer>(new CoordinateTensorEqualityComparer());
 
             directed = isdirected;
 
-            int index = 0;
             foreach (Tuple<string, IEnumerable<string>> axisValue in dimensions)
             {
                 aspects.Add(axisValue.Item1);
-                axes.Add(axisValue.Item2.ToList<string>());
-                index++;
+                indices.Add(axisValue.Item2.ToList<string>());
             }
 
         }
@@ -68,6 +69,7 @@ namespace Networks.Core
             get { return nodeIdsAndLayers.Keys.Count();  }
         }
 
+        // lists all the vertices in the multilayer network once, i.e., does not worry about how often a vertex appears in elementary layers
         public List<string> UniqueVertices()
         {
             return nodeIdsAndLayers.Keys.ToList<string>();
@@ -148,6 +150,7 @@ namespace Networks.Core
             return retVal;
         }
 
+        // Indicates whether a possible elementary layer is actually populated
         public bool HasElementaryLayer(List<string> coords)
         {
             List<int> rcoords = ResolveCoordinates(coords);
@@ -156,6 +159,7 @@ namespace Networks.Core
             return ElementaryLayerExists(rcoords);
         }
 
+        // indicates whether a vertex appears in a particular elementary layer
         public bool HasVertex(NodeTensor vertex)
         {
             ResolvedNodeTensor rVertex = ResolveNodeTensor(vertex);
@@ -217,6 +221,7 @@ namespace Networks.Core
             Dictionary<NodeTensor, double> retVal = elementaryLayers[resolvedCoords].GetNeighbors(vertex.nodeId);
 
             // Add node-coupled neighbors
+            // TODO: add support for enabling and disabling inter-aspect coupling -- node coupling as implemented enables inter-aspect coupling
             foreach (ElementaryLayer layer in nodeIdsAndLayers[vertex.nodeId])
             {
                 if (layer.ResolvedCoordinates.SequenceEqual(resolvedCoords))
@@ -277,7 +282,7 @@ namespace Networks.Core
             for (int i = 0; i < aspects.Count(); i++)
             {
                 writer.Write(aspects[i] + ": ");
-                writer.WriteLine(string.Join(",", axes[i]));
+                writer.WriteLine(string.Join(",", indices[i]));
             }
 
             foreach (List<int> layerCoord in elementaryLayers.Keys)
@@ -306,6 +311,8 @@ namespace Networks.Core
             {
                 elementaryLayers[rVertex.coordinates].AddVertex(rVertex.nodeId);
                 List<ElementaryLayer> layers;
+
+                // update the concordance of unique vertex ids and the elementary layers in which they appear
                 if (!nodeIdsAndLayers.TryGetValue(rVertex.nodeId, out layers))
                 {
                     List<ElementaryLayer> layerList = new List<ElementaryLayer>();
@@ -549,7 +556,7 @@ namespace Networks.Core
 
             for (int i = 0; i < aspects.Count(); i++)
             {
-                int index = axes[i].IndexOf(coords[i]);
+                int index = indices[i].IndexOf(coords[i]);
                 if (index != -1)
                     retVal.Add(index);
                 else
@@ -568,10 +575,10 @@ namespace Networks.Core
 
             for (int i = 0; i < aspects.Count(); i++)
             {
-                if (coords[i] > axes[i].Count() - 1)
-                    throw new ArgumentOutOfRangeException($"Coordinate value exceeds maximum defined on aspect {axes[i]}");
+                if (coords[i] > indices[i].Count() - 1)
+                    throw new ArgumentOutOfRangeException($"Coordinate value exceeds maximum defined on aspect {indices[i]}");
 
-                string sCoord = axes[i][coords[i]]; // simply debugging
+                string sCoord = indices[i][coords[i]]; // simply debugging
                 retVal.Add(sCoord);
             }
 
