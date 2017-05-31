@@ -20,7 +20,7 @@ Multilayer networks may be directed or undirected.  The decision is made at the 
 must be the same (i.e., directed or undirected) as the multilayer network or an exception will be thrown.
 
 Elementary layers are implicitly diagonally coupled.  Any given vertex is assumed to be coupled to any vertex with the same id on any other layer.  The coupling has zero length. 
-Thus, any vertex is adjacent to the neighbors of a vertex with the same id on other layers.
+Thus, any vertex is adjacent to the neighbors of a vertex with the same id on other layers. Neighboring vertices with intra-aspect only node coupling is also permitted using the CategoricalGetNeighbors method.
 
 Internally, elementary layers contain a Network instance and properties to manage interlayer edges.  This permits us to easily distinguish between in-layer neighbors and edges  and interlayer 
 neighbors and edges.  This comes at the expense of some overhead.  The opposite approach, storing all vertices and edges as layer-qualified entities with no internal networks 
