@@ -13,11 +13,11 @@ namespace TestApp
     {
         static void Main(string[] args)
         {
-            TestReadMultilayer();
-            return;
-
-            //TestBasicMultiLayer();
+            //TestReadMultilayer();
             //return;
+
+            TestBasicMultiLayer();
+            return;
 
             //TestNetworkVertex();
             //return;
@@ -204,6 +204,11 @@ namespace TestApp
             neighbors = Q.GetNeighbors(new NodeTensor("Z", "flow,SLTC"));
             neighbors = Q.GetNeighbors(new NodeTensor("D", "flow,SLTC"));
             neighbors = Q.GetNeighbors(new NodeTensor("C", "electrical,PHL"));
+
+            neighbors = Q.GetNeighborsCategorical(new NodeTensor("B", "electrical,PHL"), "process");
+            neighbors = Q.GetNeighborsCategorical(new NodeTensor("B", "electrical,PHL"), "process", true);
+
+            neighbors = Q.GetNeighborsCategorical(new NodeTensor("A", "flow,PHL"), "process");
 
             List<string> verts = Q.UniqueVertices();
 

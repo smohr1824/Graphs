@@ -219,7 +219,7 @@ namespace Networks.Core
         }
 
         /// <summary>
-        /// Returns a dictionary of resolved vertices and the weights to reach them that are adjacent to the given vertex, to include node-coupled neighbors.
+        /// Returns a dictionary of vertices and the weights to reach them such that the vertices are adjacent to the given vertex, to include node-coupled neighbors.
         /// In other words, the neighbors will include those vertices neighboring any vertex with the same id in other layers.
         /// </summary>
         /// <param name="vertex">Vertex qualified by aspect coordinates</param>
@@ -237,10 +237,78 @@ namespace Networks.Core
             Dictionary<NodeTensor, double> retVal = elementaryLayers[resolvedCoords].GetNeighbors(vertex.nodeId);
 
             // Add node-coupled neighbors
-            // TODO: add support for enabling and disabling inter-aspect coupling -- node coupling as implemented enables inter-aspect coupling
+            // node coupling as implemented enables inter-aspect coupling
             foreach (ElementaryLayer layer in nodeIdsAndLayers[vertex.nodeId])
             {
                 if (layer.ResolvedCoordinates.SequenceEqual(resolvedCoords))
+                    continue;
+
+                Dictionary<NodeTensor, double> nghrs = layer.GetNeighbors(vertex.nodeId);
+                foreach (KeyValuePair<NodeTensor, double> kvp in nghrs)
+                {
+                    retVal.Add(kvp.Key, kvp.Value);
+                }
+            }
+
+            return retVal;
+        }
+
+        /// <summary>
+        /// Returns a dictionary of vertices and weights such that the vertices are adjacent to the given vertex within the specified aspect.
+        /// Additionally, if ordinal is true, the any vertex returned must be in an elementary layer immediately adjacent to the elementary layer of the given vertex.
+        /// Ordinal = true allows for ordinal coupling assuming the indices of an aspect are in ordinal order.
+        /// </summary>
+        /// <param name="vertex">Vertex qualified by aspect coordinates</param>
+        /// <param name="aspectCategory">Name of the aspect to which to limit node coupling</param>
+        /// <param name="ordinal">True if candidate vertices must be in a layer adjacent to the layer of the specified vertex.</param>
+        /// <returns>Dictionary of layer-qualified vertices and the edge weight between them and the originating vertex.</returns>
+        public Dictionary<NodeTensor, double> CategoricalGetNeighbors(NodeTensor vertex, string aspectCategory, bool ordinal = false)
+        {
+            if (!nodeIdsAndLayers.Keys.Contains(vertex.nodeId))
+                throw new ArgumentException($"Vertex {vertex.nodeId} does not exist anywhere in the multilayer network.");
+
+            List<int> resolvedCoords = ResolveCoordinates(vertex.aspectCoordinates);
+            if (resolvedCoords == null || !ElementaryLayerExists(resolvedCoords))
+                throw new ArgumentException($"Layer {string.Join(",", vertex.aspectCoordinates)} does not exist.");
+
+            if (!aspects.Contains(aspectCategory))
+                throw new ArgumentException($"Aspect {aspectCategory} cannot be used as a category as it is not an aspect in the network.");
+
+            // Get the neighbors in the elementary layer and those neighbors explicitly linked by an interlayer edge
+            Dictionary<NodeTensor, double> retVal = elementaryLayers[resolvedCoords].GetNeighbors(vertex.nodeId);
+
+            int indexOfAspect = aspects.IndexOf(aspectCategory);
+            int epsilon = 1;
+
+            if (!ordinal)
+                epsilon = indices[indexOfAspect].Count();
+
+            // Get node-coupled neighbors given the constrainsts on node coupling
+            foreach (ElementaryLayer layer in nodeIdsAndLayers[vertex.nodeId])
+            {
+                if (layer.ResolvedCoordinates.SequenceEqual(resolvedCoords))
+                    continue;
+
+                bool outOfAspect = false;
+
+                // determine if we are out of the aspect
+                for (int k = 0; k < layer.ResolvedCoordinates.Count(); k++)
+                {
+                    if (k == indexOfAspect)
+                        continue;
+
+                    if (layer.ResolvedCoordinates[k] != resolvedCoords[k])
+                    {
+                        outOfAspect = true;
+                        break;
+                    }
+                }
+
+                if (outOfAspect)
+                    continue;
+
+                // any layer that survives to this point is in aspect; see if it is ordinal if required
+                if (Math.Abs(resolvedCoords[indexOfAspect] - layer.ResolvedCoordinates[indexOfAspect]) > epsilon)
                     continue;
 
                 Dictionary<NodeTensor, double> nghrs = layer.GetNeighbors(vertex.nodeId);
