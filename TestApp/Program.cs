@@ -13,11 +13,13 @@ namespace TestApp
     {
         static void Main(string[] args)
         {
+            TestMultilayerSources();
+            return;
             //TestReadMultilayer();
             //return;
 
-            TestBasicMultiLayer();
-            return;
+            //TestBasicMultiLayer();
+            //return;
 
             //TestNetworkVertex();
             //return;
@@ -44,6 +46,11 @@ namespace TestApp
                 Console.ReadLine();
                 return;
             }
+
+            Dictionary<string, double> sources = G.GetSources("5");
+
+            //G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\displays2.dat", true);
+            //sources = G.GetSources("4");
 
             /* try
              {
@@ -86,6 +93,15 @@ namespace TestApp
 
             IEnumerable<HashSet<string>> best = seeds.Distinct<HashSet<string>>(new SetEqualityComparer());
             ClusterSerializer.WriteClustersToFile(best, @"..\..\work\displays1clusters_test.out");
+        }
+
+        private static void TestMultilayerSources()
+        {
+            MultilayerNetwork Q = MultilayerNetworkSerializer.ReadMultilayerNetworkFromFile(@"..\..\work\multilayer_test.dat", true);
+            Dictionary<NodeTensor, double> sources = Q.GetSources(new NodeTensor("B", "control,SLTC"));
+            sources = Q.CategoricalGetSources(new NodeTensor("A", "control,SLTC"), "process");
+            sources = Q.CategoricalGetSources(new NodeTensor("D", "flow,PHL"), "site");
+            Dictionary<NodeTensor, double> neighbors = Q.CategoricalGetNeighbors(new NodeTensor("A", "control,PHL"), "site");
         }
 
         private static void TestNetworkVertex()
@@ -205,10 +221,10 @@ namespace TestApp
             neighbors = Q.GetNeighbors(new NodeTensor("D", "flow,SLTC"));
             neighbors = Q.GetNeighbors(new NodeTensor("C", "electrical,PHL"));
 
-            neighbors = Q.GetNeighborsCategorical(new NodeTensor("B", "electrical,PHL"), "process");
-            neighbors = Q.GetNeighborsCategorical(new NodeTensor("B", "electrical,PHL"), "process", true);
+            neighbors = Q.CategoricalGetNeighbors(new NodeTensor("B", "electrical,PHL"), "process");
+            neighbors = Q.CategoricalGetNeighbors(new NodeTensor("B", "electrical,PHL"), "process", true);
 
-            neighbors = Q.GetNeighborsCategorical(new NodeTensor("A", "flow,PHL"), "process");
+            neighbors = Q.CategoricalGetNeighbors(new NodeTensor("A", "flow,PHL"), "process");
 
             List<string> verts = Q.UniqueVertices();
 

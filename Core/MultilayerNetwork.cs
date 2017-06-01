@@ -236,7 +236,7 @@ namespace Networks.Core
             // Get the neighbors in the elementary layer and those neighbors explicitly linked by an interlayer edge
             Dictionary<NodeTensor, double> retVal = elementaryLayers[resolvedCoords].GetNeighbors(vertex.nodeId);
 
-            // Add node-coupled neighbors
+            // Add node-coupled neighbors (zero-length, bidirectional)
             // node coupling as implemented enables inter-aspect coupling
             foreach (ElementaryLayer layer in nodeIdsAndLayers[vertex.nodeId])
             {
@@ -253,6 +253,36 @@ namespace Networks.Core
             return retVal;
         }
 
+        public Dictionary<NodeTensor, double> GetSources(NodeTensor vertex)
+        {
+            if (!nodeIdsAndLayers.Keys.Contains(vertex.nodeId))
+                throw new ArgumentException($"Vertex {vertex.nodeId} does not exist anywhere in the multilayer network.");
+
+            List<int> resolvedCoords = ResolveCoordinates(vertex.aspectCoordinates);
+            if (resolvedCoords == null || !ElementaryLayerExists(resolvedCoords))
+                throw new ArgumentException($"Layer {string.Join(",", vertex.aspectCoordinates)} does not exist.");
+
+            // Get the neighbors in the elementary layer and those neighbors explicitly linked by an interlayer edge
+            Dictionary<NodeTensor, double> retVal = elementaryLayers[resolvedCoords].GetSources(vertex.nodeId);
+
+            // Add node-coupled neighbors (zero-length, bidirectional)
+            // node coupling as implemented enables inter-aspect coupling
+            foreach (ElementaryLayer layer in nodeIdsAndLayers[vertex.nodeId])
+            {
+                if (layer.ResolvedCoordinates.SequenceEqual(resolvedCoords))
+                    continue;
+
+                Dictionary<NodeTensor, double> nghrs = layer.GetSources(vertex.nodeId);
+                foreach (KeyValuePair<NodeTensor, double> kvp in nghrs)
+                {
+                    retVal.Add(kvp.Key, kvp.Value);
+                }
+            }
+
+            return retVal;
+        }
+
+        // TODO: Can GetNeighbors and CategoricalGetNeighbors be refactored so that the latter is a constrained version of the former and both can be implemented by a common private method?  Simplicity
         /// <summary>
         /// Returns a dictionary of vertices and weights such that the vertices are adjacent to the given vertex within the specified aspect.
         /// Additionally, if ordinal is true, the any vertex returned must be in an elementary layer immediately adjacent to the elementary layer of the given vertex.
@@ -294,7 +324,7 @@ namespace Networks.Core
                 // determine if we are out of the aspect
                 for (int k = 0; k < layer.ResolvedCoordinates.Count(); k++)
                 {
-                    if (k == indexOfAspect)
+                    if (k != indexOfAspect)
                         continue;
 
                     if (layer.ResolvedCoordinates[k] != resolvedCoords[k])
@@ -312,6 +342,65 @@ namespace Networks.Core
                     continue;
 
                 Dictionary<NodeTensor, double> nghrs = layer.GetNeighbors(vertex.nodeId);
+                foreach (KeyValuePair<NodeTensor, double> kvp in nghrs)
+                {
+                    retVal.Add(kvp.Key, kvp.Value);
+                }
+            }
+
+            return retVal;
+        }
+
+        public Dictionary<NodeTensor, double> CategoricalGetSources(NodeTensor vertex, string aspectCategory, bool ordinal = false)
+        {
+            if (!nodeIdsAndLayers.Keys.Contains(vertex.nodeId))
+                throw new ArgumentException($"Vertex {vertex.nodeId} does not exist anywhere in the multilayer network.");
+
+            List<int> resolvedCoords = ResolveCoordinates(vertex.aspectCoordinates);
+            if (resolvedCoords == null || !ElementaryLayerExists(resolvedCoords))
+                throw new ArgumentException($"Layer {string.Join(",", vertex.aspectCoordinates)} does not exist.");
+
+            if (!aspects.Contains(aspectCategory))
+                throw new ArgumentException($"Aspect {aspectCategory} cannot be used as a category as it is not an aspect in the network.");
+
+            // Get the neighbors in the elementary layer and those neighbors explicitly linked by an interlayer edge
+            Dictionary<NodeTensor, double> retVal = elementaryLayers[resolvedCoords].GetSources(vertex.nodeId);
+
+            int indexOfAspect = aspects.IndexOf(aspectCategory);
+            int epsilon = 1;
+
+            if (!ordinal)
+                epsilon = indices[indexOfAspect].Count();
+
+            // Get node-coupled neighbors given the constrainsts on node coupling
+            foreach (ElementaryLayer layer in nodeIdsAndLayers[vertex.nodeId])
+            {
+                if (layer.ResolvedCoordinates.SequenceEqual(resolvedCoords))
+                    continue;
+
+                bool outOfAspect = false;
+
+                // determine if we are out of the aspect
+                for (int k = 0; k < layer.ResolvedCoordinates.Count(); k++)
+                {
+                    if (k != indexOfAspect)
+                        continue;
+
+                    if (layer.ResolvedCoordinates[k] != resolvedCoords[k])
+                    {
+                        outOfAspect = true;
+                        break;
+                    }
+                }
+
+                if (outOfAspect)
+                    continue;
+
+                // any layer that survives to this point is in aspect; see if it is ordinal if required
+                if (Math.Abs(resolvedCoords[indexOfAspect] - layer.ResolvedCoordinates[indexOfAspect]) > epsilon)
+                    continue;
+
+                Dictionary<NodeTensor, double> nghrs = layer.GetSources(vertex.nodeId);
                 foreach (KeyValuePair<NodeTensor, double> kvp in nghrs)
                 {
                     retVal.Add(kvp.Key, kvp.Value);

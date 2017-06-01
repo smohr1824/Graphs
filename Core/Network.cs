@@ -273,10 +273,34 @@ namespace Networks.Core
             }
         }
 
-        public Dictionary<string, double> GetNeighbors(string node)
+        /// <summary>
+        ///  Returns vertices neighboring the given vertex such that there are edges from the source to the neighboring target vertices
+        /// </summary>
+        /// <param name="vertex">source vertex</param>
+        /// <returns></returns>
+        public Dictionary<string, double> GetNeighbors(string vertex)
         {
             Dictionary<string, double> nhood = null;
-            if (!EdgeList.TryGetValue(node, out nhood))
+            if (!EdgeList.TryGetValue(vertex, out nhood))
+            {
+                return new Dictionary<string, double>();
+            }
+            else
+            {
+                return nhood;
+            }
+        }
+
+        /// <summary>
+        /// Returns a dictionary of vertices with directed edges terminating at the given vertex
+        /// </summary>
+        /// <param name="vertex">vertex that is the target of the inbound edges</param>
+        /// <returns></returns>
+        /// <remarks>Supports back-tracking for bideirectional search</remarks>
+        public Dictionary<string, double> GetSources(string vertex)
+        {
+            Dictionary<string, double> nhood = null;
+            if (!InEdges.TryGetValue(vertex, out nhood))
             {
                 return new Dictionary<string, double>();
             }

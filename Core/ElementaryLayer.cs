@@ -342,6 +342,39 @@ namespace Networks.Core
             return retVal;
         }
 
+        internal Dictionary<NodeTensor, double> GetSources(string vertex)
+        {
+            if (!HasVertex(vertex))
+                throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
+
+            Dictionary<NodeTensor, double> retVal = new Dictionary<NodeTensor, double>();
+
+            Dictionary<string, double> graphSources = G.GetSources(vertex);
+
+            List<string> layerAspectCoords = M.UnaliasCoordinates(layerCoordinates);
+
+            // get the neighbors in the layer
+            foreach (string node in graphSources.Keys)
+            {
+                NodeTensor local = new NodeTensor(node, layerAspectCoords);
+                retVal.Add(local, graphSources[node]);
+            }
+
+            // add out of layer neighbors, i.e., targets of interlayer edges
+            ResolvedNodeTensor refTensor = new ResolvedNodeTensor(vertex, layerCoordinates);
+
+            if (InEdges.Keys.Contains(refTensor))
+            {
+                foreach (ResolvedNodeTensor tensor in InEdges[refTensor].Keys)
+                {
+                    NodeTensor tgt = new NodeTensor(tensor.nodeId, M.UnaliasCoordinates(tensor.coordinates));
+                    retVal.Add(tgt, InEdges[refTensor][tensor]);
+                }
+            }
+
+            return retVal;
+        }
+
         public void List(TextWriter writer, char delimiter)
         {
             G.List(writer, delimiter);
