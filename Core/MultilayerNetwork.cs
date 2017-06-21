@@ -103,7 +103,7 @@ namespace Networks.Core
         /// <remarks>Throws ArgumentException if the referenced elementary layer does not exist or the vertex is not a member of that layer.</remarks>
         public int Degree(NodeTensor vertex)
         {
-            List<int> resolved = ResolveCoordinates(vertex.aspectCoordinates);
+            List<int> resolved = ResolveCoordinates(vertex.coordinates);
             if (resolved == null)
                 throw new ArgumentException($"Elementary layer referenced by vertex {vertex} does not exist.");
 
@@ -124,7 +124,7 @@ namespace Networks.Core
 
         public int InDegree(NodeTensor vertex)
         {
-            List<int> resolved = ResolveCoordinates(vertex.aspectCoordinates);
+            List<int> resolved = ResolveCoordinates(vertex.coordinates);
             if (resolved == null)
                 throw new ArgumentException($"Elementary layer referenced by vertex {vertex} does not exist.");
 
@@ -146,7 +146,7 @@ namespace Networks.Core
 
         public int OutDegree(NodeTensor vertex)
         {
-            List<int> resolved = ResolveCoordinates(vertex.aspectCoordinates);
+            List<int> resolved = ResolveCoordinates(vertex.coordinates);
             if (resolved == null)
                 throw new ArgumentException($"Elementary layer referenced by vertex {vertex} does not exist.");
 
@@ -229,12 +229,12 @@ namespace Networks.Core
             if (!nodeIdsAndLayers.Keys.Contains(vertex.nodeId))
                 throw new ArgumentException($"Vertex {vertex.nodeId} does not exist anywhere in the multilayer network.");
 
-            List<int> resolvedCoords = ResolveCoordinates(vertex.aspectCoordinates);
+            List<int> resolvedCoords = ResolveCoordinates(vertex.coordinates);
             if (resolvedCoords == null || !ElementaryLayerExists(resolvedCoords))
-                throw new ArgumentException($"Layer {string.Join(",", vertex.aspectCoordinates)} does not exist.");
+                throw new ArgumentException($"Layer {string.Join(",", vertex.coordinates)} does not exist.");
 
             // Get the neighbors in the elementary layer and those neighbors explicitly linked by an interlayer edge
-            Dictionary<NodeTensor, double> retVal = elementaryLayers[resolvedCoords].GetNeighbors(vertex.nodeId);
+            Dictionary<NodeTensor, double> retVal = new Dictionary<NodeTensor, double>(elementaryLayers[resolvedCoords].GetNeighbors(vertex.nodeId), new NodeTensorEqualityComparer());
 
             // Add node-coupled neighbors (zero-length, bidirectional)
             // node coupling as implemented enables inter-aspect coupling
@@ -246,7 +246,15 @@ namespace Networks.Core
                 Dictionary<NodeTensor, double> nghrs = layer.GetNeighbors(vertex.nodeId);
                 foreach (KeyValuePair<NodeTensor, double> kvp in nghrs)
                 {
-                    retVal.Add(kvp.Key, kvp.Value);
+                    // an explicit interlayer edge may duplicate a node-coupled edge;
+                    // if so, it replaces it
+                    if (!retVal.ContainsKey(kvp.Key))
+                        retVal.Add(kvp.Key, kvp.Value);
+                    else
+                    {
+                        retVal.Remove(kvp.Key);
+                        retVal.Add(kvp.Key, kvp.Value);
+                    }
                 }
             }
 
@@ -258,12 +266,12 @@ namespace Networks.Core
             if (!nodeIdsAndLayers.Keys.Contains(vertex.nodeId))
                 throw new ArgumentException($"Vertex {vertex.nodeId} does not exist anywhere in the multilayer network.");
 
-            List<int> resolvedCoords = ResolveCoordinates(vertex.aspectCoordinates);
+            List<int> resolvedCoords = ResolveCoordinates(vertex.coordinates);
             if (resolvedCoords == null || !ElementaryLayerExists(resolvedCoords))
-                throw new ArgumentException($"Layer {string.Join(",", vertex.aspectCoordinates)} does not exist.");
+                throw new ArgumentException($"Layer {string.Join(",", vertex.coordinates)} does not exist.");
 
             // Get the neighbors in the elementary layer and those neighbors explicitly linked by an interlayer edge
-            Dictionary<NodeTensor, double> retVal = elementaryLayers[resolvedCoords].GetSources(vertex.nodeId);
+            Dictionary<NodeTensor, double> retVal = new Dictionary<NodeTensor, double>(elementaryLayers[resolvedCoords].GetSources(vertex.nodeId), new NodeTensorEqualityComparer());
 
             // Add node-coupled neighbors (zero-length, bidirectional)
             // node coupling as implemented enables inter-aspect coupling
@@ -275,7 +283,15 @@ namespace Networks.Core
                 Dictionary<NodeTensor, double> nghrs = layer.GetSources(vertex.nodeId);
                 foreach (KeyValuePair<NodeTensor, double> kvp in nghrs)
                 {
-                    retVal.Add(kvp.Key, kvp.Value);
+                    // an explicit interlayer edge may duplicate a node-coupled edge;
+                    // if so, it replaces it
+                    if (!retVal.ContainsKey(kvp.Key))
+                        retVal.Add(kvp.Key, kvp.Value);
+                    else
+                    {
+                        retVal.Remove(kvp.Key);
+                        retVal.Add(kvp.Key, kvp.Value);
+                    }
                 }
             }
 
@@ -297,15 +313,15 @@ namespace Networks.Core
             if (!nodeIdsAndLayers.Keys.Contains(vertex.nodeId))
                 throw new ArgumentException($"Vertex {vertex.nodeId} does not exist anywhere in the multilayer network.");
 
-            List<int> resolvedCoords = ResolveCoordinates(vertex.aspectCoordinates);
+            List<int> resolvedCoords = ResolveCoordinates(vertex.coordinates);
             if (resolvedCoords == null || !ElementaryLayerExists(resolvedCoords))
-                throw new ArgumentException($"Layer {string.Join(",", vertex.aspectCoordinates)} does not exist.");
+                throw new ArgumentException($"Layer {string.Join(",", vertex.coordinates)} does not exist.");
 
             if (!aspects.Contains(aspectCategory))
                 throw new ArgumentException($"Aspect {aspectCategory} cannot be used as a category as it is not an aspect in the network.");
 
             // Get the neighbors in the elementary layer and those neighbors explicitly linked by an interlayer edge
-            Dictionary<NodeTensor, double> retVal = elementaryLayers[resolvedCoords].GetNeighbors(vertex.nodeId);
+            Dictionary<NodeTensor, double> retVal = new Dictionary<NodeTensor, double>(elementaryLayers[resolvedCoords].GetNeighbors(vertex.nodeId), new NodeTensorEqualityComparer());
 
             int indexOfAspect = aspects.IndexOf(aspectCategory);
             int epsilon = 1;
@@ -344,7 +360,15 @@ namespace Networks.Core
                 Dictionary<NodeTensor, double> nghrs = layer.GetNeighbors(vertex.nodeId);
                 foreach (KeyValuePair<NodeTensor, double> kvp in nghrs)
                 {
-                    retVal.Add(kvp.Key, kvp.Value);
+                    // an explicit interlayer edge may duplicate a node-coupled edge;
+                    // if so, it replaces it
+                    if (!retVal.ContainsKey(kvp.Key))
+                        retVal.Add(kvp.Key, kvp.Value);
+                    else
+                    {
+                        retVal.Remove(kvp.Key);
+                        retVal.Add(kvp.Key, kvp.Value);
+                    }
                 }
             }
 
@@ -356,15 +380,15 @@ namespace Networks.Core
             if (!nodeIdsAndLayers.Keys.Contains(vertex.nodeId))
                 throw new ArgumentException($"Vertex {vertex.nodeId} does not exist anywhere in the multilayer network.");
 
-            List<int> resolvedCoords = ResolveCoordinates(vertex.aspectCoordinates);
+            List<int> resolvedCoords = ResolveCoordinates(vertex.coordinates);
             if (resolvedCoords == null || !ElementaryLayerExists(resolvedCoords))
-                throw new ArgumentException($"Layer {string.Join(",", vertex.aspectCoordinates)} does not exist.");
+                throw new ArgumentException($"Layer {string.Join(",", vertex.coordinates)} does not exist.");
 
             if (!aspects.Contains(aspectCategory))
                 throw new ArgumentException($"Aspect {aspectCategory} cannot be used as a category as it is not an aspect in the network.");
 
             // Get the neighbors in the elementary layer and those neighbors explicitly linked by an interlayer edge
-            Dictionary<NodeTensor, double> retVal = elementaryLayers[resolvedCoords].GetSources(vertex.nodeId);
+            Dictionary<NodeTensor, double> retVal = new Dictionary<NodeTensor, double>(elementaryLayers[resolvedCoords].GetSources(vertex.nodeId), new NodeTensorEqualityComparer());
 
             int indexOfAspect = aspects.IndexOf(aspectCategory);
             int epsilon = 1;
@@ -403,7 +427,15 @@ namespace Networks.Core
                 Dictionary<NodeTensor, double> nghrs = layer.GetSources(vertex.nodeId);
                 foreach (KeyValuePair<NodeTensor, double> kvp in nghrs)
                 {
-                    retVal.Add(kvp.Key, kvp.Value);
+                    // an explicit interlayer edge may duplicate a node-coupled edge;
+                    // if so, it replaces it
+                    if (!retVal.ContainsKey(kvp.Key))
+                        retVal.Add(kvp.Key, kvp.Value);
+                    else
+                    {
+                        retVal.Remove(kvp.Key);
+                        retVal.Add(kvp.Key, kvp.Value);
+                    }
                 }
             }
 
@@ -476,7 +508,7 @@ namespace Networks.Core
                 throw new ArgumentException($"Aspect coordinates could not be resolved for {vertex}.");
 
             if (!ElementaryLayerExists(rVertex.coordinates))
-                throw new ArgumentException($"Elementary layer does not exist at {vertex.aspectCoordinates}");
+                throw new ArgumentException($"Elementary layer does not exist at {vertex.coordinates}");
 
             // elementary layer exists
             ElementaryLayer layer = elementaryLayers[rVertex.coordinates];
@@ -510,7 +542,7 @@ namespace Networks.Core
                 throw new ArgumentException($"Aspect coordinates could not be resolved for {vertex}.");
 
             if (!ElementaryLayerExists(rVertex.coordinates))
-                throw new ArgumentException($"Elementary layer does not exist at {vertex.aspectCoordinates}");
+                throw new ArgumentException($"Elementary layer does not exist at {vertex.coordinates}");
 
             ElementaryLayer layer = elementaryLayers[rVertex.coordinates];
             if (layer.HasVertex(rVertex.nodeId))
@@ -529,7 +561,7 @@ namespace Networks.Core
         public void AddEdge(NodeTensor from, NodeTensor to, double wt)
         {
             // same vertex
-            if (from.nodeId == to.nodeId && from.aspectCoordinates.SequenceEqual(to.aspectCoordinates))
+            if (from.nodeId == to.nodeId && from.coordinates.SequenceEqual(to.coordinates))
                 throw new ArgumentException($"Self-edges are not permitted (vertex {from}, {to}");
 
             // same vertex, different layers -- layers are node-coupled
@@ -716,7 +748,7 @@ namespace Networks.Core
             ResolvedNodeTensor retVal = new ResolvedNodeTensor();
             retVal.nodeId = tensor.nodeId;
 
-            retVal.coordinates = ResolveCoordinates(tensor.aspectCoordinates);
+            retVal.coordinates = ResolveCoordinates(tensor.coordinates);
             if (retVal.coordinates == null)
                 retVal = null;
 

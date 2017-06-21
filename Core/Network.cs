@@ -72,7 +72,7 @@ namespace Networks.Core
             for (int i = 0; i < vertexCount; i++)
             {
                 Dictionary<string, double> adjacencyList = new Dictionary<string, double>();
-                Dictionary<string, double> inVertices = new Dictionary<string, double>();
+                //Dictionary<string, double> inVertices = new Dictionary<string, double>();
                 for (int k = 0; k < vertexCount; k++)
                 {
                     if (k == i)

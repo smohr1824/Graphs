@@ -43,8 +43,8 @@ namespace Networks.Core
         {
             M = m;
             G = g;
-            EdgeList = new Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, double>>(new NodeTensorEqualityComparer());
-            InEdges = new Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, double>>(new NodeTensorEqualityComparer());
+            EdgeList = new Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, double>>(new ResolvedNodeTensorEqualityComparer());
+            InEdges = new Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, double>>(new ResolvedNodeTensorEqualityComparer());
             layerCoordinates = coordinates;
         }
 
@@ -216,7 +216,7 @@ namespace Networks.Core
                     InEdges[from].Add(to, wt);
                 else
                 {
-                    Dictionary<ResolvedNodeTensor, double> dict = new Dictionary<ResolvedNodeTensor, double>(new NodeTensorEqualityComparer());
+                    Dictionary<ResolvedNodeTensor, double> dict = new Dictionary<ResolvedNodeTensor, double>(new ResolvedNodeTensorEqualityComparer());
                     dict.Add(to, wt);
                     InEdges.Add(from, dict);
                 }
@@ -282,7 +282,7 @@ namespace Networks.Core
                 }
                 else
                 {
-                    Dictionary<ResolvedNodeTensor, double> dict = new Dictionary<ResolvedNodeTensor, double>(new NodeTensorEqualityComparer());
+                    Dictionary<ResolvedNodeTensor, double> dict = new Dictionary<ResolvedNodeTensor, double>(new ResolvedNodeTensorEqualityComparer());
                     dict.Add(to, wt);
                     EdgeList.Add(from, dict);
                 }

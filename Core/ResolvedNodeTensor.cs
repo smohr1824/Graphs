@@ -29,7 +29,7 @@ using System.Threading.Tasks;
 
 namespace Networks.Core
 {
-    internal class ResolvedNodeTensor
+    internal class ResolvedNodeTensor 
     {
         public string nodeId;
         public List<int> coordinates;

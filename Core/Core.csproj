@@ -50,6 +50,7 @@
     <Compile Include="NetworkSerializer.cs" />
     <Compile Include="NodeTensor.cs" />
     <Compile Include="NodeTensorEqualityComparer.cs" />
+    <Compile Include="ResolvedNodeTensorEqualityComparer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResolvedNodeTensor.cs" />
     <Compile Include="SetEqualityComparer.cs" />

@@ -24,9 +24,14 @@ namespace TestApp
             //TestNetworkVertex();
             //return;
 
-            //TestConstructor();
-            //return;
+            // TestCommunityDetection();
+            // return;
 
+
+        }
+
+        private static void TestCommunityDetection()
+        {
             Network G = new Network(false);
 
             HashSet<HashSet<string>> seeds = null;
@@ -49,35 +54,13 @@ namespace TestApp
 
             Dictionary<string, double> sources = G.GetSources("5");
 
-            //G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\displays2.dat", true);
-            //sources = G.GetSources("4");
-
-            /* try
-             {
-                 seeds = ClusterSerializer.ReadClustersFromFile(@"..\..\work\displays1seeds4.dat");
-             }
-             catch (FileNotFoundException)
-             {
-                 Console.WriteLine("Unable to find seed file for input");
-                 Console.ReadLine();
-                 return;
-             }
-             catch (DirectoryNotFoundException)
-             {
-                 Console.WriteLine("Unable to find working directory");
-                 Console.ReadLine();
-                 return;
-             }*/
-
-
-
             NetworkSerializer.WriteNetworkToFile(G, @"..\..\work\nettest.out");
             List<HashSet<string>> communities = Partitioning.SLPA(G, 20, 0.3, DateTime.Now.Millisecond);
             IEnumerable<HashSet<string>> unique = communities.Distinct(new SetEqualityComparer());
             Console.WriteLine($"Found {unique.Count()} communities in a graph of {G.Order} vertices, writing to displays2SLPA.out");
             Console.ReadLine();
             ClusterSerializer.WriteClustersToFileByLine(unique, @"..\..\work\chartest.out");
-            return;
+
             seeds = new HashSet<HashSet<string>>();
             foreach (string vertex in G.Vertices)
             {
@@ -97,11 +80,7 @@ namespace TestApp
 
         private static void TestMultilayerSources()
         {
-            MultilayerNetwork Q = MultilayerNetworkSerializer.ReadMultilayerNetworkFromFile(@"..\..\work\multilayer_test.dat", true);
-            Dictionary<NodeTensor, double> sources = Q.GetSources(new NodeTensor("B", "control,SLTC"));
-            sources = Q.CategoricalGetSources(new NodeTensor("A", "control,SLTC"), "process");
-            sources = Q.CategoricalGetSources(new NodeTensor("D", "flow,PHL"), "site");
-            Dictionary<NodeTensor, double> neighbors = Q.CategoricalGetNeighbors(new NodeTensor("A", "control,PHL"), "site");
+
         }
 
         private static void TestNetworkVertex()
@@ -238,23 +217,5 @@ namespace TestApp
             MultilayerNetworkSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\work\multilayer_test.dat");
         }
 
-        private static void TestConstructor()
-        {
-            double[, ] weights = { { 0.0, 1.0, 2.0, 0.0 }, { 0.0, 0.0, 1.0, 3.5 }, { 1.0, 2.1, 0.0, 2.0 }, { 1.0, 0.0, 0.0, 0.0 } };
-            string[] nodes = { "A", "B", "C", "D" };
-            List<string> vertices = new List<string>(nodes);
-
-            Network G = new Network(vertices, weights, true);
-
-            double[,] ewts = G.AdjacencyMatrix;
-            List<string> outV = G.Vertices;
-
-            bool test = G.HasEdge("B", "C");
-
-            double dtest = G.EdgeWeight("B", "D");
-
-            dtest = G.EdgeWeight("D", "C");
-
-        }
     }
 }

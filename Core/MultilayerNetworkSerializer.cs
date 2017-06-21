@@ -134,7 +134,7 @@ namespace Networks.Core
                                 Tuple<NodeTensor, NodeTensor, double> tpl = new Tuple<NodeTensor, NodeTensor, double>(tensorFrom, tensorTo, wt);
 
                                 // If the target elementary layer exists, add the edge, otherwise, add to the list to be resolved later
-                                if (retVal.HasElementaryLayer(tensorTo.aspectCoordinates))
+                                if (retVal.HasElementaryLayer(tensorTo.coordinates))
                                     retVal.AddEdge(tensorFrom, tensorTo, wt);
                                 else
                                     interEdges.Add(tpl);
@@ -150,7 +150,7 @@ namespace Networks.Core
 
             // now add the accumulated interlayer edges
             // TODO: add an opportunistic test after each elementary layer is complete so as to keep the length of this list down
-            // for multilayer networks with lots of interlayer edges
+            // for multilayer networks with lots of interlayer edges -- perf test to find a balance of entries in list and number of elementary layers instantiated
             foreach (Tuple<NodeTensor, NodeTensor, double> tuple in interEdges)
                 retVal.AddEdge(tuple.Item1, tuple.Item2, tuple.Item3);
             return retVal;

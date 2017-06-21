@@ -28,25 +28,26 @@ using System.Threading.Tasks;
 
 namespace Networks.Core
 {
-    public class NodeTensor
+
+    public class NodeTensor 
     {
         public string nodeId;
-        public List<string> aspectCoordinates;
+        public List<string> coordinates;
         public NodeTensor(string id, string coords)
         {
             nodeId = id;
-            aspectCoordinates = new List<string>(coords.Split(','));
+            coordinates = new List<string>(coords.Split(','));
         }
 
         public NodeTensor(string id, List<string> coords)
         {
             nodeId = id;
-            aspectCoordinates = coords;
+            coordinates = coords;
         }
 
         public override string ToString()
         {
-            return nodeId + ":" + string.Join(",", aspectCoordinates);
+            return nodeId + ":" + string.Join(",", coordinates);
         }
     }
 
