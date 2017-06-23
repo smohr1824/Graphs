@@ -32,10 +32,10 @@ namespace Networks.Core
     internal class ElementaryLayer
     {
         // adjacency list of interlayer edges
-        private Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, double>> EdgeList;
+        private Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, float>> EdgeList;
         
         // reference count of inbound interlayer edges
-        private Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, double>> InEdges;
+        private Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, float>> InEdges;
         private Network G;
         private MultilayerNetwork M;
         private List<int> layerCoordinates;
@@ -43,8 +43,8 @@ namespace Networks.Core
         {
             M = m;
             G = g;
-            EdgeList = new Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, double>>(new ResolvedNodeTensorEqualityComparer());
-            InEdges = new Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, double>>(new ResolvedNodeTensorEqualityComparer());
+            EdgeList = new Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, float>>(new ResolvedNodeTensorEqualityComparer());
+            InEdges = new Dictionary<ResolvedNodeTensor, Dictionary<ResolvedNodeTensor, float>>(new ResolvedNodeTensorEqualityComparer());
             layerCoordinates = coordinates;
         }
 
@@ -208,7 +208,7 @@ namespace Networks.Core
 
         }
 
-        public void AddInEdge(ResolvedNodeTensor from, ResolvedNodeTensor to, double wt)
+        public void AddInEdge(ResolvedNodeTensor from, ResolvedNodeTensor to, float wt)
         {
             if (HasVertex(from.nodeId))
             {
@@ -216,7 +216,7 @@ namespace Networks.Core
                     InEdges[from].Add(to, wt);
                 else
                 {
-                    Dictionary<ResolvedNodeTensor, double> dict = new Dictionary<ResolvedNodeTensor, double>(new ResolvedNodeTensorEqualityComparer());
+                    Dictionary<ResolvedNodeTensor, float> dict = new Dictionary<ResolvedNodeTensor, float>(new ResolvedNodeTensorEqualityComparer());
                     dict.Add(to, wt);
                     InEdges.Add(from, dict);
                 }
@@ -237,7 +237,7 @@ namespace Networks.Core
                 InEdges[tgt].Remove(src);
         }
 
-        public double EdgeWeight(ResolvedNodeTensor rFrom, ResolvedNodeTensor rTo)
+        public float EdgeWeight(ResolvedNodeTensor rFrom, ResolvedNodeTensor rTo)
         {
             if (rFrom.IsSameElementaryLayer(rTo))
             {
@@ -250,7 +250,7 @@ namespace Networks.Core
                 {
                     if (EdgeList[rFrom].Keys.Contains(rTo))
                     {
-                        double retVal;
+                        float retVal;
                         EdgeList[rFrom].TryGetValue(rTo, out retVal);
                         return retVal;
                     }
@@ -262,7 +262,7 @@ namespace Networks.Core
             }
         }
 
-        public void AddEdge(ResolvedNodeTensor from, ResolvedNodeTensor to, double wt)
+        public void AddEdge(ResolvedNodeTensor from, ResolvedNodeTensor to, float wt)
         {
             if (!from.coordinates.SequenceEqual(layerCoordinates))
                 throw new ArgumentException($"Trying to add an edge to the wrong elementary layer. Source vertex is {from.nodeId + ":" + string.Join(",", M.UnaliasCoordinates(from.coordinates))}, layer aspect coordinates are {string.Join(",", M.UnaliasCoordinates(layerCoordinates))}");
@@ -282,7 +282,7 @@ namespace Networks.Core
                 }
                 else
                 {
-                    Dictionary<ResolvedNodeTensor, double> dict = new Dictionary<ResolvedNodeTensor, double>(new ResolvedNodeTensorEqualityComparer());
+                    Dictionary<ResolvedNodeTensor, float> dict = new Dictionary<ResolvedNodeTensor, float>(new ResolvedNodeTensorEqualityComparer());
                     dict.Add(to, wt);
                     EdgeList.Add(from, dict);
                 }
@@ -309,14 +309,14 @@ namespace Networks.Core
                 
         }
 
-        internal Dictionary<NodeTensor, double> GetNeighbors(string vertex)
+        internal Dictionary<NodeTensor, float> GetNeighbors(string vertex)
         {
             if (!HasVertex(vertex))
                 throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
 
-            Dictionary<NodeTensor, double> retVal = new Dictionary<NodeTensor, double>();
+            Dictionary<NodeTensor, float> retVal = new Dictionary<NodeTensor, float>();
 
-            Dictionary<string, double> graphNeighbors = G.GetNeighbors(vertex);
+            Dictionary<string, float> graphNeighbors = G.GetNeighbors(vertex);
 
             List<string> layerAspectCoords = M.UnaliasCoordinates(layerCoordinates);
 
@@ -342,14 +342,14 @@ namespace Networks.Core
             return retVal;
         }
 
-        internal Dictionary<NodeTensor, double> GetSources(string vertex)
+        internal Dictionary<NodeTensor, float> GetSources(string vertex)
         {
             if (!HasVertex(vertex))
                 throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
 
-            Dictionary<NodeTensor, double> retVal = new Dictionary<NodeTensor, double>();
+            Dictionary<NodeTensor, float> retVal = new Dictionary<NodeTensor, float>();
 
-            Dictionary<string, double> graphSources = G.GetSources(vertex);
+            Dictionary<string, float> graphSources = G.GetSources(vertex);
 
             List<string> layerAspectCoords = M.UnaliasCoordinates(layerCoordinates);
 
@@ -383,7 +383,7 @@ namespace Networks.Core
                 writer.WriteLine(@":Interlayer edges");
             foreach (ResolvedNodeTensor from in EdgeList.Keys)
             {
-                Dictionary<ResolvedNodeTensor, double> targets = EdgeList[from];
+                Dictionary<ResolvedNodeTensor, float> targets = EdgeList[from];
                 foreach (ResolvedNodeTensor to in targets.Keys)
                 {
                     writer.WriteLine(from.nodeId + ":" + string.Join(",", M.UnaliasCoordinates(from.coordinates)) + delimiter + to.nodeId + ":" + string.Join(",", M.UnaliasCoordinates(to.coordinates)) + delimiter + targets[to].ToString());

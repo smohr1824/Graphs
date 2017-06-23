@@ -1,4 +1,4 @@
-﻿double// Copyright 2017 -- Stephen T. Mohr, OSIsoft, LLC
+﻿// Copyright 2017 -- Stephen T. Mohr, OSIsoft, LLC
 // MIT License
 
 // Copyright(c) 2017 Stephen Mohr and OSIsoft, LLC
@@ -38,22 +38,22 @@ namespace Networks.Core
     {
         // each key in the edge list is the id of a from vertex.  The value is an adjacency list composed of a dictionary of to vertex ids and the edge weight
         // May need to revisit if scaling becomes an issue.  Uniqueness of entries is paramount, but Dictionary is resource intensive.
-        private Dictionary<string, Dictionary<string, double>> EdgeList;
+        private Dictionary<string, Dictionary<string, float>> EdgeList;
 
         // We need to keep track of edges into any given vertex so that we can handle in-edge deletion when deleting a vertex.  Since we are
         // taking a memory and performance hit for this, keeping the edge weight allows us to cheaply calculate the weight of inbound edges.
-        private Dictionary<string, Dictionary<string, double>> InEdges;
+        private Dictionary<string, Dictionary<string, float>> InEdges;
 
         private bool directed;
 
         public Network(bool bDirected)
         {
-            EdgeList = new Dictionary<string, Dictionary<string, double>>();
-            InEdges = new Dictionary<string, Dictionary<string, double>>();
+            EdgeList = new Dictionary<string, Dictionary<string, float>>();
+            InEdges = new Dictionary<string, Dictionary<string, float>>();
             directed = bDirected;
         }
 
-        public Network(List<string> vertices, double[,] weights, bool bDirected)
+        public Network(List<string> vertices, float[,] weights, bool bDirected)
         {
             if (vertices == null)
                 throw new ArgumentNullException("Vertex list must be non-null");
@@ -65,14 +65,14 @@ namespace Networks.Core
             if (vertexCount != weights.GetLength(0) || vertexCount != weights.GetLength(1) || vertexCount == 0)
                 throw new ArgumentException($"Adjacency matrix must be square, have the same dimensions as the vertex list, and be non-zero; vertices count: {vertices.Count()}, weights row count: {weights.GetLength(0)}, weights column count: {weights.GetLength(1)}");
 
-            EdgeList = new Dictionary<string, Dictionary<string, double>>();
-            InEdges = new Dictionary<string, Dictionary<string, double>>();
+            EdgeList = new Dictionary<string, Dictionary<string, float>>();
+            InEdges = new Dictionary<string, Dictionary<string, float>>();
             directed = bDirected;
 
             for (int i = 0; i < vertexCount; i++)
             {
-                Dictionary<string, double> adjacencyList = new Dictionary<string, double>();
-                //Dictionary<string, double> inVertices = new Dictionary<string, double>();
+                Dictionary<string, float> adjacencyList = new Dictionary<string, float>();
+
                 for (int k = 0; k < vertexCount; k++)
                 {
                     if (k == i)
@@ -87,7 +87,7 @@ namespace Networks.Core
                         }
                         else
                         {
-                            Dictionary<string, double> dict = new Dictionary<string, double>();
+                            Dictionary<string, float> dict = new Dictionary<string, float>();
                             dict.Add(vertices[i], weights[i, k]);
                             InEdges.Add(vertices[k], dict);
                         }
@@ -96,7 +96,6 @@ namespace Networks.Core
                 }
 
                 EdgeList.Add(vertices[i], adjacencyList);
-                //InEdges.Add(vertices[i], inVertices);
 
             }
         }
@@ -127,7 +126,7 @@ namespace Networks.Core
         /// <summary>
         /// Creates a new adjacency matrix current as of the time of calling this method
         /// </summary>
-        public double[,] AdjacencyMatrix
+        public float[,] AdjacencyMatrix
         {
             get { return MakeAdjacencyMatrix(); }
         }
@@ -137,10 +136,10 @@ namespace Networks.Core
         #region public methods
         public void AddVertex(string id)
         {
-            Dictionary<string, double> neighbors;
+            Dictionary<string, float> neighbors;
             if (!EdgeList.TryGetValue(id, out neighbors))
             {
-                neighbors = new Dictionary<string, double>();
+                neighbors = new Dictionary<string, float>();
                 EdgeList.Add(id, neighbors);
             }
         }
@@ -169,12 +168,12 @@ namespace Networks.Core
             EdgeList.Remove(id);
         }
 
-        public void AddEdge(string from, string to, double weight)
+        public void AddEdge(string from, string to, float weight)
         {
             if (from == to)
                 throw new ArgumentException($"Self-edges are not permitted (vertex {from})");
 
-            Dictionary<string, double> neighbors;
+            Dictionary<string, float> neighbors;
 
             // multiple edges between the same two vertices are not permitted
             if (HasEdge(from, to))
@@ -182,10 +181,10 @@ namespace Networks.Core
 
             if (!EdgeList.TryGetValue(from, out neighbors))
             {
-                neighbors = new Dictionary<string, double>(); 
+                neighbors = new Dictionary<string, float>(); 
                 neighbors.Add(to, weight);
                 EdgeList.Add(from, neighbors);
-                InEdges.Add(from, new Dictionary<string, double>());
+                InEdges.Add(from, new Dictionary<string, float>());
             }
             else
             {
@@ -203,9 +202,9 @@ namespace Networks.Core
             // check for the existence of the to vertex and create if needed
             if (!EdgeList.TryGetValue(to, out neighbors))
             {
-                neighbors = new Dictionary<string, double>();
+                neighbors = new Dictionary<string, float>();
                 EdgeList.Add(to, neighbors);
-                InEdges.Add(to, new Dictionary<string, double>());
+                InEdges.Add(to, new Dictionary<string, float>());
             }
 
             if (InEdges.Keys.Contains(to))
@@ -214,7 +213,7 @@ namespace Networks.Core
             }
             else
             {
-                Dictionary<string, double> dict = new Dictionary<string, double>();
+                Dictionary<string, float> dict = new Dictionary<string, float>();
                 dict.Add(from, weight);
                 InEdges.Add(to, dict);
             }
@@ -225,7 +224,7 @@ namespace Networks.Core
                 // The first clause should never be hit since we added the check for the to vertex above
                 if (!EdgeList.TryGetValue(to, out neighbors))
                 {
-                    neighbors = new Dictionary<string, double>(); 
+                    neighbors = new Dictionary<string, float>(); 
                     neighbors.Add(from, weight);
                     EdgeList.Add(to, neighbors);
                 }
@@ -247,7 +246,7 @@ namespace Networks.Core
                 }
                 else
                 {
-                    Dictionary<string, double> dict = new Dictionary<string, double>();
+                    Dictionary<string, float> dict = new Dictionary<string, float>();
                     dict.Add(to, weight);
                     InEdges.Add(from, dict);
                 }
@@ -256,7 +255,7 @@ namespace Networks.Core
 
         public void RemoveEdge(string from, string to)
         {
-            Dictionary<string, double> neighbors = new Dictionary<string, double>();
+            Dictionary<string, float> neighbors = new Dictionary<string, float>();
 
             if (HasEdge(from, to))
             {
@@ -278,12 +277,12 @@ namespace Networks.Core
         /// </summary>
         /// <param name="vertex">source vertex</param>
         /// <returns></returns>
-        public Dictionary<string, double> GetNeighbors(string vertex)
+        public Dictionary<string, float> GetNeighbors(string vertex)
         {
-            Dictionary<string, double> nhood = null;
+            Dictionary<string, float> nhood = null;
             if (!EdgeList.TryGetValue(vertex, out nhood))
             {
-                return new Dictionary<string, double>();
+                return new Dictionary<string, float>();
             }
             else
             {
@@ -297,12 +296,12 @@ namespace Networks.Core
         /// <param name="vertex">vertex that is the target of the inbound edges</param>
         /// <returns></returns>
         /// <remarks>Supports back-tracking for bideirectional search</remarks>
-        public Dictionary<string, double> GetSources(string vertex)
+        public Dictionary<string, float> GetSources(string vertex)
         {
-            Dictionary<string, double> nhood = null;
+            Dictionary<string, float> nhood = null;
             if (!InEdges.TryGetValue(vertex, out nhood))
             {
-                return new Dictionary<string, double>();
+                return new Dictionary<string, float>();
             }
             else
             {
@@ -316,10 +315,10 @@ namespace Networks.Core
         }
         public bool HasEdge(string from, string to)
         {
-            Dictionary<string, double> adjList;
+            Dictionary<string, float> adjList;
             if (EdgeList.TryGetValue(from, out adjList))
             {
-                double wt = 0.0;
+                float wt = 0.0F;
                 if (adjList.TryGetValue(to, out wt))
                     return true;
             }
@@ -327,12 +326,12 @@ namespace Networks.Core
             return false;
         }
 
-        public double EdgeWeight(string from, string to)
+        public float EdgeWeight(string from, string to)
         {
             if (HasEdge(from, to))
                 return EdgeList[from][to];
             else
-                return 0.0;
+                return 0.0F;
         }
 
         public int Degree(string vertex)
@@ -355,7 +354,7 @@ namespace Networks.Core
             {
                 // only return the number of neighbors, as the practice of adding a reciprocal, directed edge
                 // is an implementation decision; the actual degree is the number of edges incident on the vertex
-                Dictionary<string, double> neighbors = null;
+                Dictionary<string, float> neighbors = null;
                 if (!EdgeList.TryGetValue(vertex, out neighbors))
                     return 0;
                 else
@@ -380,22 +379,22 @@ namespace Networks.Core
             return InEdges[vertex].Count();
         }
 
-        public double InWeights(string vertex)
+        public float InWeights(string vertex)
         {
             if (!HasVertex(vertex))
                 throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
 
-            double retVal = 0;
+            float retVal = 0F;
             if (!directed)
             {
-                foreach (KeyValuePair<string, double> edge in EdgeList[vertex])
+                foreach (KeyValuePair<string, float> edge in EdgeList[vertex])
                     retVal += edge.Value;
 
                 return retVal;
             }
 
 
-            foreach (KeyValuePair<string, double> inEdge in InEdges[vertex])
+            foreach (KeyValuePair<string, float> inEdge in InEdges[vertex])
             {
                 retVal += inEdge.Value;
             }
@@ -403,22 +402,22 @@ namespace Networks.Core
             return retVal;
         }
 
-        public double OutWeights(string vertex)
+        public float OutWeights(string vertex)
         {
-            double retVal = 0;
+            float retVal = 0F;
 
             if (!HasVertex(vertex))
                 throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
 
             if (!directed)
             {
-                foreach (KeyValuePair<string, double> edge in EdgeList[vertex])
+                foreach (KeyValuePair<string, float> edge in EdgeList[vertex])
                     retVal += edge.Value;
 
                 return retVal;
             }
 
-            foreach (KeyValuePair<string, double> kvp in EdgeList[vertex])
+            foreach (KeyValuePair<string, float> kvp in EdgeList[vertex])
             {
                 retVal += kvp.Value;
             }
@@ -431,9 +430,9 @@ namespace Networks.Core
             Network retVal = new Network(directed);
             foreach (string key in EdgeList.Keys)
             {
-                Dictionary<string, double> value = new Dictionary<string, double>(EdgeList[key]);
+                Dictionary<string, float> value = new Dictionary<string, float>(EdgeList[key]);
                 retVal.EdgeList.Add(key, value);
-                Dictionary<string, double> srcs = new Dictionary<string, double>(InEdges[key]);
+                Dictionary<string, float> srcs = new Dictionary<string, float>(InEdges[key]);
                 retVal.InEdges.Add(key, srcs);
             }
             return retVal;
@@ -442,7 +441,7 @@ namespace Networks.Core
         {
             foreach (string key in EdgeList.Keys)
             {
-                Dictionary<string, double> targets = EdgeList[key];
+                Dictionary<string, float> targets = EdgeList[key];
                 if (targets.Count() == 0)
                 {
                     writer.WriteLine(key);
@@ -460,10 +459,10 @@ namespace Networks.Core
 
         #region private methods
 
-        private double[,] MakeAdjacencyMatrix()
+        private float[,] MakeAdjacencyMatrix()
         {
             int dimension = EdgeList.Keys.Count();
-            double[,] retVal = new double[dimension, dimension];
+            float[,] retVal = new float[dimension, dimension];
             List<string> vertices = Vertices;
 
             foreach (string vertex in EdgeList.Keys)
@@ -473,8 +472,8 @@ namespace Networks.Core
                 foreach (string to in EdgeList[vertex].Keys)
                 {
                     int j = vertices.IndexOf(to);
-                    Dictionary<string, double> edges = EdgeList[vertex];
-                    double weight = 0.0;
+                    Dictionary<string, float> edges = EdgeList[vertex];
+                    float weight = 0.0F;
                     if (edges.TryGetValue(to, out weight))
                     {
                         retVal[i, j] = weight;

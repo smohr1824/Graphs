@@ -20,7 +20,7 @@ namespace TestApp
             //TestBasicMultiLayer();
             //return;
 
-            // TestCommunityDetection();
+            TestCommunityDetection();
             // return;
 
 
@@ -48,13 +48,14 @@ namespace TestApp
                 return;
             }
 
-            Dictionary<string, double> sources = G.GetSources("5");
+            Dictionary<string, float> sources = G.GetSources("5");
 
             NetworkSerializer.WriteNetworkToFile(G, @"..\..\work\nettest.out");
             List<HashSet<string>> communities = Partitioning.SLPA(G, 20, 0.3, DateTime.Now.Millisecond);
             IEnumerable<HashSet<string>> unique = communities.Distinct(new SetEqualityComparer());
             Console.WriteLine($"Found {unique.Count()} communities in a graph of {G.Order} vertices, writing to displays2SLPA.out");
             Console.ReadLine();
+
             ClusterSerializer.WriteClustersToFileByLine(unique, @"..\..\work\chartest.out");
 
             seeds = new HashSet<HashSet<string>>();
@@ -173,7 +174,7 @@ namespace TestApp
             double edgeWt = Q.EdgeWeight(new NodeTensor("D", "flow,SLTC"), new NodeTensor("E", "flow,SLTC"));
             edgeWt = Q.EdgeWeight(new NodeTensor("C", "control,PHL"), new NodeTensor("A", "control,SLTC"));
 
-            Dictionary<NodeTensor, double> neighbors = Q.GetNeighbors(new NodeTensor("A", "electrical,SLTC"));
+            Dictionary<NodeTensor, float> neighbors = Q.GetNeighbors(new NodeTensor("A", "electrical,SLTC"));
             neighbors = Q.GetNeighbors(new NodeTensor("Z", "flow,SLTC"));
             neighbors = Q.GetNeighbors(new NodeTensor("D", "flow,SLTC"));
             neighbors = Q.GetNeighbors(new NodeTensor("C", "electrical,PHL"));

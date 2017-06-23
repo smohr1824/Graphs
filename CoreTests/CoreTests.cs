@@ -24,10 +24,11 @@ namespace CoreTests
         [TestInitialize]
         public void Initialize()
         {
-           // G = MakeRandomGraph(100, 10);
-            //M = MakeRandomMultilayerNetwork(4, 5, 1000, 100, 10);
+            G = MakeRandomGraph(100, 10);
+            M = MakeRandomMultilayerNetwork(4, 5, 1000, 100, 10);
         }
 
+        [Ignore]
         [TestCategory("Performance")]
         [TestMethod]
         public void BasicNumberNetwork()
@@ -49,13 +50,13 @@ namespace CoreTests
         [TestMethod]
         public void TestAdjacencyConstructor()
         {
-            double[,] weights = { { 0.0, 1.0, 2.0, 0.0 }, { 0.0, 0.0, 1.0, 3.5 }, { 1.0, 2.1, 0.0, 2.0 }, { 1.0, 0.0, 0.0, 0.0 } };
+            float[,] weights = { { 0.0F, 1.0F, 2.0F, 0.0F }, { 0.0F, 0.0F, 1.0F, 3.5F }, { 1.0F, 2.1F, 0.0F, 2.0F }, { 1.0F, 0.0F, 0.0F, 0.0F } };
             string[] nodes = { "A", "B", "C", "D" };
             List<string> vertices = new List<string>(nodes);
 
             Network G = new Network(vertices, weights, true);
 
-            double[,] ewts = G.AdjacencyMatrix;
+            float[,] ewts = G.AdjacencyMatrix;
             List<string> outV = G.Vertices;
 
             Assert.AreEqual(nodes.Length, outV.Count, $"Count of vertices input {nodes.Length} does not equal count of vertices output {outV.Count}");
@@ -93,29 +94,29 @@ namespace CoreTests
         public void TestMultilayerSources()
         {
             MultilayerNetwork Q = MultilayerNetworkSerializer.ReadMultilayerNetworkFromFile(@"..\..\work\multilayer_test.dat", true);
-            Dictionary<NodeTensor, double> sources = Q.GetSources(new NodeTensor("B", "control,SLTC"));
+            Dictionary<NodeTensor, float> sources = Q.GetSources(new NodeTensor("B", "control,SLTC"));
             Assert.AreEqual(sources.Count, 5);
             NodeTensor test = new NodeTensor("A", "control,PHL");
             bool check = sources.ContainsKey(test);
-            double wt = sources[test];
+            float wt = sources[test];
             Assert.AreEqual(sources.ContainsKey(test), true);
-            Assert.AreEqual(sources[test], 1.0, 0.01);
+            Assert.AreEqual(sources[test], 1.0F, 0.01F);
 
             sources = Q.CategoricalGetSources(new NodeTensor("A", "control,SLTC"), "process");
             Assert.AreEqual(sources.Count, 1);
             test = new NodeTensor("C", "control,PHL");
             Assert.AreEqual(sources.ContainsKey(test), true);
-            Assert.AreEqual(sources[test], 4.0, 0.01);
+            Assert.AreEqual(sources[test], 4.0F, 0.01F);
 
             sources = Q.CategoricalGetSources(new NodeTensor("D", "flow,PHL"), "site");
             test = new NodeTensor("A", "flow,PHL");
             NodeTensor test2 = new NodeTensor("B", "control,PHL");
             Assert.AreEqual(sources.Count, 2);
             Assert.AreEqual(sources.ContainsKey(test), true);
-            Assert.AreEqual(sources[test], 1.0, 0.01);
+            Assert.AreEqual(sources[test], 1.0F, 0.01F);
             Assert.AreEqual(sources.ContainsKey(test2), true);
 
-            Dictionary<NodeTensor, double> neighbors = Q.CategoricalGetNeighbors(new NodeTensor("A", "control,PHL"), "site");
+            Dictionary<NodeTensor, float> neighbors = Q.CategoricalGetNeighbors(new NodeTensor("A", "control,PHL"), "site");
             Assert.AreEqual(neighbors.Count, 6);
             Assert.AreEqual(neighbors.ContainsKey(test2), true);
         }
@@ -322,32 +323,43 @@ namespace CoreTests
         private Network MakeRandomGraph(int maxVertices, int maxDegree, bool randomMax = true)
         {
             Network net = new Network(true);
-            Random rand = new Random(DateTime.UtcNow.Millisecond);
-            int order = maxVertices;
-            if (randomMax)
-                order = rand.Next(1, maxVertices + 1);
 
-            for (int i = 0; i < order; i++)
+            try
             {
-                net.AddVertex($"V{i}");
-            }
-
-            for (int j = 0; j < order; j++)
-            {
-                int degree = maxDegree;
+                Random rand = new Random(DateTime.UtcNow.Millisecond);
+                int order = maxVertices;
                 if (randomMax)
-                    degree = rand.Next(maxDegree + 1);
+                    order = rand.Next(1, maxVertices + 1);
 
-                for (int k = 0; k < degree; k++)
+                for (int i = 0; i < order; i++)
                 {
-                    int tgt = rand.Next(maxVertices);
-                    while (tgt == j)
-                        tgt = rand.Next(maxVertices);
+                    net.AddVertex($"V{i}");
+                }
 
-                    if (!net.HasEdge($"V{j}", $"V{tgt}"))
-                        net.AddEdge($"V{j}", $"V{tgt}", 1);
+                for (int j = 0; j < order; j++)
+                {
+                    int degree = maxDegree;
+                    if (randomMax)
+                        degree = rand.Next(maxDegree + 1);
+
+                    for (int k = 0; k < degree; k++)
+                    {
+                        int tgt = rand.Next(maxVertices);
+                        while (tgt == j)
+                            tgt = rand.Next(maxVertices);
+
+                        if (!net.HasEdge($"V{j}", $"V{tgt}"))
+                            net.AddEdge($"V{j}", $"V{tgt}", 1);
+                    }
                 }
             }
+            //catch (OutOfMemoryException ex)
+            //{
+            //    TestContext.WriteLine($"Out of memory: order {net.Order}");
+            //    Assert.Fail($"Failure to generate a random network, maxVertices {maxVertices}, maxDegree {maxDegree}, randomMax is {randomMax}");
+            //}
+            catch (IOException)
+            { }
 
             return net;
         }

@@ -26,18 +26,18 @@ namespace Networks.Algorithms
         public static void CISExpandSeed(ref HashSet<string> seed, Network G, double lambda)
         {
             HashSet<string> fringe = new HashSet<string>();
-            Dictionary<string, Tuple<double, double>> members = new Dictionary<string, Tuple<double, double>>();
-            Dictionary<string, Tuple<double, double>> neighbors = new Dictionary<string, Tuple<double, double>>();
-            double seedWeightIn = 0;
-            double seedWeightOut = 0;
+            Dictionary<string, Tuple<float, float>> members = new Dictionary<string, Tuple<float, float>>();
+            Dictionary<string, Tuple<float, float>> neighbors = new Dictionary<string, Tuple<float, float>>();
+            float seedWeightIn = 0;
+            float seedWeightOut = 0;
 
             foreach(string node in seed)
             {  
                 //Add members of the seed, calculating individual
                // Win and Wout measures and noting neighborhood
-                Dictionary<string, double> N = G.GetNeighbors(node);
-                double Win = 0.0, Wout = 0.0;
-                foreach (KeyValuePair<string, double> vertex in N)
+                Dictionary<string, float> N = G.GetNeighbors(node);
+                float Win = 0.0F, Wout = 0.0F;
+                foreach (KeyValuePair<string, float> vertex in N)
                 {
                     if (seed.Contains(vertex.Key))
                     {     
@@ -53,7 +53,7 @@ namespace Networks.Algorithms
                     }
                 }
 
-                members.Add(node, new Tuple<double, double>(Win, Wout));
+                members.Add(node, new Tuple<float, float>(Win, Wout));
 
             }
 
@@ -61,9 +61,9 @@ namespace Networks.Algorithms
 
             foreach (string node in fringe)
             { //Tally same information for neighborhood
-                Dictionary<string, double> N = G.GetNeighbors(node);
-                double Win = 0, Wout = 0;
-                foreach(KeyValuePair<string, double> vertex in N)
+                Dictionary<string, float> N = G.GetNeighbors(node);
+                float Win = 0F, Wout = 0F;
+                foreach(KeyValuePair<string, float> vertex in N)
                 {
                     if (seed.Contains(vertex.Key))
                     {
@@ -75,7 +75,7 @@ namespace Networks.Algorithms
                     }
                 }
 
-                neighbors.Add(node, new Tuple<double, double>(Win, Wout));
+                neighbors.Add(node, new Tuple<float, float>(Win, Wout));
 
             }
 
@@ -88,7 +88,7 @@ namespace Networks.Algorithms
                 List<string> to_check = new List<string>();
                 List<HashSet<string>> order_by_degree = new List<HashSet<string>>();
 
-                foreach (KeyValuePair<string, Tuple<double, double>> neighbor in neighbors)
+                foreach (KeyValuePair<string, Tuple<float, float>> neighbor in neighbors)
                 {
                     int deg = G.Degree(neighbor.Key);
                     if (order_by_degree.Count() < deg + 1)
@@ -112,7 +112,7 @@ namespace Networks.Algorithms
 
                 for (int i = 0; i < to_check.Count(); i++)
                 { 
-                    Tuple<double, double> neighborWts = neighbors[to_check[i]];
+                    Tuple<float, float> neighborWts = neighbors[to_check[i]];
                         
                     // Add the vertex if it increases the density metric
                     if (CalcDensity(seed.Count(), seedWeightIn, seedWeightOut, lambda) < CalcDensity(seed.Count() + 1, seedWeightIn + neighborWts.Item1, seedWeightOut + neighborWts.Item2 - neighborWts.Item1, lambda))
@@ -131,37 +131,37 @@ namespace Networks.Algorithms
                         // Because the seed cluster has changed, the values of weights within the seed and going out of the seed have changed.
                         // Update the member and neighbor lists to reflect this.
 
-                        Dictionary<string, double> N = G.GetNeighbors(to_check[i]);
+                        Dictionary<string, float> N = G.GetNeighbors(to_check[i]);
 
-                        foreach (KeyValuePair<string, double> neighbor in N)
+                        foreach (KeyValuePair<string, float> neighbor in N)
                         {
-                            Tuple<double, double> weights;
+                            Tuple<float, float> weights;
                             if (members.TryGetValue(neighbor.Key, out weights))
                             { 
-                                Tuple<double, double> updatedWeights = new Tuple<double, double>(weights.Item1 + neighbor.Value, weights.Item2 - neighbor.Value);
+                                Tuple<float, float> updatedWeights = new Tuple<float, float>(weights.Item1 + neighbor.Value, weights.Item2 - neighbor.Value);
                                 members[neighbor.Key] = updatedWeights;
                             }
                             else if (neighbors.TryGetValue(neighbor.Key, out weights))
                             { 
-                                Tuple<double, double> updatedWeights = new Tuple<double, double>(weights.Item1 + neighbor.Value, weights.Item2 - neighbor.Value);
+                                Tuple<float, float> updatedWeights = new Tuple<float, float>(weights.Item1 + neighbor.Value, weights.Item2 - neighbor.Value);
                                 neighbors[neighbor.Key] = updatedWeights;
                             }
                             else
                             { 
                                 // Not found in either, so add it
-                                Dictionary<string, double> N2 = G.GetNeighbors(neighbor.Key);
+                                Dictionary<string, float> N2 = G.GetNeighbors(neighbor.Key);
 
-                                double newWin = 0, newWout = 0;
-                                foreach (KeyValuePair<string, double> neighbor2 in N2)
+                                float newWin = 0F, newWout = 0F;
+                                foreach (KeyValuePair<string, float> neighbor2 in N2)
                                 {
-                                    Tuple<double, double> wts;
+                                    Tuple<float, float> wts;
                                     if (members.TryGetValue(neighbor2.Key, out wts))
                                         newWin += neighbor2.Value;
                                     else
                                         newWout += neighbor2.Value;
                                 }
 
-                                neighbors.Add(neighbor.Key, new Tuple<double, double>(newWin, newWout));
+                                neighbors.Add(neighbor.Key, new Tuple<float, float>(newWin, newWout));
                             }
                         }
                     }
@@ -171,7 +171,7 @@ namespace Networks.Algorithms
                 to_check.Clear();
                 order_by_degree.Clear();
 
-                foreach (KeyValuePair<string, Tuple<double, double>> member in members)
+                foreach (KeyValuePair<string, Tuple<float, float>> member in members)
                 {
                     int deg = G.Degree(member.Key);
                     if (order_by_degree.Count() < deg + 1)
@@ -194,7 +194,7 @@ namespace Networks.Algorithms
 
                 for (int i = 0; i < to_check.Count(); i++)
                 {
-                    Tuple<double, double> weights;
+                    Tuple<float, float> weights;
 
                     members.TryGetValue(to_check[i], out weights);
                     double density1 = CalcDensity(seed.Count(), seedWeightIn, seedWeightOut, lambda);
@@ -209,18 +209,18 @@ namespace Networks.Algorithms
                         members.Remove(to_check[i]);
 
                         // update member and neighbor weights
-                        Dictionary<string, double> N = G.GetNeighbors(to_check[i]);
+                        Dictionary<string, float> N = G.GetNeighbors(to_check[i]);
 
-                        foreach(KeyValuePair<string, double> neighbor in N)
+                        foreach(KeyValuePair<string, float> neighbor in N)
                         {
-                            Tuple<double, double> d2Wts;
+                            Tuple<float, float> d2Wts;
                             if (members.TryGetValue(neighbor.Key, out d2Wts))
                             { 
-                                members[neighbor.Key] = new Tuple<double, double>(d2Wts.Item1 - neighbor.Value, d2Wts.Item2 + neighbor.Value);
+                                members[neighbor.Key] = new Tuple<float, float>(d2Wts.Item1 - neighbor.Value, d2Wts.Item2 + neighbor.Value);
                             }
                             else if (neighbors.TryGetValue(neighbor.Key, out d2Wts))
                             { 
-                                neighbors[neighbor.Key] = new Tuple<double, double>(d2Wts.Item1 - neighbor.Value, d2Wts.Item2 + neighbor.Value);
+                                neighbors[neighbor.Key] = new Tuple<float, float>(d2Wts.Item1 - neighbor.Value, d2Wts.Item2 + neighbor.Value);
                             } 
                         }
                     }
@@ -263,7 +263,7 @@ namespace Networks.Algorithms
                 // each pass has each vertex function as a listener
                 foreach(int nodeIdx in order)
                 {
-                    Dictionary<string, double> adjacencyList = G.GetNeighbors(vertices[nodeIdx]);
+                    Dictionary<string, float> adjacencyList = G.GetNeighbors(vertices[nodeIdx]);
 
                     // keep track of the labels sent to the listener
                     Dictionary<int, int> labelsSeen = new Dictionary<int, int>();
@@ -363,11 +363,11 @@ namespace Networks.Algorithms
                     component.Add(first);
                     seen.Add(first);
 
-                    Dictionary<string, double> Neighborhood = G.GetNeighbors(first);
+                    Dictionary<string, float> Neighborhood = G.GetNeighbors(first);
                     toCheck.Remove(first);
 
                     // expand by the neighbors of the node to check; must not have been previously seen and must be part of the seed cluster
-                    foreach(KeyValuePair<string, double> edge in Neighborhood)
+                    foreach(KeyValuePair<string, float> edge in Neighborhood)
                     {
                         if (!seen.Contains(edge.Key) && seedCluster.Contains(edge.Key))
                         {

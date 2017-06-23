@@ -204,7 +204,7 @@ namespace Networks.Core
             return elementaryLayers[rFrom.coordinates].HasEdge(rFrom, rTo);
         }
 
-        public double EdgeWeight(NodeTensor from, NodeTensor to)
+        public float EdgeWeight(NodeTensor from, NodeTensor to)
         {
             ResolvedNodeTensor rFrom = ResolveNodeTensor(from);
             ResolvedNodeTensor rTo = ResolveNodeTensor(to);
@@ -215,7 +215,7 @@ namespace Networks.Core
             if (ElementaryLayerExists(rFrom.coordinates))
                 return elementaryLayers[rFrom.coordinates].EdgeWeight(rFrom, rTo);
             else
-                return 0;
+                return 0F;
         }
 
         /// <summary>
@@ -224,7 +224,7 @@ namespace Networks.Core
         /// </summary>
         /// <param name="vertex">Vertex qualified by aspect coordinates</param>
         /// <returns>Dictionary of layer-qualified vertices and the weight of the edge from the given vertex to the neighboring vertex.</returns>
-        public Dictionary<NodeTensor, double> GetNeighbors(NodeTensor vertex)
+        public Dictionary<NodeTensor, float> GetNeighbors(NodeTensor vertex)
         {
             if (!nodeIdsAndLayers.Keys.Contains(vertex.nodeId))
                 throw new ArgumentException($"Vertex {vertex.nodeId} does not exist anywhere in the multilayer network.");
@@ -234,7 +234,7 @@ namespace Networks.Core
                 throw new ArgumentException($"Layer {string.Join(",", vertex.coordinates)} does not exist.");
 
             // Get the neighbors in the elementary layer and those neighbors explicitly linked by an interlayer edge
-            Dictionary<NodeTensor, double> retVal = new Dictionary<NodeTensor, double>(elementaryLayers[resolvedCoords].GetNeighbors(vertex.nodeId), new NodeTensorEqualityComparer());
+            Dictionary<NodeTensor, float> retVal = new Dictionary<NodeTensor, float>(elementaryLayers[resolvedCoords].GetNeighbors(vertex.nodeId), new NodeTensorEqualityComparer());
 
             // Add node-coupled neighbors (zero-length, bidirectional)
             // node coupling as implemented enables inter-aspect coupling
@@ -243,8 +243,8 @@ namespace Networks.Core
                 if (layer.ResolvedCoordinates.SequenceEqual(resolvedCoords))
                     continue;
 
-                Dictionary<NodeTensor, double> nghrs = layer.GetNeighbors(vertex.nodeId);
-                foreach (KeyValuePair<NodeTensor, double> kvp in nghrs)
+                Dictionary<NodeTensor, float> nghrs = layer.GetNeighbors(vertex.nodeId);
+                foreach (KeyValuePair<NodeTensor, float> kvp in nghrs)
                 {
                     // an explicit interlayer edge may duplicate a node-coupled edge;
                     // if so, it replaces it
@@ -261,7 +261,7 @@ namespace Networks.Core
             return retVal;
         }
 
-        public Dictionary<NodeTensor, double> GetSources(NodeTensor vertex)
+        public Dictionary<NodeTensor, float> GetSources(NodeTensor vertex)
         {
             if (!nodeIdsAndLayers.Keys.Contains(vertex.nodeId))
                 throw new ArgumentException($"Vertex {vertex.nodeId} does not exist anywhere in the multilayer network.");
@@ -271,7 +271,7 @@ namespace Networks.Core
                 throw new ArgumentException($"Layer {string.Join(",", vertex.coordinates)} does not exist.");
 
             // Get the neighbors in the elementary layer and those neighbors explicitly linked by an interlayer edge
-            Dictionary<NodeTensor, double> retVal = new Dictionary<NodeTensor, double>(elementaryLayers[resolvedCoords].GetSources(vertex.nodeId), new NodeTensorEqualityComparer());
+            Dictionary<NodeTensor, float> retVal = new Dictionary<NodeTensor, float>(elementaryLayers[resolvedCoords].GetSources(vertex.nodeId), new NodeTensorEqualityComparer());
 
             // Add node-coupled neighbors (zero-length, bidirectional)
             // node coupling as implemented enables inter-aspect coupling
@@ -280,8 +280,8 @@ namespace Networks.Core
                 if (layer.ResolvedCoordinates.SequenceEqual(resolvedCoords))
                     continue;
 
-                Dictionary<NodeTensor, double> nghrs = layer.GetSources(vertex.nodeId);
-                foreach (KeyValuePair<NodeTensor, double> kvp in nghrs)
+                Dictionary<NodeTensor, float> nghrs = layer.GetSources(vertex.nodeId);
+                foreach (KeyValuePair<NodeTensor, float> kvp in nghrs)
                 {
                     // an explicit interlayer edge may duplicate a node-coupled edge;
                     // if so, it replaces it
@@ -308,7 +308,7 @@ namespace Networks.Core
         /// <param name="aspectCategory">Name of the aspect to which to limit node coupling</param>
         /// <param name="ordinal">True if candidate vertices must be in a layer adjacent to the layer of the specified vertex.</param>
         /// <returns>Dictionary of layer-qualified vertices and the edge weight between them and the originating vertex.</returns>
-        public Dictionary<NodeTensor, double> CategoricalGetNeighbors(NodeTensor vertex, string aspectCategory, bool ordinal = false)
+        public Dictionary<NodeTensor, float> CategoricalGetNeighbors(NodeTensor vertex, string aspectCategory, bool ordinal = false)
         {
             if (!nodeIdsAndLayers.Keys.Contains(vertex.nodeId))
                 throw new ArgumentException($"Vertex {vertex.nodeId} does not exist anywhere in the multilayer network.");
@@ -321,7 +321,7 @@ namespace Networks.Core
                 throw new ArgumentException($"Aspect {aspectCategory} cannot be used as a category as it is not an aspect in the network.");
 
             // Get the neighbors in the elementary layer and those neighbors explicitly linked by an interlayer edge
-            Dictionary<NodeTensor, double> retVal = new Dictionary<NodeTensor, double>(elementaryLayers[resolvedCoords].GetNeighbors(vertex.nodeId), new NodeTensorEqualityComparer());
+            Dictionary<NodeTensor, float> retVal = new Dictionary<NodeTensor, float>(elementaryLayers[resolvedCoords].GetNeighbors(vertex.nodeId), new NodeTensorEqualityComparer());
 
             int indexOfAspect = aspects.IndexOf(aspectCategory);
             int epsilon = 1;
@@ -357,8 +357,8 @@ namespace Networks.Core
                 if (Math.Abs(resolvedCoords[indexOfAspect] - layer.ResolvedCoordinates[indexOfAspect]) > epsilon)
                     continue;
 
-                Dictionary<NodeTensor, double> nghrs = layer.GetNeighbors(vertex.nodeId);
-                foreach (KeyValuePair<NodeTensor, double> kvp in nghrs)
+                Dictionary<NodeTensor, float> nghrs = layer.GetNeighbors(vertex.nodeId);
+                foreach (KeyValuePair<NodeTensor, float> kvp in nghrs)
                 {
                     // an explicit interlayer edge may duplicate a node-coupled edge;
                     // if so, it replaces it
@@ -375,7 +375,7 @@ namespace Networks.Core
             return retVal;
         }
 
-        public Dictionary<NodeTensor, double> CategoricalGetSources(NodeTensor vertex, string aspectCategory, bool ordinal = false)
+        public Dictionary<NodeTensor, float> CategoricalGetSources(NodeTensor vertex, string aspectCategory, bool ordinal = false)
         {
             if (!nodeIdsAndLayers.Keys.Contains(vertex.nodeId))
                 throw new ArgumentException($"Vertex {vertex.nodeId} does not exist anywhere in the multilayer network.");
@@ -388,7 +388,7 @@ namespace Networks.Core
                 throw new ArgumentException($"Aspect {aspectCategory} cannot be used as a category as it is not an aspect in the network.");
 
             // Get the neighbors in the elementary layer and those neighbors explicitly linked by an interlayer edge
-            Dictionary<NodeTensor, double> retVal = new Dictionary<NodeTensor, double>(elementaryLayers[resolvedCoords].GetSources(vertex.nodeId), new NodeTensorEqualityComparer());
+            Dictionary<NodeTensor, float> retVal = new Dictionary<NodeTensor, float>(elementaryLayers[resolvedCoords].GetSources(vertex.nodeId), new NodeTensorEqualityComparer());
 
             int indexOfAspect = aspects.IndexOf(aspectCategory);
             int epsilon = 1;
@@ -424,8 +424,8 @@ namespace Networks.Core
                 if (Math.Abs(resolvedCoords[indexOfAspect] - layer.ResolvedCoordinates[indexOfAspect]) > epsilon)
                     continue;
 
-                Dictionary<NodeTensor, double> nghrs = layer.GetSources(vertex.nodeId);
-                foreach (KeyValuePair<NodeTensor, double> kvp in nghrs)
+                Dictionary<NodeTensor, float> nghrs = layer.GetSources(vertex.nodeId);
+                foreach (KeyValuePair<NodeTensor, float> kvp in nghrs)
                 {
                     // an explicit interlayer edge may duplicate a node-coupled edge;
                     // if so, it replaces it
@@ -558,7 +558,7 @@ namespace Networks.Core
             }
         }
 
-        public void AddEdge(NodeTensor from, NodeTensor to, double wt)
+        public void AddEdge(NodeTensor from, NodeTensor to, float wt)
         {
             // same vertex
             if (from.nodeId == to.nodeId && from.coordinates.SequenceEqual(to.coordinates))
