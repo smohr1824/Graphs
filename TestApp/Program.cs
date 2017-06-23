@@ -13,15 +13,11 @@ namespace TestApp
     {
         static void Main(string[] args)
         {
-            TestMultilayerSources();
-            return;
+
             //TestReadMultilayer();
             //return;
 
             //TestBasicMultiLayer();
-            //return;
-
-            //TestNetworkVertex();
             //return;
 
             // TestCommunityDetection();
@@ -76,24 +72,6 @@ namespace TestApp
 
             IEnumerable<HashSet<string>> best = seeds.Distinct<HashSet<string>>(new SetEqualityComparer());
             ClusterSerializer.WriteClustersToFile(best, @"..\..\work\displays1clusters_test.out");
-        }
-
-        private static void TestMultilayerSources()
-        {
-
-        }
-
-        private static void TestNetworkVertex()
-        {
-            Network G = new Network(true);
-            G.AddEdge("A", "B", 1);
-            G.AddEdge("A", "C", 1);
-            G.AddEdge("B", "C", 2);
-            G.AddEdge("A", "D", 3);
-
-            G.RemoveVertex("C");
-
-            Console.WriteLine("Done");
         }
 
         private static void TestReadMultilayer()

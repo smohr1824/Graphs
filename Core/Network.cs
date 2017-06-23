@@ -1,4 +1,4 @@
-﻿// Copyright 2017 -- Stephen T. Mohr, OSIsoft, LLC
+﻿double// Copyright 2017 -- Stephen T. Mohr, OSIsoft, LLC
 // MIT License
 
 // Copyright(c) 2017 Stephen Mohr and OSIsoft, LLC
@@ -252,7 +252,7 @@ namespace Networks.Core
                     InEdges.Add(from, dict);
                 }
             }
-        }
+            }
 
         public void RemoveEdge(string from, string to)
         {
