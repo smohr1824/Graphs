@@ -116,11 +116,37 @@ namespace Networks.Core
         }
 
         /// <summary>
+        /// Returns true if the graph is connected, i.e., there are no unreachable vertices
+        /// </summary>
+        public bool Connected
+        {
+            get { return IsConnected(); }
+        }
+
+        /// <summary>
         /// Order (vertex count) of the graph
         /// </summary>
         public int Order
         {
             get { return EdgeList.Keys.Count; }
+        }
+
+        /// <summary>
+        /// Calculates the density of the network.  For undirected networks, this is 2|E|/(|V| * (|V| - 1 )), where |E| is the number of edges, |V| is the numebr of vertices (order),
+        /// and thus |V| * (|V| - 1) is the number of possible edges in the network.  For a directed network, the density is |E|/(|V| * (|V| - 1)). Note, this method iterates through 
+        /// all vertices, so very large networks will have a performance hit O(n).
+        /// </summary>
+        public double Density
+        {
+            get
+            {
+                int edgeCt = CountEdges();
+                int order = EdgeList.Keys.Count();
+
+                // since our undirected edges are stored as reciprocal directed edges, the computation is the same, i.e., DO NOT multiply by 2 in the undirected case
+                return ((double) edgeCt / ((double) order * ((double) order - 1)));
+
+            }
         }
 
         /// <summary>
@@ -137,10 +163,17 @@ namespace Networks.Core
         public void AddVertex(string id)
         {
             Dictionary<string, float> neighbors;
+
+            // make sure EdgeList and InEdges have entries for the vertex
             if (!EdgeList.TryGetValue(id, out neighbors))
             {
                 neighbors = new Dictionary<string, float>();
                 EdgeList.Add(id, neighbors);
+            }
+
+            if (!InEdges.Keys.Contains(id))
+            {
+                InEdges.Add(id, new Dictionary<string, float>());
             }
         }
 
@@ -479,6 +512,28 @@ namespace Networks.Core
                         retVal[i, j] = weight;
                     }
                 }
+            }
+
+            return retVal;
+        }
+
+        private int CountEdges()
+        {
+            int retVal = 0;
+            foreach (Dictionary<string, float> adjList in EdgeList.Values)
+                retVal += adjList.Keys.Count;
+
+            return retVal;
+        }
+
+        private bool IsConnected()
+        {
+            bool retVal = true;
+
+            foreach (Dictionary<string, float> adjList in InEdges.Values)
+            {
+                if (adjList.Keys.Count == 0)
+                    return false;
             }
 
             return retVal;

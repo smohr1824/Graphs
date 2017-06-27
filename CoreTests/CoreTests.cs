@@ -24,8 +24,9 @@ namespace CoreTests
         [TestInitialize]
         public void Initialize()
         {
-            G = MakeRandomGraph(100, 10);
-            M = MakeRandomMultilayerNetwork(4, 5, 1000, 100, 10);
+            // uncomment when we have multiple tests requiring large, random networks
+            //G = MakeRandomGraph(100, 10);
+           // M = MakeRandomMultilayerNetwork(4, 5, 1000, 100, 10);
         }
 
         [Ignore]
@@ -70,6 +71,22 @@ namespace CoreTests
 
         [TestCategory("Basic")]
         [TestMethod]
+        public void TestConnectedProperty()
+        {
+            Network G = new Network(false);
+            G.AddEdge("A", "B", 1);
+            G.AddVertex("C"); // C is unreachable
+            Assert.IsTrue(!G.Connected);
+
+            G = new Network(true);
+            G.AddEdge("A", "B", 1);
+            G.AddVertex("C"); // C is unreachable
+            Assert.IsTrue(!G.Connected);
+        }
+        
+
+        [TestCategory("Basic")]
+        [TestMethod]
         public void TestNetworkVertex()
         {
             Network G = new Network(true);
@@ -89,6 +106,28 @@ namespace CoreTests
             Assert.AreEqual(false, G.HasEdge("A", "C"));
         }
 
+        [TestCategory("Basic")]
+        [TestMethod]
+        public void TestDensity()
+        {
+            Network G = new Network(true);
+            G.AddEdge("A", "B", 1);
+            G.AddEdge("A", "C", 1);
+            G.AddEdge("B", "C", 2);
+            G.AddEdge("A", "D", 3);
+
+            double density = G.Density;
+            Assert.AreEqual(0.33, density, 0.01);
+
+            G = new Network(false);
+            G.AddEdge("A", "B", 1);
+            G.AddEdge("A", "C", 1);
+            G.AddEdge("B", "C", 2);
+            G.AddEdge("A", "D", 3);
+
+            density = G.Density;
+            Assert.AreEqual(0.66, density, 0.01);
+        }
         [TestCategory("Multilayer")]
         [TestMethod]
         public void TestMultilayerSources()
@@ -131,7 +170,7 @@ namespace CoreTests
         [TestMethod]
         public void TestMultilayerSerialization()
         {
-            //MultilayerNetwork M = MakeRandomMultilayerNetwork(3, 4, 20, 5, 6);
+            MultilayerNetwork M = MakeRandomMultilayerNetwork(3, 4, 20, 5, 6);
 
             TestContext.WriteLine($"Random network created, {M.Aspects().Count()} aspects, Order {M.Order}");
             foreach (string aspect in M.Aspects())
