@@ -149,6 +149,11 @@ namespace Networks.Core
             }
         }
 
+        public int Size
+        {
+            get { return CountEdges(); }
+        }
+
         /// <summary>
         /// Creates a new adjacency matrix current as of the time of calling this method
         /// </summary>

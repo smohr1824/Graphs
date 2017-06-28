@@ -21,7 +21,7 @@ namespace TestApp
             //return;
 
             TestCommunityDetection();
-            // return;
+            return;
 
 
         }
@@ -53,10 +53,22 @@ namespace TestApp
             NetworkSerializer.WriteNetworkToFile(G, @"..\..\work\nettest.out");
             List<HashSet<string>> communities = Partitioning.SLPA(G, 20, 0.3, DateTime.Now.Millisecond);
             IEnumerable<HashSet<string>> unique = communities.Distinct(new SetEqualityComparer());
-            Console.WriteLine($"Found {unique.Count()} communities in a graph of {G.Order} vertices, writing to displays2SLPA.out");
+            Console.WriteLine($"Found {unique.Count()} communities in a graph of {G.Order} vertices, writing to chartest.out");
             Console.ReadLine();
 
             ClusterSerializer.WriteClustersToFileByLine(unique, @"..\..\work\chartest.out");
+            List<HashSet<string>> expanded = new List<HashSet<string>>();
+            for (int i = 0; i< unique.Count(); i++)
+            {
+                HashSet < string > work = unique.ElementAt(i);
+                Partitioning.CISExpandSeed(ref work, G, 0.5);
+                expanded.Add(work);
+            }
+
+            unique = expanded.Distinct(new SetEqualityComparer());
+            Console.WriteLine($"Found {unique.Count()} communities after expansion, writing to expanded.out");
+            Console.ReadLine();
+            ClusterSerializer.WriteClustersToFileByLine(unique, @"..\..\work\expanded.out");
 
             seeds = new HashSet<HashSet<string>>();
             foreach (string vertex in G.Vertices)
@@ -64,6 +76,7 @@ namespace TestApp
                 HashSet<string> seed = new HashSet<string>();
                 seed.Add(vertex);
                 seeds.Add(seed);
+
             }
             for (int i = 0; i < seeds.Count(); i++)
             {
@@ -72,7 +85,7 @@ namespace TestApp
             }
 
             IEnumerable<HashSet<string>> best = seeds.Distinct<HashSet<string>>(new SetEqualityComparer());
-            ClusterSerializer.WriteClustersToFile(best, @"..\..\work\displays1clusters_test.out");
+            ClusterSerializer.WriteClustersToFileByLine(best, @"..\..\work\displays1clusters_test.out");
         }
 
         private static void TestReadMultilayer()
