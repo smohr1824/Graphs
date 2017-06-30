@@ -51,7 +51,7 @@ namespace TestApp
             Dictionary<string, float> sources = G.GetSources("5");
 
             NetworkSerializer.WriteNetworkToFile(G, @"..\..\work\nettest.out");
-            List<HashSet<string>> communities = Partitioning.SLPA(G, 20, 0.3, DateTime.Now.Millisecond);
+            List<HashSet<string>> communities = CommunityDectection.SLPA(G, 20, 0.3, DateTime.Now.Millisecond);
             IEnumerable<HashSet<string>> unique = communities.Distinct(new SetEqualityComparer());
             Console.WriteLine($"Found {unique.Count()} communities in a graph of {G.Order} vertices, writing to chartest.out");
             Console.ReadLine();
@@ -61,7 +61,7 @@ namespace TestApp
             for (int i = 0; i< unique.Count(); i++)
             {
                 HashSet < string > work = unique.ElementAt(i);
-                Partitioning.CISExpandSeed(ref work, G, 0.5);
+                CommunityDectection.CISExpandSeed(ref work, G, 0.5);
                 expanded.Add(work);
             }
 
@@ -81,7 +81,7 @@ namespace TestApp
             for (int i = 0; i < seeds.Count(); i++)
             {
                 HashSet<string> seed = seeds.ElementAt(i);
-                Partitioning.CISExpandSeed(ref seed, G, 0.5);
+                CommunityDectection.CISExpandSeed(ref seed, G, 0.5);
             }
 
             IEnumerable<HashSet<string>> best = seeds.Distinct<HashSet<string>>(new SetEqualityComparer());

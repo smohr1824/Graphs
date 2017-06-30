@@ -17,7 +17,7 @@ using Networks.Core;
 
 namespace Networks.Algorithms
 {
-    public class Partitioning
+    public class CommunityDectection
     {
         #region CIS
         // ported from http://www.cs.rpi.edu/~magdon/LFDlabpublic.html/software/CIS/CIS.tar.gz
