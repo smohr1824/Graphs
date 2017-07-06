@@ -45,6 +45,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommunityDetection.cs" />
+    <Compile Include="Louvain.cs" />
+    <Compile Include="LouvainGoldberg.cs" />
+    <Compile Include="LouvainGraph.cs" />
+    <Compile Include="LouvainModularity.cs" />
+    <Compile Include="LouvainQuality.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -55,6 +60,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="GNU Lesser GPL.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

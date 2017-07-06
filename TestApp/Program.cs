@@ -20,12 +20,23 @@ namespace TestApp
             //TestBasicMultiLayer();
             //return;
 
+            //TestLouvain();
+            //return;
+
             TestCommunityDetection();
             return;
 
 
         }
 
+        private static void TestLouvain()
+        {
+            Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\louvain_prime.dat", false);
+
+            List<HashSet<string>> res = CommunityDetection.Louvain(G, LouvainMetric.Goldberg);
+
+            Console.ReadLine();
+        }
         private static void TestCommunityDetection()
         {
             Network G = new Network(false);
@@ -51,24 +62,24 @@ namespace TestApp
             Dictionary<string, float> sources = G.GetSources("5");
 
             NetworkSerializer.WriteNetworkToFile(G, @"..\..\work\nettest.out");
-            List<HashSet<string>> communities = CommunityDectection.SLPA(G, 20, 0.3, DateTime.Now.Millisecond);
+            List<HashSet<string>> communities = CommunityDetection.SLPA(G, 20, 0.3, DateTime.Now.Millisecond);
             IEnumerable<HashSet<string>> unique = communities.Distinct(new SetEqualityComparer());
-            Console.WriteLine($"Found {unique.Count()} communities in a graph of {G.Order} vertices, writing to chartest.out");
+            Console.WriteLine($"Found {unique.Count()} communities via SLPA in a graph of {G.Order} vertices, writing to slpa.out");
             Console.ReadLine();
 
-            ClusterSerializer.WriteClustersToFileByLine(unique, @"..\..\work\chartest.out");
+            ClusterSerializer.WriteClustersToFileByLine(unique, @"..\..\work\slpa.out");
             List<HashSet<string>> expanded = new List<HashSet<string>>();
             for (int i = 0; i< unique.Count(); i++)
             {
                 HashSet < string > work = unique.ElementAt(i);
-                CommunityDectection.CISExpandSeed(ref work, G, 0.5);
+                CommunityDetection.CISExpandSeed(ref work, G, 0.5);
                 expanded.Add(work);
             }
 
             unique = expanded.Distinct(new SetEqualityComparer());
-            Console.WriteLine($"Found {unique.Count()} communities after expansion, writing to expanded.out");
+            Console.WriteLine($"Found {unique.Count()} communities after expansion with CIS, writing to slpa_cis.out");
             Console.ReadLine();
-            ClusterSerializer.WriteClustersToFileByLine(unique, @"..\..\work\expanded.out");
+            ClusterSerializer.WriteClustersToFileByLine(unique, @"..\..\work\slpa_cis.out");
 
             seeds = new HashSet<HashSet<string>>();
             foreach (string vertex in G.Vertices)
@@ -81,11 +92,18 @@ namespace TestApp
             for (int i = 0; i < seeds.Count(); i++)
             {
                 HashSet<string> seed = seeds.ElementAt(i);
-                CommunityDectection.CISExpandSeed(ref seed, G, 0.5);
+                CommunityDetection.CISExpandSeed(ref seed, G, 0.5);
             }
 
             IEnumerable<HashSet<string>> best = seeds.Distinct<HashSet<string>>(new SetEqualityComparer());
-            ClusterSerializer.WriteClustersToFileByLine(best, @"..\..\work\displays1clusters_test.out");
+            Console.WriteLine($"Found {best.Count()} communities with CIS, writing to cis.out");
+            Console.ReadLine();
+            ClusterSerializer.WriteClustersToFileByLine(best, @"..\..\work\cis.out");
+
+            communities = CommunityDetection.Louvain(G, LouvainMetric.Goldberg);
+            Console.WriteLine($"Found {communities.Count()} communities with Louvain, writing to louvain.out");
+            Console.ReadLine();
+            ClusterSerializer.WriteClustersToFileByLine(communities, @"..\..\work\louvain.out");
         }
 
         private static void TestReadMultilayer()
