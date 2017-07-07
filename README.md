@@ -16,10 +16,15 @@ file is loaded with the directed parameter of LoadNetwork set to false.  In that
 Presently, the Partitioning class implements the following community detection algorithms:
 1. Connected Iterative Scan (CIS)
 2. Speaker-Listener Propagation Algorithm (SLPA)
+3. Louvain (Modularity and Goldberg quality metrics)
 
 The Connected Iterative Scan algorithm is described in Baumes J., Goldberg M., Krishnamoorthy M., Magdon-Ismail M., Preston N. Finding Communities by Clustering a Graph into Overlapping Subgraphs. Proceedings of the IADIS International Conference on Applied Computing, :97-104, Feb-2005.
 The algorithmic code itself is adapted from the standard C++ code provided at http://www.cs.rpi.edu/~magdon/LFDlabpublic.html/software/CIS/CIS.tar.gz.
 
 SLPA is described in Xie, Jierui and Szymanski, Boleslaw, Towards Linear Time Overlapping Community Detection in Social Networks, Proceedings of the Pacific-Asiz Conference on Knowledge Discovery and Data Mining, :25-36, 2012.
+
+Louvain is described in Campigotto, R., Céspedes, P. , and Guillaume, JL., A Generalized and Adaptive Method for Community Detection,
+arxiv:1406.2518v1, 2014 and Blondel, V., Guillaume JL., Lambiotte, R., and Lefebvre, E, Fast Unfolding of Communities in Large Networks,
+Journal of Statistical Mechanics: Theory and Experiment, Issue 10, pp. 10008, 2008.  The algorithmic code is greatly adapted under the GPL Lesser Public License from https://sourceforge.net/projects/louvain/.
 
 Additional algorithm implementations are planned.
