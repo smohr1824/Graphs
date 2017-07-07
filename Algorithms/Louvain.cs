@@ -33,6 +33,9 @@
 /// to communities.  Our other community detection algorithms do this and we leverage that to return a List of HashSets denoting the members of each community.
 /// The steps needed to map string ids to integer node ids and collect the communities are memory intensive.
 /// TODO: reimplement Louvain from scratch with better memory usage.
+/// N.B. Louvain is conceptually similar to CIS.  The collapsed nodes in Louvain are essentially the expanding clusters of CIS, where the self-loops
+/// of the former are the in-cluster edges of the latter.  It should be possible to simplify the code and eliminate the LouvainGraph class entirely.
+/// This would have the benefit of not having to traverse the existing graph to build a new graph in the do-while loop in this class.
 using System;
 using System.Collections.Generic;
 using System.Linq;
