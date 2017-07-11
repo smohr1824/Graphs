@@ -25,8 +25,8 @@ namespace CoreTests
         public void Initialize()
         {
             // uncomment when we have multiple tests requiring large, random networks
-            //G = MakeRandomGraph(100, 10);
-           // M = MakeRandomMultilayerNetwork(4, 5, 1000, 100, 10);
+            // MakeRandomGraph(ref G, 100, 10);
+            // MakeRandomMultilayerNetwork(ref M, 4, 5, 1000, 100, 10);
         }
 
         [Ignore]
@@ -34,16 +34,16 @@ namespace CoreTests
         [TestMethod]
         public void BasicNumberNetwork()
         {
+            
             for (int i = 1000; i <= 1000000; i*=10)
             {
                 long start, end;
+                //G = new Network(true);
 
                 start = DateTime.Now.Ticks;
-                Network g = MakeRandomGraph(i, 10, false);
+                MakeRandomGraph(ref G, i, 10, false);
                 end = DateTime.Now.Ticks;
-                TestContext.WriteLine($"Graph degree {g.Order}, {g.Order * 10} edges time to create {(end - start)/TimeSpan.TicksPerSecond} seconds.");
-
-
+                TestContext.WriteLine($"Graph degree {G.Order}, {G.Order * 10} edges time to create {(end - start)/TimeSpan.TicksPerSecond} seconds.");
                 TestContext.WriteLine("");
             }
         }
@@ -170,7 +170,7 @@ namespace CoreTests
         [TestMethod]
         public void TestMultilayerSerialization()
         {
-            MultilayerNetwork M = MakeRandomMultilayerNetwork(3, 4, 20, 5, 6);
+            MakeRandomMultilayerNetwork(ref M, 3, 4, 20, 5, 6);
 
             TestContext.WriteLine($"Random network created, {M.Aspects().Count()} aspects, Order {M.Order}");
             foreach (string aspect in M.Aspects())
@@ -276,11 +276,11 @@ namespace CoreTests
         /// <param name="maxDegree">Maximum degree per vertex, neglecting node coupling, i.e., maximum number of explicit edges to create.</param>
         /// <param name="maxInterLayerEdges">Maximum number of explicit interlayer edges to create per elementary layer.</param>
         /// <returns>Instance of a multilayer network with no omitted elementary layers and parameters as above.</returns>
-        private MultilayerNetwork MakeRandomMultilayerNetwork(int aspectCt, int maxIndices, int maxVertices, int maxDegree, int maxInterLayerEdges)
+        private void MakeRandomMultilayerNetwork(ref MultilayerNetwork mNet, int aspectCt, int maxIndices, int maxVertices, int maxDegree, int maxInterLayerEdges)
         {
             // Create the aspects and their indices, then instantiate the multilayer network and determine how many elementary layers it can contain.
             IEnumerable<Tuple<string, IEnumerable<string>>> aspects = MakeRandomAspects(aspectCt, maxIndices);
-            MultilayerNetwork mNet = new MultilayerNetwork(aspects, true);
+            mNet = new MultilayerNetwork(aspects, true);
             int elementaryCt = CountCross(aspects);
 
             // Generate a list of elementary layer tensors such that each possible permutation is created.
@@ -320,7 +320,8 @@ namespace CoreTests
             // one of the elementary layer tensors for the previosuly created list.
             for (int i = 0; i < elementaryCt; i++)
             {
-                Network G = MakeRandomGraph(maxVertices, maxDegree);
+                Network G = new Network(true);
+                MakeRandomGraph(ref G, maxVertices, maxDegree);
                 mNet.AddElementaryLayer(coords[i], G);
             }
 
@@ -348,7 +349,6 @@ namespace CoreTests
                 
             }
 
-            return mNet;
         }
 
         /// <summary>
@@ -359,10 +359,9 @@ namespace CoreTests
         /// <param name="maxVertices">Maximum number of vertices to create in the graph.  Actual order will be [1..maxVertices]</param>
         /// <param name="maxDegree">Maximum degree.  Actual number of edges will be [0..maxDegree]</param>
         /// <returns></returns>
-        private Network MakeRandomGraph(int maxVertices, int maxDegree, bool randomMax = true)
+        private void MakeRandomGraph(ref Network net, int maxVertices, int maxDegree, bool randomMax = true)
         {
-            Network net = new Network(true);
-
+            net = new Network(true);
             try
             {
                 Random rand = new Random(DateTime.UtcNow.Millisecond);
@@ -392,15 +391,14 @@ namespace CoreTests
                     }
                 }
             }
-            //catch (OutOfMemoryException ex)
-            //{
-            //    TestContext.WriteLine($"Out of memory: order {net.Order}");
-            //    Assert.Fail($"Failure to generate a random network, maxVertices {maxVertices}, maxDegree {maxDegree}, randomMax is {randomMax}");
-            //}
+            catch (OutOfMemoryException)
+            {
+                TestContext.WriteLine($"Out of memory: order {net.Order}");
+                Assert.Fail($"Failure to generate a random network, maxVertices {maxVertices}, maxDegree {maxDegree}, randomMax is {randomMax}");
+            }
             catch (IOException)
             { }
 
-            return net;
         }
 
         /// <summary>

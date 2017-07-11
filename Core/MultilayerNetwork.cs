@@ -29,7 +29,7 @@ using System.Threading.Tasks;
 
 namespace Networks.Core
 {
-    public partial class MultilayerNetwork
+    public class MultilayerNetwork
     {
         // list of aspect names
         private List<string> aspects;
