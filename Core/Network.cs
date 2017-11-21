@@ -132,7 +132,7 @@ namespace Networks.Core
         }
 
         /// <summary>
-        /// Calculates the density of the network.  For undirected networks, this is 2|E|/(|V| * (|V| - 1 )), where |E| is the number of edges, |V| is the numebr of vertices (order),
+        /// Calculates the density of the network.  For undirected networks, this is 2|E|/(|V| * (|V| - 1 )), where |E| is the number of edges, |V| is the number of vertices (order),
         /// and thus |V| * (|V| - 1) is the number of possible edges in the network.  For a directed network, the density is |E|/(|V| * (|V| - 1)). Note, this method iterates through 
         /// all vertices, so very large networks will have a performance hit O(n).
         /// </summary>
@@ -416,7 +416,8 @@ namespace Networks.Core
 
             return InEdges[vertex].Count();
         }
-
+        
+        // TODO: How valuable is this? Keeping the edge weights nearly doubles the storage.
         public float InWeights(string vertex)
         {
             if (!HasVertex(vertex))
@@ -440,6 +441,7 @@ namespace Networks.Core
             return retVal;
         }
 
+        
         public float OutWeights(string vertex)
         {
             float retVal = 0F;

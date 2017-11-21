@@ -21,9 +21,11 @@ namespace TestApp
             //return;
 
             //TestLouvain();
+            //TestLouvainResolution();
             //return;
 
             TestCommunityDetection();
+            //TestGephiOutput();
             return;
 
 
@@ -33,8 +35,30 @@ namespace TestApp
         {
             Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\louvain_prime.dat", false);
 
-            List<HashSet<string>> res = CommunityDetection.Louvain(G, LouvainMetric.Goldberg);
+            List<HashSet<string>> res = CommunityDetection.Louvain(G, LouvainMetric.Modularity);
+            res = CommunityDetection.Louvain(G, LouvainMetric.Goldberg);
 
+            Console.ReadLine();
+        }
+
+        private static void TestLouvainResolution()
+        {
+            Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\louvain_prime.dat", false);
+
+            List<HashSet<string>> res = CommunityDetection.Louvain(G, 0.5);
+            res = CommunityDetection.Louvain(G, 0.6);
+            res = CommunityDetection.Louvain(G, 0.7);
+            res = CommunityDetection.Louvain(G, 0.8);
+            res = CommunityDetection.Louvain(G, 0.9);
+            res = CommunityDetection.Louvain(G, 1.0);
+
+            Console.ReadLine();
+        }
+
+        private static void TestGephiOutput()
+        {
+            Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\louvain_prime.dat", false);
+            NetworkSerializer.WriteAdjacencyMatrixToGephiFile(G.Vertices, G.AdjacencyMatrix, @"..\..\work\louvain_forgephi.csv");
             Console.ReadLine();
         }
         private static void TestCommunityDetection()
@@ -101,9 +125,19 @@ namespace TestApp
             ClusterSerializer.WriteClustersToFileByLine(best, @"..\..\work\cis.out");
 
             communities = CommunityDetection.Louvain(G, LouvainMetric.Goldberg);
-            Console.WriteLine($"Found {communities.Count()} communities with Louvain, writing to louvain.out");
+            Console.WriteLine($"Found {communities.Count()} communities with Louvain Goldberg, writing to louvain_g.out");
             Console.ReadLine();
-            ClusterSerializer.WriteClustersToFileByLine(communities, @"..\..\work\louvain.out");
+            ClusterSerializer.WriteClustersToFileByLine(communities, @"..\..\work\louvain_g.out");
+
+            communities = CommunityDetection.Louvain(G, LouvainMetric.Modularity);
+            Console.WriteLine($"Found {communities.Count()} communities with Louvain Modularity, writing to louvain_m.out");
+            Console.ReadLine();
+            ClusterSerializer.WriteClustersToFileByLine(communities, @"..\..\work\louvain_m.out");
+
+            communities = CommunityDetection.Louvain(G, 0.9);
+            Console.WriteLine($"Found {communities.Count()} communities with Louvain Resolution (r = 0.9), writing to louvain_r.out");
+            Console.ReadLine();
+            ClusterSerializer.WriteClustersToFileByLine(communities, @"..\..\work\louvain_r.out");
         }
 
         private static void TestReadMultilayer()

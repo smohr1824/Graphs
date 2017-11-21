@@ -84,6 +84,25 @@ namespace Networks.Core
         }
 
         /// <summary>
+        /// Entry point for writing a network to a Gephi-compatible import format, in this case an adjacency matrix
+        /// </summary>
+        /// <param name="vertices">vertiex ids</param>
+        /// <param name="weights">adjacency matrix</param>
+        /// <param name="filename">name of file (fully qualified)</param>
+        public static void WriteAdjacencyMatrixToGephiFile(List<string> vertices, float[,] weights, string filename)
+        {
+            if (vertices == null)
+                throw new ArgumentNullException("Vertex list must be non-null");
+
+            if (weights == null)
+                throw new ArgumentNullException("Adjacency matrix must be non-null");
+
+            StreamWriter writer = new StreamWriter(filename);
+            WriteMatrixForGephi(writer, vertices, weights);
+            writer.Close();
+        }
+
+        /// <summary>
         /// Serializes the network with all edges shown, i.e., an undirected graph will have edges in both directions even if it was read
         /// from a file with directed == false to create the back edges
         /// </summary>
@@ -93,6 +112,32 @@ namespace Networks.Core
         public static void WriteNetwork(Network net, TextWriter writer, char  delimiter = '|')
         {
             net.List(writer, delimiter);
+        }
+
+        /// <summary>
+        /// Writes the adjacency matrix in the annotated format Gephi can read
+        /// </summary>
+        /// <param name="writer">Instantiated writer (file, typically, can be memory stream or other</param>
+        /// <param name="vertices">List of vertex ids</param>
+        /// <param name="weights">adjacency matrix to write</param>
+        public static void WriteMatrixForGephi(TextWriter writer, List<string> vertices, float[,] weights)
+        {
+            // writer the columns
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                writer.Write(";" + vertices[i]);
+            }
+            writer.WriteLine();
+            // write the body
+            for (int j = 0; j < vertices.Count; j++)
+            {
+                writer.Write(vertices[j]);
+                for (int k = 0; k < vertices.Count; k++)
+                {
+                    writer.Write(";" + weights[j, k].ToString());
+                }
+                writer.WriteLine();
+            }
         }
 
         private static string[] SplitAndClean(string line, char delimiter)

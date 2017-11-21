@@ -50,6 +50,7 @@
     <Compile Include="LouvainGraph.cs" />
     <Compile Include="LouvainModularity.cs" />
     <Compile Include="LouvainQuality.cs" />
+    <Compile Include="LouvainResolution.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

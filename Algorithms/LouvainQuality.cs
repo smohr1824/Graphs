@@ -38,7 +38,8 @@ namespace Networks.Algorithms
     public enum LouvainMetric
     {
         Modularity = 1,
-        Goldberg = 2
+        Goldberg = 2,
+        Resolution = 3
     }
     public abstract class LouvainQuality
     {
