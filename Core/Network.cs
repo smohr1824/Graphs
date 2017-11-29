@@ -182,6 +182,10 @@ namespace Networks.Core
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
         public void RemoveVertex(string id)
         {
             if (EdgeList.Keys.Contains(id))
