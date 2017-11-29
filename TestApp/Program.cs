@@ -23,14 +23,25 @@ namespace TestApp
             //TestLouvain();
             //TestLouvainResolution();
             //return;
-
-            TestCommunityDetection();
+            TestRemove();
+            //TestCommunityDetection();
             //TestGephiOutput();
             return;
 
 
         }
 
+        private static void TestRemove()
+        {
+            Network G = new Network(false);
+            G.AddEdge("A", "B", 1.0F);
+            G.AddEdge("B", "C", 2.0F);
+            G.AddEdge("B", "D", 3.0F);
+            G.AddEdge("C", "D", 2.0F);
+            G.AddEdge("D", "B", 1.0F);
+            G.RemoveVertex("C");
+            int i = 0;
+        }
         private static void TestLouvain()
         {
             Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\louvain_prime.dat", false);

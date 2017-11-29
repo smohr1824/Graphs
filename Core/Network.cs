@@ -184,26 +184,28 @@ namespace Networks.Core
 
         public void RemoveVertex(string id)
         {
-            // remove any edge to the vertex we are removing
+            if (EdgeList.Keys.Contains(id))
+            {
+                // traverse the out edges and remove the corresponding in edge entries
+                foreach (string to in EdgeList[id].Keys)
+                {
+                    InEdges[to].Remove(id);
+                }
+                // remove the list of outgoing edges for this vertex
+                EdgeList.Remove(id);
+            }
+
             if (InEdges.Keys.Contains(id))
             {
+                // traverse the list of incoming edges and delete the corresponding out edge entries
                 foreach (string from in InEdges[id].Keys)
                 {
                     EdgeList[from].Remove(id);
-                    if (!directed)
-                    {
-                        if (EdgeList.Keys.Contains(id))
-                            EdgeList[id].Remove(from);
-
-                        if (InEdges.Keys.Contains(from))
-                            InEdges[from].Remove(id);
-                    }
                 }
+                // remove the list of incoming edges
                 InEdges.Remove(id);
             }
 
-            // remove any out edges, and coincidentally remove any awareness of this vertex from the network
-            EdgeList.Remove(id);
         }
 
         public void AddEdge(string from, string to, float weight)
