@@ -58,12 +58,12 @@ namespace Networks.Core
                 if (ct > 3)
                     continue;
 
-                int wt = 1;
+                float wt = 1.0F;
                 if (ct == 3)
                 {
                     try
                     {
-                        wt = Convert.ToInt32(fields[2]);
+                        wt = (float)Convert.ToDouble(fields[2]);
                     }
                     catch (Exception)
                     {
