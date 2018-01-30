@@ -291,8 +291,6 @@ namespace Networks.Algorithms
                     // keep track of the labels sent to the listener
                     Dictionary<int, int> labelsSeen = new Dictionary<int, int>();
 
-                    List<string> neighbors = adjacencyList.Keys.ToList<string>();
-
                     // iterate through all neighbors of the listener vertex
                     foreach (string neighbor in adjacencyList.Keys)
                     {
