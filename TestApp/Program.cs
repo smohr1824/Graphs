@@ -26,9 +26,22 @@ namespace TestApp
             TestRemove();
             //TestCommunityDetection();
             //TestGephiOutput();
+            //TestBig();
             return;
 
 
+        }
+
+        private static void TestBig()
+        {
+            Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\python_reqs.csv", true, ',');
+
+            DateTime start = DateTime.Now;
+            List<HashSet<string>> communities = CommunityDetection.SLPA(G, 20, .4, DateTime.Now.Millisecond);
+            DateTime end = DateTime.Now;
+            TimeSpan dur = end - start;
+            Console.WriteLine($"Found {communities.Count} in {dur.TotalSeconds} seconds");
+            Console.ReadLine();
         }
 
         private static void TestRemove()

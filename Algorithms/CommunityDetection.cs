@@ -313,6 +313,9 @@ namespace Networks.Algorithms
 
                     }
 
+                    if (labelsSeen.Count == 0)
+                        continue;
+
                     // find the maximum number of times any label has been seen
                     Dictionary<int, int> listenerDict = nodeLabelMemory[vertices[nodeIdx]];
                     int max = labelsSeen.Values.Max();
