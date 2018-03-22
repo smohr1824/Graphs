@@ -23,8 +23,8 @@ namespace TestApp
             //TestLouvain();
             //TestLouvainResolution();
             //return;
-            TestRemove();
-            //TestCommunityDetection();
+            //TestRemove();
+            TestCommunityDetection();
             //TestGephiOutput();
             //TestBig();
             return;
@@ -35,9 +35,9 @@ namespace TestApp
         private static void TestBig()
         {
             Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\python_reqs.csv", true, ',');
-
+            Console.WriteLine($"Read {G.Order} vertices");
             DateTime start = DateTime.Now;
-            List<HashSet<string>> communities = CommunityDetection.SLPA(G, 20, .4, DateTime.Now.Millisecond);
+            List<HashSet<string>> communities = CommunityDetection.SLPA(G, 20, .4, 123456);
             DateTime end = DateTime.Now;
             TimeSpan dur = end - start;
             Console.WriteLine($"Found {communities.Count} in {dur.TotalSeconds} seconds");

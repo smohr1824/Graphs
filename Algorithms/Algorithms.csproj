@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="CommunityDetection.cs" />
     <Compile Include="Louvain.cs" />
+    <Compile Include="LouvainAlgorithm.cs" />
     <Compile Include="LouvainGoldberg.cs" />
     <Compile Include="LouvainGraph.cs" />
     <Compile Include="LouvainModularity.cs" />

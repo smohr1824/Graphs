@@ -70,7 +70,13 @@ namespace Networks.Core
                         // default to 1
                     }
                 }
-                if (ct >= 2 && fields[0] == "" && fields[1] == "")
+                if (ct == 2 && fields[1] == "")
+                {
+                    retVal.AddVertex(fields[0]);
+                    continue;
+                }
+
+                if (ct == 2 && fields[0] == "")
                     continue;
 
                 retVal.AddEdge(fields[0], fields[1], wt);
