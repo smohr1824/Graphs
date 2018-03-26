@@ -128,6 +128,33 @@ namespace CoreTests
             density = G.Density;
             Assert.AreEqual(0.66, density, 0.01);
         }
+
+        [TestCategory("Basic")]
+        [TestMethod]
+        public void TestSize()
+        {
+            Network G = MakeSimple(true);
+            int size = G.Size;
+            Assert.AreEqual(9, size);
+            G = MakeSimple(false);
+            size = G.Size;
+            Assert.AreEqual(9, size);
+        }
+
+        private Network MakeSimple(Boolean directed)
+        {
+            Network G = new Network(directed);
+            G.AddEdge("A", "B", 1);
+            G.AddEdge("A", "C", 1);
+            G.AddEdge("A", "F", 1);
+            G.AddEdge("B", "D", 1);
+            G.AddEdge("D", "F", 1);
+            G.AddEdge("C", "E", 1);
+            G.AddEdge("E", "F", 1);
+            G.AddEdge("B", "E", 1);
+            G.AddEdge("C", "D", 1);
+            return G;
+        }
         [TestCategory("Multilayer")]
         [TestMethod]
         public void TestMultilayerSources()

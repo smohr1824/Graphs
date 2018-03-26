@@ -151,7 +151,11 @@ namespace Networks.Core
 
         public int Size
         {
-            get { return CountEdges(); }
+            get { if (directed)
+                    return CountEdges();
+                else
+                    return CountEdges() / 2;
+            }
         }
 
         /// <summary>
