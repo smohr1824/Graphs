@@ -41,7 +41,7 @@ namespace CoreTests
                 //G = new Network(true);
 
                 start = DateTime.Now.Ticks;
-                MakeRandomGraph(ref G, i, 10, false);
+                MakeRandomGraph(ref G, i, 10, false, true);
                 end = DateTime.Now.Ticks;
                 TestContext.WriteLine($"Graph degree {G.Order}, {G.Order * 10} edges time to create {(end - start)/TimeSpan.TicksPerSecond} seconds.");
                 TestContext.WriteLine("");
@@ -386,9 +386,9 @@ namespace CoreTests
         /// <param name="maxVertices">Maximum number of vertices to create in the graph.  Actual order will be [1..maxVertices]</param>
         /// <param name="maxDegree">Maximum degree.  Actual number of edges will be [0..maxDegree]</param>
         /// <returns></returns>
-        private void MakeRandomGraph(ref Network net, int maxVertices, int maxDegree, bool randomMax = true)
+        private void MakeRandomGraph(ref Network net, int maxVertices, int maxDegree, bool randomMax = true, bool directed = true)
         {
-            net = new Network(true);
+            net = new Network(directed);
             try
             {
                 Random rand = new Random(DateTime.UtcNow.Millisecond);

@@ -60,8 +60,6 @@ namespace Networks.Algorithms
 
             }
 
-            seedWeightIn /= 2;  //Internal edges were counted twice (assumed undirected)
-
             foreach (string node in fringe)
             { //Tally same information for neighborhood
                 Dictionary<string, float> N = G.GetNeighbors(node);

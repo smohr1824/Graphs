@@ -24,9 +24,11 @@ namespace TestApp
             //TestLouvainResolution();
             //return;
             //TestRemove();
-            TestCommunityDetection();
+            //TestCommunityDetection();
             //TestGephiOutput();
             //TestBig();
+            //TestNewAdj();
+            WriteGML();
             return;
 
 
@@ -42,6 +44,22 @@ namespace TestApp
             TimeSpan dur = end - start;
             Console.WriteLine($"Found {communities.Count} in {dur.TotalSeconds} seconds");
             Console.ReadLine();
+        }
+
+        private static void TestNewAdj()
+        {
+            Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\newadjtest.dat", false);
+            Console.WriteLine($"Read {G.Order} vertices");
+            Console.WriteLine($"Edge count is {G.Size}");
+            Dictionary<string, float> nghrs = G.GetNeighbors("D");
+            Console.Write(@"Neighbors of D: ");
+            foreach (KeyValuePair<string, float> kvp in nghrs)
+            {
+                Console.Write(kvp.Key + " ");
+            }
+            Console.WriteLine();
+            float[,] matrix = G.AdjacencyMatrix;
+            Console.WriteLine();
         }
 
         private static void TestRemove()
@@ -162,6 +180,12 @@ namespace TestApp
             Console.WriteLine($"Found {communities.Count()} communities with Louvain Resolution (r = 0.9), writing to louvain_r.out");
             Console.ReadLine();
             ClusterSerializer.WriteClustersToFileByLine(communities, @"..\..\work\louvain_r.out");
+        }
+
+        private static void WriteGML()
+        {
+            Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\newadjtest.dat", false);
+            GMLNetworkSerializer.WriteNetworkToFile(G, @"..\..\work\newadjtest.gml");
         }
 
         private static void TestReadMultilayer()

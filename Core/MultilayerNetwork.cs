@@ -613,11 +613,6 @@ namespace Networks.Core
             elementaryLayers[rFrom.coordinates].AddEdge(rFrom, rTo, wt);
             elementaryLayers[rTo.coordinates].AddInEdge(rTo, rFrom, wt);
 
-            if (!directed)
-            {
-                elementaryLayers[rTo.coordinates].AddEdge(rTo, rFrom, wt);
-                elementaryLayers[rFrom.coordinates].AddInEdge(rFrom, rTo, wt);
-            }
         }
 
 
@@ -636,13 +631,6 @@ namespace Networks.Core
             {
                 fromLayer.RemoveEdge(rFrom, rTo, directed);
                 toLayer.RemoveInEdge(rTo, rFrom);
-            }
-
-            // if this is an undirected edge, remove the reciprocal edge
-            if (!directed && toLayer.HasEdge(rTo, rFrom))
-            {
-                toLayer.RemoveEdge(rTo, rFrom, directed);
-                fromLayer.RemoveInEdge(rFrom, rTo);
             }
         }
 

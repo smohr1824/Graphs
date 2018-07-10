@@ -31,8 +31,8 @@ using System.Threading.Tasks;
 namespace Networks.Core
 {
     /// <summary>
-    /// Class modelling a graph.  All edges are treated as directed.  If an undirected graph is loaded using the serializer, reciprocal edges are added.
-    /// In this way, we do not need to distinguish between directed and undirected graphs at the class level.
+    /// Class modelling a graph.  All edges are treated as directed. Neighborhoods for undirected networks are
+    /// handled using the in edges.
     /// </summary>
     public class Network
     {
@@ -142,20 +142,17 @@ namespace Networks.Core
             {
                 int edgeCt = CountEdges();
                 int order = EdgeList.Keys.Count();
-
-                // since our undirected edges are stored as reciprocal directed edges, the computation is the same, i.e., DO NOT multiply by 2 in the undirected case
-                return ((double) edgeCt / ((double) order * ((double) order - 1)));
+                double retVal = ((double)edgeCt / ((double)order * ((double)order - 1)));
+                if (!Directed)
+                    retVal = 2 * retVal;
+                return retVal;
 
             }
         }
 
         public int Size
         {
-            get { if (directed)
-                    return CountEdges();
-                else
-                    return CountEdges() / 2;
-            }
+            get { return CountEdges(); }
         }
 
         /// <summary>
@@ -265,41 +262,7 @@ namespace Networks.Core
                 dict.Add(from, weight);
                 InEdges.Add(to, dict);
             }
-
-            // if this is an undirected edge, add the reciprocal edge as well
-            if (!directed)
-            {
-                // The first clause should never be hit since we added the check for the to vertex above
-                if (!EdgeList.TryGetValue(to, out neighbors))
-                {
-                    neighbors = new Dictionary<string, float>(); 
-                    neighbors.Add(from, weight);
-                    EdgeList.Add(to, neighbors);
-                }
-                else
-                {
-                    if (!neighbors.ContainsKey(from))
-                    {
-                        neighbors.Add(from, weight);
-                    }
-                    else
-                    {
-                        neighbors[from] = weight;
-                    }
-                }
-
-                if (InEdges.Keys.Contains(from))
-                {
-                    InEdges[from].Add(to, weight);
-                }
-                else
-                {
-                    Dictionary<string, float> dict = new Dictionary<string, float>();
-                    dict.Add(to, weight);
-                    InEdges.Add(from, dict);
-                }
-            }
-            }
+        }
 
         public void RemoveEdge(string from, string to)
         {
@@ -310,36 +273,45 @@ namespace Networks.Core
                 EdgeList.TryGetValue(from, out neighbors);
                 neighbors.Remove(to);
                 InEdges[to].Remove(from);
-
-                if (!directed)
-                {
-                    if (EdgeList.TryGetValue(to, out neighbors))
-                        neighbors.Remove(from);
-                    InEdges[from].Remove(to);
-                }
             }
         }
 
         /// <summary>
         ///  Returns vertices neighboring the given vertex such that there are edges from the source to the neighboring target vertices
+        ///  Undirected networks return all edges incident on the given vertex.
         /// </summary>
         /// <param name="vertex">source vertex</param>
         /// <returns></returns>
         public Dictionary<string, float> GetNeighbors(string vertex)
         {
             Dictionary<string, float> nhood = null;
-            if (!EdgeList.TryGetValue(vertex, out nhood))
+            Dictionary<string, float> inhood = null;
+            Dictionary<string, float> retVal = new Dictionary<string, float>();
+
+            EdgeList.TryGetValue(vertex, out nhood);
+            if (!Directed)
             {
-                return new Dictionary<string, float>();
+                InEdges.TryGetValue(vertex, out inhood);
             }
-            else
+
+            if (nhood != null)
             {
-                return nhood;
+                foreach (KeyValuePair<string, float> kvp in nhood)
+                    retVal.Add(kvp.Key, kvp.Value);
             }
+
+            if (!Directed && inhood != null)
+            {
+                foreach (KeyValuePair<string, float> kvp in inhood)
+                    retVal.Add(kvp.Key, kvp.Value);
+            }
+
+            return retVal;
         }
 
         /// <summary>
-        /// Returns a dictionary of vertices with directed edges terminating at the given vertex
+        /// Returns a dictionary of vertices with directed edges terminating at the given vertex.
+        /// If working with an undirected network, call GetNeighbors to get all incident edges.
         /// </summary>
         /// <param name="vertex">vertex that is the target of the inbound edges</param>
         /// <returns></returns>
@@ -387,28 +359,14 @@ namespace Networks.Core
             if (!HasVertex(vertex))
                 throw new ArgumentException($"Vertex {vertex} is not a member of this graph.");
 
-            if (directed)
-            {
-                // return the total of in and out edges
-                int retVal = 0;
-                if (EdgeList.Keys.Contains(vertex))
-                    retVal = EdgeList[vertex].Count();
-                if (InEdges.Keys.Contains(vertex))
-                    retVal += InEdges[vertex].Count();
+            // return the total of in and out edges
+            int retVal = 0;
+            if (EdgeList.Keys.Contains(vertex))
+                retVal = EdgeList[vertex].Count();
+            if (InEdges.Keys.Contains(vertex))
+                retVal += InEdges[vertex].Count();
 
-                return retVal;
-            }
-            else
-            {
-                // only return the number of neighbors, as the practice of adding a reciprocal, directed edge
-                // is an implementation decision; the actual degree is the number of edges incident on the vertex
-                Dictionary<string, float> neighbors = null;
-                if (!EdgeList.TryGetValue(vertex, out neighbors))
-                    return 0;
-                else
-                    return neighbors.Count();
-            }
-
+            return retVal;
         }
 
         public int OutDegree(string vertex)
@@ -427,7 +385,6 @@ namespace Networks.Core
             return InEdges[vertex].Count();
         }
         
-        // TODO: How valuable is this? Keeping the edge weights nearly doubles the storage.
         public float InWeights(string vertex)
         {
             if (!HasVertex(vertex))
@@ -505,6 +462,38 @@ namespace Networks.Core
                 }
             }
         }
+
+        public void ListGML(TextWriter writer)
+        {
+            writer.WriteLine(@"graph [");
+            if (Directed)
+                writer.WriteLine("\tdirected 1");
+            else
+                writer.WriteLine("\tdirected 0");
+
+            foreach (string key in Vertices)
+            {
+                writer.WriteLine("\tnode [");
+                writer.WriteLine("\t\tid " + key);
+                writer.WriteLine("\t]");
+            }
+
+            writer.WriteLine("\t]");
+
+            foreach (string key in EdgeList.Keys)
+            {
+                Dictionary<string, float> edges = EdgeList[key];
+                foreach (KeyValuePair<string, float> kvp in edges)
+                {
+                    writer.WriteLine("\tedge [");
+                    writer.WriteLine("\t\tsource " + key);
+                    writer.WriteLine("\t\ttarget " + kvp.Key);
+                    writer.WriteLine("\t\tweight " + kvp.Value.ToString("F4"));
+                    writer.WriteLine("\t]");
+                }
+            }
+            writer.WriteLine(@"]");
+        }
         #endregion
 
         #region private methods
@@ -527,6 +516,26 @@ namespace Networks.Core
                     if (edges.TryGetValue(to, out weight))
                     {
                         retVal[i, j] = weight;
+                    }
+                }
+            }
+
+            if (!Directed)
+            {
+                // pick up the in edges
+                foreach (string vertex in InEdges.Keys)
+                {
+                    int i = vertices.IndexOf(vertex);
+
+                    foreach (string to in InEdges[vertex].Keys)
+                    {
+                        int j = vertices.IndexOf(to);
+                        Dictionary<string, float> edges = InEdges[vertex];
+                        float weight = 0.0F;
+                        if (edges.TryGetValue(to, out weight))
+                        {
+                            retVal[i, j] = weight;
+                        }
                     }
                 }
             }
