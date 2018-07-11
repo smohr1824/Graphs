@@ -28,7 +28,8 @@ namespace TestApp
             //TestGephiOutput();
             //TestBig();
             //TestNewAdj();
-            WriteGML();
+            //WriteGML();
+            TestEdgeWeight();
             return;
 
 
@@ -60,6 +61,25 @@ namespace TestApp
             Console.WriteLine();
             float[,] matrix = G.AdjacencyMatrix;
             Console.WriteLine();
+        }
+
+        private static void TestEdgeWeight()
+        {
+            Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\hasedgestest.dat", false);
+            Console.WriteLine($"Read graph with {G.Order} vertices and {G.Size} edges");
+
+            if (!G.HasEdge("C", "A"))
+            {
+                Console.WriteLine(@"Well, shoot, that's bad...");
+                return;
+            }
+            else
+            {
+                float wt = G.EdgeWeight("C", "A");
+                wt = G.EdgeWeight("A", "B");
+                bool test = G.HasEdge("A", "B");
+            }
+
         }
 
         private static void TestRemove()

@@ -341,6 +341,23 @@ namespace Networks.Core
                 float wt = 0.0F;
                 if (adjList.TryGetValue(to, out wt))
                     return true;
+                else
+                {
+                    // if directed, there is no edge
+                    // if undirected, check the in edges
+                    if (!Directed)
+                    {
+                        if (InEdges.TryGetValue(from, out adjList))
+                        {
+                            if (adjList.TryGetValue(to, out wt))
+                                return true;
+                            else
+                                return false;
+                        }
+                    }
+                    else
+                        return false;
+                }
             }
 
             return false;
@@ -349,7 +366,28 @@ namespace Networks.Core
         public float EdgeWeight(string from, string to)
         {
             if (HasEdge(from, to))
-                return EdgeList[from][to];
+            {
+                try
+                {
+                    return EdgeList[from][to];
+                }
+                catch (Exception)
+                {
+                    if (!Directed)
+                    {
+                        try
+                        {
+                            return InEdges[from][to];
+                        }
+                        catch (Exception)
+                        {
+                            return 0.0F;
+                        }
+                    }
+                    else
+                        return 0.0F;
+                }
+            }
             else
                 return 0.0F;
         }
