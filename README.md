@@ -10,13 +10,13 @@ Mulitlayer graphs are implemented via the MultilayerNetwork class and serialized
 ### Serialization Format
 Each line of a graph represents an edge adjacency list.  The first string is the from vertex, followed by the delimiter character, followed by,
 the to vertext, followed by the delimiter and the edge weight.  Edge weights are integers.  Graphs are assumed to be directed, unless the 
-file is loaded with the directed parameter of LoadNetwork set to false.  In that case, an edge is added for the reciprocal direction.
+file is loaded with the directed parameter of LoadNetwork set to false.  
 
 # Community detection algorithms 
 Presently, the Partitioning class implements the following community detection algorithms:
 1. Connected Iterative Scan (CIS)
 2. Speaker-Listener Propagation Algorithm (SLPA)
-3. Louvain (Modularity and Goldberg quality metrics)
+3. Louvain (Modularity, Goldberg, and Resolution quality metrics)
 
 The Connected Iterative Scan algorithm is described in Baumes J., Goldberg M., Krishnamoorthy M., Magdon-Ismail M., Preston N. Finding Communities by Clustering a Graph into Overlapping Subgraphs. Proceedings of the IADIS International Conference on Applied Computing, :97-104, Feb-2005.
 The algorithmic code itself is adapted from the standard C++ code provided at http://www.cs.rpi.edu/~magdon/LFDlabpublic.html/software/CIS/CIS.tar.gz.
