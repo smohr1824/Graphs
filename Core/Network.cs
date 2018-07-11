@@ -429,18 +429,18 @@ namespace Networks.Core
                 throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
 
             float retVal = 0F;
-            if (!directed)
-            {
-                foreach (KeyValuePair<string, float> edge in EdgeList[vertex])
-                    retVal += edge.Value;
-
-                return retVal;
-            }
-
 
             foreach (KeyValuePair<string, float> inEdge in InEdges[vertex])
             {
                 retVal += inEdge.Value;
+            }
+
+            if (!directed)
+            {
+                foreach (KeyValuePair<string, float> edge in InEdges[vertex])
+                    retVal += edge.Value;
+
+                return retVal;
             }
 
             return retVal;
@@ -454,17 +454,15 @@ namespace Networks.Core
             if (!HasVertex(vertex))
                 throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
 
-            if (!directed)
-            {
-                foreach (KeyValuePair<string, float> edge in EdgeList[vertex])
-                    retVal += edge.Value;
-
-                return retVal;
-            }
-
             foreach (KeyValuePair<string, float> kvp in EdgeList[vertex])
             {
                 retVal += kvp.Value;
+            }
+
+            if (!directed)
+            {
+                foreach (KeyValuePair<string, float> edge in InEdges[vertex])
+                    retVal += edge.Value;
             }
 
             return retVal;
