@@ -9,7 +9,7 @@
 
 
 /// Algorithms for community detection in networks
-/// Alogorithms are Speaker-Listener Propagation Alogirthm, Connected Iterative Scan (CIS), and Louvain.
+/// Alogorithms are Speaker-Listener Propagation Alogrithm, Connected Iterative Scan (CIS), and Louvain.
 
 using System;
 using System.Collections.Generic;
