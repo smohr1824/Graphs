@@ -110,6 +110,22 @@ namespace Networks.Core
              get { return EdgeList.Keys.ToList<string>(); }
         }
 
+        /// <summary>
+        /// Provides a vertex id for algorithms requiring an arbitrary starting point, e.g., "do X to any vertex v, then for each adjacent vertex..."
+        /// </summary>
+        /// <param name="random">if true, randomizes which vertex is selected, otherwise always returns the same vertex assuming the graph has not been changed</param>
+        /// <returns>id of a vertex in G</returns>
+        public string StartingVertex(bool random = false)
+        {
+            if (random)
+            {
+                Random rnd = new Random();
+                return EdgeList.Keys.ElementAt<string>(rnd.Next(Order));
+            }
+            else
+                return EdgeList.Keys.ElementAt<string>(0);
+        }
+
         public bool Directed
         {
             get { return directed; }

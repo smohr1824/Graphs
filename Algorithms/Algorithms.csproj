@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bipartite.cs" />
     <Compile Include="CommunityDetection.cs" />
     <Compile Include="Louvain.cs" />
     <Compile Include="LouvainAlgorithm.cs" />
