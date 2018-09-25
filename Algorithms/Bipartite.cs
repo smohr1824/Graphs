@@ -17,13 +17,6 @@ namespace Networks.Algorithms
             blue = 2
         }
 
-        private struct coloring
-        {
-            string vertex;
-            color color;
-
-        }
-
         /// <summary>
         /// Determines if G is bipartite by attempting a two-coloring of the network.
         /// </summary>

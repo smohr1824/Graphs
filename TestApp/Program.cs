@@ -29,7 +29,8 @@ namespace TestApp
             //TestBig();
             //TestNewAdj();
             //WriteGML();
-            TestEdgeWeight();
+            //TestEdgeWeight();
+            TestBigBipartite();
             return;
 
 
@@ -47,6 +48,35 @@ namespace TestApp
             Console.ReadLine();
         }
 
+        private static void TestBigBipartite()
+        {
+            Random rnd = new Random();
+            Network G = new Network(true);
+            long start = DateTime.UtcNow.Ticks;
+            for (int i = 0; i < 100000; i++)
+            {
+                int degree = rnd.Next(21); // up to 20 additional edges
+                string id = i.ToString();
+                // make a graph in which numbers first nodes are matched to "A"+ numbers second nodes, hence known bipartite
+                G.AddEdge(id + "A", "A" + id, 1.0F);
+                // make degree edges while maintaining the bipartite nature -- goal is to compare to concurrent version, so must have enough neighbors to make it worthwhile
+                for (int j = 0; j < degree; j++)
+                {
+                    int right = rnd.Next(100000);
+                    G.AddEdge(id + "A", "A" + right.ToString(), 1.0F);
+                }
+            }
+            long end = DateTime.UtcNow.Ticks;
+            Console.WriteLine($"Building 200,000 node graph took {(end - start) / 10000} milliseconds");
+
+            List<string> R = null;
+            List<string> B = null;
+            bool res = false;
+            start = DateTime.UtcNow.Ticks;
+            res = Bipartite.IsBipartite(G, out R, out B);
+            end = DateTime.UtcNow.Ticks;
+            Console.WriteLine($"Graph of 200,000 nodes is  bipartite {res}, took {(end - start) / 10000} milliseconds");
+        }
         private static void TestNewAdj()
         {
             Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\newadjtest.dat", false);
