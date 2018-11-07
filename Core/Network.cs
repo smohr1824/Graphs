@@ -1,7 +1,4 @@
-﻿// Copyright 2017 -- Stephen T. Mohr, OSIsoft, LLC
-// MIT License
-
-// Copyright(c) 2017 Stephen Mohr and OSIsoft, LLC
+﻿// Copyright(c) 2017 - 2018 Stephen Mohr 
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +22,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Networks.Core
 {

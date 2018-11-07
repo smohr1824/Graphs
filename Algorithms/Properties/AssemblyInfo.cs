@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Algorithms")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("OSIsoft, LLC")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Algorithms")]
-[assembly: AssemblyCopyright("Copyright © 2017 OSIsoft, LLC ")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
