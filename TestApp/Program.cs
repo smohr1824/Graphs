@@ -143,7 +143,6 @@ namespace TestApp
             G.AddEdge("C", "D", 2.0F);
             G.AddEdge("D", "B", 1.0F);
             G.RemoveVertex("C");
-            int i = 0;
         }
         private static void TestLouvain()
         {
@@ -318,18 +317,18 @@ namespace TestApp
             Q.AddElementaryLayer(index, L); // control,SLTC
 
             // add interlayer edges
-            Q.AddEdge(new NodeTensor("A", "electrical,SLTC"), new NodeTensor("B", "control,SLTC"), 2);
-            Q.AddEdge(new NodeTensor("B", "electrical,SLTC"), new NodeTensor("C", "control,SLTC"), 2);
-            Q.AddEdge(new NodeTensor("C", "control,PHL"), new NodeTensor("A", "control,SLTC"), 4);
+            Q.AddEdge(new NodeLayerTuple("A", "electrical,SLTC"), new NodeLayerTuple("B", "control,SLTC"), 2);
+            Q.AddEdge(new NodeLayerTuple("B", "electrical,SLTC"), new NodeLayerTuple("C", "control,SLTC"), 2);
+            Q.AddEdge(new NodeLayerTuple("C", "control,PHL"), new NodeLayerTuple("A", "control,SLTC"), 4);
 
             // add intralayer edge
-            Q.AddEdge(new NodeTensor("D", "flow,SLTC"), new NodeTensor("E", "flow,SLTC"), 2);
+            Q.AddEdge(new NodeLayerTuple("D", "flow,SLTC"), new NodeLayerTuple("E", "flow,SLTC"), 2);
 
             // try to add edge with non-existent vertex
             try
             {
                 // layer does not exist
-                Q.AddEdge(new NodeTensor("G", "fusion,SLTC"), new NodeTensor("H", "fusion, SLTC"), 1);
+                Q.AddEdge(new NodeLayerTuple("G", "fusion,SLTC"), new NodeLayerTuple("H", "fusion, SLTC"), 1);
             }
             catch (ArgumentException)
             {
@@ -340,7 +339,7 @@ namespace TestApp
             try
             {
                 // interlayer, vertex does not exist -- vertex should NOT be added
-                Q.AddEdge(new NodeTensor("Z", "electrical,PHL"), new NodeTensor("A", "flow,PHL"), 2);
+                Q.AddEdge(new NodeLayerTuple("Z", "electrical,PHL"), new NodeLayerTuple("A", "flow,PHL"), 2);
             }
             catch (ArgumentException)
             {
@@ -350,32 +349,32 @@ namespace TestApp
             try
             {
                 // intralayer, vertex does not exist -- vertex should be added
-                Q.AddEdge(new NodeTensor("Z", "flow,SLTC"), new NodeTensor("B", "flow,SLTC"), 2);
+                Q.AddEdge(new NodeLayerTuple("Z", "flow,SLTC"), new NodeLayerTuple("B", "flow,SLTC"), 2);
             }
             catch (ArgumentException)
             {
 
             }
-            double edgeWt = Q.EdgeWeight(new NodeTensor("D", "flow,SLTC"), new NodeTensor("E", "flow,SLTC"));
-            edgeWt = Q.EdgeWeight(new NodeTensor("C", "control,PHL"), new NodeTensor("A", "control,SLTC"));
+            double edgeWt = Q.EdgeWeight(new NodeLayerTuple("D", "flow,SLTC"), new NodeLayerTuple("E", "flow,SLTC"));
+            edgeWt = Q.EdgeWeight(new NodeLayerTuple("C", "control,PHL"), new NodeLayerTuple("A", "control,SLTC"));
 
-            Dictionary<NodeTensor, float> neighbors = Q.GetNeighbors(new NodeTensor("A", "electrical,SLTC"));
-            neighbors = Q.GetNeighbors(new NodeTensor("Z", "flow,SLTC"));
-            neighbors = Q.GetNeighbors(new NodeTensor("D", "flow,SLTC"));
-            neighbors = Q.GetNeighbors(new NodeTensor("C", "electrical,PHL"));
+            Dictionary<NodeLayerTuple, float> neighbors = Q.GetNeighbors(new NodeLayerTuple("A", "electrical,SLTC"));
+            neighbors = Q.GetNeighbors(new NodeLayerTuple("Z", "flow,SLTC"));
+            neighbors = Q.GetNeighbors(new NodeLayerTuple("D", "flow,SLTC"));
+            neighbors = Q.GetNeighbors(new NodeLayerTuple("C", "electrical,PHL"));
 
-            neighbors = Q.CategoricalGetNeighbors(new NodeTensor("B", "electrical,PHL"), "process");
-            neighbors = Q.CategoricalGetNeighbors(new NodeTensor("B", "electrical,PHL"), "process", true);
+            neighbors = Q.CategoricalGetNeighbors(new NodeLayerTuple("B", "electrical,PHL"), "process");
+            neighbors = Q.CategoricalGetNeighbors(new NodeLayerTuple("B", "electrical,PHL"), "process", true);
 
-            neighbors = Q.CategoricalGetNeighbors(new NodeTensor("A", "flow,PHL"), "process");
+            neighbors = Q.CategoricalGetNeighbors(new NodeLayerTuple("A", "flow,PHL"), "process");
 
             List<string> verts = Q.UniqueVertices();
 
-           // Q.RemoveVertex(new NodeTensor("A", "control,SLTC"));
-            Q.AddVertex(new NodeTensor("S", "control,PHL"));
-            //Q.RemoveVertex(new NodeTensor("S", "control,PHL"));
+           // Q.RemoveVertex(new NodeLayerTuple("A", "control,SLTC"));
+            Q.AddVertex(new NodeLayerTuple("S", "control,PHL"));
+            //Q.RemoveVertex(new NodeLayerTuple("S", "control,PHL"));
 
-            //Q.RemoveEdge(new NodeTensor("A", "electrical,SLTC"), new NodeTensor("B", "control,SLTC"));
+            //Q.RemoveEdge(new NodeLayerTuple("A", "electrical,SLTC"), new NodeLayerTuple("B", "control,SLTC"));
            // Q.RemoveElementaryLayer(index); // remove (control, SLTC)
             string[] coord = { "electrical", "SLTC" };
             MultilayerNetworkSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\work\multilayer_test.dat");

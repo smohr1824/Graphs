@@ -28,9 +28,9 @@ using System.Threading.Tasks;
 
 namespace Networks.Core
 {
-    public class NodeTensorEqualityComparer : IEqualityComparer<NodeTensor>
+    public class NodeLayerTupleEqualityComparer : IEqualityComparer<NodeLayerTuple>
     {
-        bool IEqualityComparer<NodeTensor>.Equals(NodeTensor a, NodeTensor b)
+        bool IEqualityComparer<NodeLayerTuple>.Equals(NodeLayerTuple a, NodeLayerTuple b)
         {
             if (a.nodeId == b.nodeId)
             {
@@ -49,10 +49,10 @@ namespace Networks.Core
                 return false;
         }
 
-        int IEqualityComparer<NodeTensor>.GetHashCode(NodeTensor tensor)
+        int IEqualityComparer<NodeLayerTuple>.GetHashCode(NodeLayerTuple tuple)
         {
-            int code = tensor.nodeId.GetHashCode();
-            foreach (string coord in tensor.coordinates)
+            int code = tuple.nodeId.GetHashCode();
+            foreach (string coord in tuple.coordinates)
                 code += coord.GetHashCode();
             return code;
         }

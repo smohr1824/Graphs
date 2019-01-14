@@ -28,28 +28,35 @@ using System.Threading.Tasks;
 
 namespace Networks.Core
 {
-
-    public class NodeTensor 
+    public class ResolvedNodeLayerTupleEqualityComparer : IEqualityComparer<ResolvedNodeLayerTuple>
     {
-        public string nodeId;
-        public List<string> coordinates;
-        public NodeTensor(string id, string coords)
+        bool IEqualityComparer<ResolvedNodeLayerTuple>.Equals(ResolvedNodeLayerTuple a, ResolvedNodeLayerTuple b)
         {
-            nodeId = id;
-            coordinates = new List<string>(coords.Split(','));
+            if (a.nodeId == b.nodeId)
+            {
+                if (a.coordinates.Count() == b.coordinates.Count())
+                {
+                    for (int i = 0; i < a.coordinates.Count(); i++)
+                    {
+                        if (a.coordinates[i] != b.coordinates[i])
+                            return false;
+                    }
+                    return true;
+                }
+                else return false;
+            }
+            else
+                return false;
         }
 
-        public NodeTensor(string id, List<string> coords)
+        int IEqualityComparer<ResolvedNodeLayerTuple>.GetHashCode(ResolvedNodeLayerTuple tuple)
         {
-            nodeId = id;
-            coordinates = coords;
-        }
-
-        public override string ToString()
-        {
-            return nodeId + ":" + string.Join(",", coordinates);
+            int code = tuple.nodeId.GetHashCode();
+            string field = string.Empty;
+            foreach (int coord in tuple.coordinates)
+                field += coord.ToString();
+            code += field.GetHashCode();
+            return code;
         }
     }
-
-    
 }

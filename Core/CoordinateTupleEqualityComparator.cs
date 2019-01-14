@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 
 namespace Networks.Core
 {
-    public class CoordinateTensorEqualityComparer : IEqualityComparer<List<int>>
+    public class CoordinateTupleEqualityComparer : IEqualityComparer<List<int>>
     {
          bool IEqualityComparer<List<int>>.Equals(List<int> a, List<int> b)
         {
@@ -45,10 +45,10 @@ namespace Networks.Core
                 return false;
         }
 
-        int IEqualityComparer<List<int>>.GetHashCode(List<int> tensor)
+        int IEqualityComparer<List<int>>.GetHashCode(List<int> tuple)
         {
             string field = string.Empty;
-            foreach (int coord in tensor)
+            foreach (int coord in tuple)
                 field += coord.ToString();
             return field.GetHashCode();
         }

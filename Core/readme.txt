@@ -13,7 +13,7 @@ MultilayerNetworks
 ==================
 This implementation of generalized multilayer networks is intended for uses in which elementary layers may be developed and used independently,
 but layers and aspects may be desired to add semantic richness to the model.  Aspects are fixed at the time of network creation. Aspects are defined by string labels, 
-and layer sets within an aspect are similarly addressed by a string value.  Tensor notation is supported 
+and layer sets within an aspect are similarly addressed by a string value.  Node layer tuple notation is supported 
 for brevity and convenience.  Vertices in the multilayer network are addressed in the form <node id>:a1,a2,..,ad where a1..ad are the aspect coordinates for the d aspects.
 
 Multilayer networks may be directed or undirected.  The decision is made at the time of instantiation.  Each elementary layer added to the multilayer network 

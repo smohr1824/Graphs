@@ -71,7 +71,7 @@ namespace Networks.Core
             // TODO: turn this into a proper state machine for robustness
             string line = string.Empty;
             MultilayerNetwork retVal = null;
-            List<Tuple<NodeTensor, NodeTensor, float>> interEdges = new List<Tuple<NodeTensor, NodeTensor, float>>();
+            List<Tuple<NodeLayerTuple, NodeLayerTuple, float>> interEdges = new List<Tuple<NodeLayerTuple, NodeLayerTuple, float>>();
 
             line = MoveToNextBlock(stIn);
             uint block; 
@@ -126,16 +126,16 @@ namespace Networks.Core
                             edgeParams = SplitAndCleanInterlayer(line, delimiter);
                             if (edgeParams.Length == 3)
                             {
-                                string[] tensorParms = edgeParams[0].Split(':');
-                                NodeTensor tensorFrom = new NodeTensor(tensorParms[0], tensorParms[1]);
-                                tensorParms = edgeParams[1].Split(':');
-                                NodeTensor tensorTo = new NodeTensor(tensorParms[0], tensorParms[1]);
+                                string[] tupleParams = edgeParams[0].Split(':');
+                                NodeLayerTuple tupleFrom = new NodeLayerTuple(tupleParams[0], tupleParams[1]);
+                                tupleParams = edgeParams[1].Split(':');
+                                NodeLayerTuple tupleTo = new NodeLayerTuple(tupleParams[0], tupleParams[1]);
                                 float wt = Convert.ToSingle(edgeParams[2]);
-                                Tuple<NodeTensor, NodeTensor, float> tpl = new Tuple<NodeTensor, NodeTensor, float>(tensorFrom, tensorTo, wt);
+                                Tuple<NodeLayerTuple, NodeLayerTuple, float> tpl = new Tuple<NodeLayerTuple, NodeLayerTuple, float>(tupleFrom, tupleTo, wt);
 
                                 // If the target elementary layer exists, add the edge, otherwise, add to the list to be resolved later
-                                if (retVal.HasElementaryLayer(tensorTo.coordinates))
-                                    retVal.AddEdge(tensorFrom, tensorTo, wt);
+                                if (retVal.HasElementaryLayer(tupleTo.coordinates))
+                                    retVal.AddEdge(tupleFrom, tupleTo, wt);
                                 else
                                     interEdges.Add(tpl);
                             }
@@ -151,7 +151,7 @@ namespace Networks.Core
             // now add the accumulated interlayer edges
             // TODO: add an opportunistic test after each elementary layer is complete so as to keep the length of this list down
             // for multilayer networks with lots of interlayer edges -- perf test to find a balance of entries in list and number of elementary layers instantiated
-            foreach (Tuple<NodeTensor, NodeTensor, float> tuple in interEdges)
+            foreach (Tuple<NodeLayerTuple, NodeLayerTuple, float> tuple in interEdges)
                 retVal.AddEdge(tuple.Item1, tuple.Item2, tuple.Item3);
             return retVal;
         }

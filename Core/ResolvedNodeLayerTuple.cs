@@ -29,23 +29,23 @@ using System.Threading.Tasks;
 
 namespace Networks.Core
 {
-    internal class ResolvedNodeTensor 
+    internal class ResolvedNodeLayerTuple 
     {
         public string nodeId;
         public List<int> coordinates;
 
-        public ResolvedNodeTensor()
+        public ResolvedNodeLayerTuple()
         {
             coordinates = new List<int>();
         }
 
-        public ResolvedNodeTensor(string id, List<int> coords)
+        public ResolvedNodeLayerTuple(string id, List<int> coords)
         {
             nodeId = id;
             coordinates = coords;
         }
 
-        public bool IsSameElementaryLayer(ResolvedNodeTensor b)
+        public bool IsSameElementaryLayer(ResolvedNodeLayerTuple b)
         {
             for (int i = 0; i < coordinates.Count(); i++)
             {

@@ -41,7 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClusterSerializer.cs" />
-    <Compile Include="CoordinateTensorEqualityComparator.cs" />
+    <Compile Include="CoordinateTupleEqualityComparator.cs" />
     <Compile Include="ElementaryLayer.cs" />
     <Compile Include="GMLNetworkSerializer.cs" />
     <Compile Include="LayerSet.cs" />
@@ -49,11 +49,11 @@
     <Compile Include="MultilayerNetworkSerializer.cs" />
     <Compile Include="Network.cs" />
     <Compile Include="NetworkSerializer.cs" />
-    <Compile Include="NodeTensor.cs" />
-    <Compile Include="NodeTensorEqualityComparer.cs" />
-    <Compile Include="ResolvedNodeTensorEqualityComparer.cs" />
+    <Compile Include="NodeLayerTuple.cs" />
+    <Compile Include="NodeLayerTupleEqualityComparer.cs" />
+    <Compile Include="ResolvedNodeLayerTupleEqualityComparer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResolvedNodeTensor.cs" />
+    <Compile Include="ResolvedNodeLayerTuple.cs" />
     <Compile Include="SetEqualityComparer.cs" />
   </ItemGroup>
   <ItemGroup>

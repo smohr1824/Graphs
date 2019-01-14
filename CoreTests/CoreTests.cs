@@ -182,29 +182,29 @@ namespace CoreTests
         public void TestMultilayerSources()
         {
             MultilayerNetwork Q = MultilayerNetworkSerializer.ReadMultilayerNetworkFromFile(@"..\..\work\multilayer_test.dat", true);
-            Dictionary<NodeTensor, float> sources = Q.GetSources(new NodeTensor("B", "control,SLTC"));
+            Dictionary<NodeLayerTuple, float> sources = Q.GetSources(new NodeLayerTuple("B", "control,SLTC"));
             Assert.AreEqual(sources.Count, 5);
-            NodeTensor test = new NodeTensor("A", "control,PHL");
+            NodeLayerTuple test = new NodeLayerTuple("A", "control,PHL");
             bool check = sources.ContainsKey(test);
             float wt = sources[test];
             Assert.AreEqual(sources.ContainsKey(test), true);
             Assert.AreEqual(sources[test], 1.0F, 0.01F);
 
-            sources = Q.CategoricalGetSources(new NodeTensor("A", "control,SLTC"), "process");
+            sources = Q.CategoricalGetSources(new NodeLayerTuple("A", "control,SLTC"), "process");
             Assert.AreEqual(sources.Count, 1);
-            test = new NodeTensor("C", "control,PHL");
+            test = new NodeLayerTuple("C", "control,PHL");
             Assert.AreEqual(sources.ContainsKey(test), true);
             Assert.AreEqual(sources[test], 4.0F, 0.01F);
 
-            sources = Q.CategoricalGetSources(new NodeTensor("D", "flow,PHL"), "site");
-            test = new NodeTensor("A", "flow,PHL");
-            NodeTensor test2 = new NodeTensor("B", "control,PHL");
+            sources = Q.CategoricalGetSources(new NodeLayerTuple("D", "flow,PHL"), "site");
+            test = new NodeLayerTuple("A", "flow,PHL");
+            NodeLayerTuple test2 = new NodeLayerTuple("B", "control,PHL");
             Assert.AreEqual(sources.Count, 2);
             Assert.AreEqual(sources.ContainsKey(test), true);
             Assert.AreEqual(sources[test], 1.0F, 0.01F);
             Assert.AreEqual(sources.ContainsKey(test2), true);
 
-            Dictionary<NodeTensor, float> neighbors = Q.CategoricalGetNeighbors(new NodeTensor("A", "control,PHL"), "site");
+            Dictionary<NodeLayerTuple, float> neighbors = Q.CategoricalGetNeighbors(new NodeLayerTuple("A", "control,PHL"), "site");
             Assert.AreEqual(neighbors.Count, 6);
             Assert.AreEqual(neighbors.ContainsKey(test2), true);
         }
@@ -236,7 +236,7 @@ namespace CoreTests
             List<string> coord1 = new List<string>();
             List<string> coord2 = new List<string>();
 
-            // lowest and hightest NodeTensors
+            // lowest and hightest NodeLayerTuples
             for (int i = 0; i < aspectCt; i++)
             {
                 coord1.Add(M.Indices(M.Aspects().ElementAt(i)).ElementAt(0));
@@ -244,16 +244,16 @@ namespace CoreTests
             }
 
             int vtx = 0;
-            while (!M.HasVertex(new NodeTensor($"V{vtx}", coord1)) && vtx < M.UniqueVertices().Count())
+            while (!M.HasVertex(new NodeLayerTuple($"V{vtx}", coord1)) && vtx < M.UniqueVertices().Count())
                 vtx++;
 
-            int degree1 = M.Degree(new NodeTensor($"V{vtx}", coord1));
+            int degree1 = M.Degree(new NodeLayerTuple($"V{vtx}", coord1));
 
             int vtx2 = 0;
-            while (!M.HasVertex(new NodeTensor($"V{vtx2}", coord1)) && vtx2 < M.UniqueVertices().Count())
+            while (!M.HasVertex(new NodeLayerTuple($"V{vtx2}", coord1)) && vtx2 < M.UniqueVertices().Count())
                 vtx2++;
 
-            int degree2 = M.Degree(new NodeTensor($"V{vtx2}", coord2));
+            int degree2 = M.Degree(new NodeLayerTuple($"V{vtx2}", coord2));
 
             string testFile = "TestMulti.txt";
 
@@ -294,8 +294,8 @@ namespace CoreTests
             try
             {
                 orderPrime = MPrime.Order;
-                degree1Prime = M.Degree(new NodeTensor($"V{vtx}", coord1));
-                degree2Prime = M.Degree(new NodeTensor($"V{vtx2}", coord2));
+                degree1Prime = M.Degree(new NodeLayerTuple($"V{vtx}", coord1));
+                degree2Prime = M.Degree(new NodeLayerTuple($"V{vtx2}", coord2));
             }
             catch (Exception ex)
             {
@@ -304,8 +304,8 @@ namespace CoreTests
             }
 
             Assert.AreEqual(order, orderPrime, $"Orders do not agree");
-            Assert.AreEqual(degree1, degree1Prime, $"Degrees of lowest node tensor do not agree");
-            Assert.AreEqual(degree2, degree2Prime, $"Degrees of highest node tensor do not agree");
+            Assert.AreEqual(degree1, degree1Prime, $"Degrees of lowest node layer tuple do not agree");
+            Assert.AreEqual(degree2, degree2Prime, $"Degrees of highest node layer tuple do not agree");
             File.Delete(testFile);
             
             //
@@ -332,7 +332,7 @@ namespace CoreTests
             mNet = new MultilayerNetwork(aspects, true);
             int elementaryCt = CountCross(aspects);
 
-            // Generate a list of elementary layer tensors such that each possible permutation is created.
+            // Generate a list of elementary layer tuples such that each possible permutation is created.
             List<List<string>> coords = new List<List<string>>();
 
             for (int i = 0; i < elementaryCt; i++)
@@ -366,7 +366,7 @@ namespace CoreTests
             }
 
             // Make a random network to form the basis of each elementary layer, then add an elementary layer using the network and
-            // one of the elementary layer tensors for the previosuly created list.
+            // one of the elementary layer tuples for the previously created list.
             for (int i = 0; i < elementaryCt; i++)
             {
                 Network G = new Network(true);
@@ -385,16 +385,16 @@ namespace CoreTests
                     target = rand.Next(elementaryCt);
 
                 int srcV = rand.Next(maxVertices);
-                while (!mNet.HasVertex(new NodeTensor($"V{srcV}", coords[source])))
+                while (!mNet.HasVertex(new NodeLayerTuple($"V{srcV}", coords[source])))
                     srcV = rand.Next(maxVertices);
 
                 int tgtV = rand.Next(maxVertices);
-                while (!mNet.HasVertex(new NodeTensor($"V{tgtV}", coords[target])) || srcV == tgtV)
+                while (!mNet.HasVertex(new NodeLayerTuple($"V{tgtV}", coords[target])) || srcV == tgtV)
                     tgtV = rand.Next(maxVertices);
 
                 // If the edge already exists, skip it.
-                if (!mNet.HasEdge(new NodeTensor($"V{srcV}", coords[source]), new NodeTensor($"V{tgtV}", coords[target])))
-                    mNet.AddEdge(new NodeTensor($"V{srcV}", coords[source]), new NodeTensor($"V{tgtV}", coords[target]), 1);
+                if (!mNet.HasEdge(new NodeLayerTuple($"V{srcV}", coords[source]), new NodeLayerTuple($"V{tgtV}", coords[target])))
+                    mNet.AddEdge(new NodeLayerTuple($"V{srcV}", coords[source]), new NodeLayerTuple($"V{tgtV}", coords[target]), 1);
                 
             }
 
