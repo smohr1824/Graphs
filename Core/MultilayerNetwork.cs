@@ -91,6 +91,18 @@ namespace Networks.Core
             return nodeIdsAndLayers.Keys.ToList<string>();
         }
 
+        // This holds iff. vertices are unique across the entire network and within any given elementary layer.  This is currently a constraint of the model.
+        public bool IsNodeAligned()
+        {
+            int vertexCountGlobal = nodeIdsAndLayers.Keys.Count;
+            foreach (ElementaryLayer layer in elementaryLayers.Values)
+            {
+                if (layer.Order() != vertexCountGlobal)
+                    return false;
+            }
+            return true;
+        }
+
         #endregion
 
         #region public methods
