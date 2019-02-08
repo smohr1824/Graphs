@@ -1,6 +1,6 @@
 ﻿// MIT License
 
-// Copyright(c) 2017 - 2018 Stephen Mohr
+// Copyright(c) 2017 - 2019 Stephen Mohr
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -45,21 +45,21 @@ namespace Networks.Algorithms
         // ported from http://www.cs.rpi.edu/~magdon/LFDlabpublic.html/software/CIS/CIS.tar.gz
         // based on "Finding Overlapping Communities in Social Networks", Goldberg, Kelley, Magdon-Ismail, Mertsalov, Wallace, 2010
         // Takes a seed community (may be a single vertex) and expands it by neighboring vertices if doing so improves the community metric
-        public static void CISExpandSeed(ref HashSet<string> seed, Network G, double lambda)
+        public static void CISExpandSeed(ref HashSet<uint> seed, Network G, double lambda)
         {
-            HashSet<string> fringe = new HashSet<string>();
-            Dictionary<string, Tuple<float, float>> members = new Dictionary<string, Tuple<float, float>>();
-            Dictionary<string, Tuple<float, float>> neighbors = new Dictionary<string, Tuple<float, float>>();
+            HashSet<uint> fringe = new HashSet<uint>();
+            Dictionary<uint, Tuple<float, float>> members = new Dictionary<uint, Tuple<float, float>>();
+            Dictionary<uint, Tuple<float, float>> neighbors = new Dictionary<uint, Tuple<float, float>>();
             float seedWeightIn = 0;
             float seedWeightOut = 0;
 
-            foreach(string node in seed)
+            foreach(uint node in seed)
             {  
                 //Add members of the seed, calculating individual
                // Win and Wout measures and noting neighborhood
-                Dictionary<string, float> N = G.GetNeighbors(node);
+                Dictionary<uint, float> N = G.GetNeighbors(node);
                 float Win = 0.0F, Wout = 0.0F;
-                foreach (KeyValuePair<string, float> vertex in N)
+                foreach (KeyValuePair<uint, float> vertex in N)
                 {
                     if (seed.Contains(vertex.Key))
                     {     
@@ -79,11 +79,11 @@ namespace Networks.Algorithms
 
             }
 
-            foreach (string node in fringe)
+            foreach (uint node in fringe)
             { //Tally same information for neighborhood
-                Dictionary<string, float> N = G.GetNeighbors(node);
+                Dictionary<uint, float> N = G.GetNeighbors(node);
                 float Win = 0F, Wout = 0F;
-                foreach(KeyValuePair<string, float> vertex in N)
+                foreach(KeyValuePair<uint, float> vertex in N)
                 {
                     if (seed.Contains(vertex.Key))
                     {
@@ -105,10 +105,10 @@ namespace Networks.Algorithms
             while (changed)
             {
                 changed = false;
-                List<string> to_check = new List<string>();
-                List<HashSet<string>> order_by_degree = new List<HashSet<string>>();
+                List<uint> to_check = new List<uint>();
+                List<HashSet<uint>> order_by_degree = new List<HashSet<uint>>();
 
-                foreach (KeyValuePair<string, Tuple<float, float>> neighbor in neighbors)
+                foreach (KeyValuePair<uint, Tuple<float, float>> neighbor in neighbors)
                 {
                     int deg = G.Degree(neighbor.Key);
                     if (order_by_degree.Count() < deg + 1)
@@ -117,14 +117,14 @@ namespace Networks.Algorithms
 
                         order_by_degree.Capacity = deg + 1;
                         for (int k = 0; k < deg + 1; k++)
-                            order_by_degree.Add(new HashSet<string>());
+                            order_by_degree.Add(new HashSet<uint>());
                     }
                     order_by_degree[deg].Add(neighbor.Key);
                 }
 
                 for (int k = 0; k < order_by_degree.Count(); k++)
                 {
-                    foreach (string vertex in order_by_degree[k])
+                    foreach (uint vertex in order_by_degree[k])
                     {
                         to_check.Add(vertex);
                     }
@@ -151,9 +151,9 @@ namespace Networks.Algorithms
                         // Because the seed cluster has changed, the values of weights within the seed and going out of the seed have changed.
                         // Update the member and neighbor lists to reflect this.
 
-                        Dictionary<string, float> N = G.GetNeighbors(to_check[i]);
+                        Dictionary<uint, float> N = G.GetNeighbors(to_check[i]);
 
-                        foreach (KeyValuePair<string, float> neighbor in N)
+                        foreach (KeyValuePair<uint, float> neighbor in N)
                         {
                             Tuple<float, float> weights;
                             if (members.TryGetValue(neighbor.Key, out weights))
@@ -169,10 +169,10 @@ namespace Networks.Algorithms
                             else
                             { 
                                 // Not found in either, so add it
-                                Dictionary<string, float> N2 = G.GetNeighbors(neighbor.Key);
+                                Dictionary<uint, float> N2 = G.GetNeighbors(neighbor.Key);
 
                                 float newWin = 0F, newWout = 0F;
-                                foreach (KeyValuePair<string, float> neighbor2 in N2)
+                                foreach (KeyValuePair<uint, float> neighbor2 in N2)
                                 {
                                     Tuple<float, float> wts;
                                     if (members.TryGetValue(neighbor2.Key, out wts))
@@ -191,7 +191,7 @@ namespace Networks.Algorithms
                 to_check.Clear();
                 order_by_degree.Clear();
 
-                foreach (KeyValuePair<string, Tuple<float, float>> member in members)
+                foreach (KeyValuePair<uint, Tuple<float, float>> member in members)
                 {
                     int deg = G.Degree(member.Key);
                     if (order_by_degree.Count() < deg + 1)
@@ -199,14 +199,14 @@ namespace Networks.Algorithms
                         order_by_degree.Capacity = deg + 1;
 
                         for (int k = 0; k < deg + 1; k++)
-                            order_by_degree.Add(new HashSet<string>());
+                            order_by_degree.Add(new HashSet<uint>());
                     }
                     order_by_degree[deg].Add(member.Key);
                 }
 
                 for (int k = 0; k < order_by_degree.Count(); k++)
                 {
-                    foreach (string node in order_by_degree[k])
+                    foreach (uint node in order_by_degree[k])
                     {
                         to_check.Add(node);
                     }
@@ -229,9 +229,9 @@ namespace Networks.Algorithms
                         members.Remove(to_check[i]);
 
                         // update member and neighbor weights
-                        Dictionary<string, float> N = G.GetNeighbors(to_check[i]);
+                        Dictionary<uint, float> N = G.GetNeighbors(to_check[i]);
 
-                        foreach(KeyValuePair<string, float> neighbor in N)
+                        foreach(KeyValuePair<uint, float> neighbor in N)
                         {
                             Tuple<float, float> d2Wts;
                             if (members.TryGetValue(neighbor.Key, out d2Wts))
@@ -247,7 +247,7 @@ namespace Networks.Algorithms
                 }
 
                 //Get best component to move forward with
-                SortedDictionary<double, HashSet<string>> comps = Components(seed, G, lambda);
+                SortedDictionary<double, HashSet<uint>> comps = Components(seed, G, lambda);
                 seed = comps.First().Value;
             }
 
@@ -266,11 +266,11 @@ namespace Networks.Algorithms
         /// <param name="inclusionThreshold">decimal percentage of the overall total number of labels heard below which a given label will be excluded from the returned set of communities</param>
         /// <param name="seed">Random seed -- passing the same seed leads to the same set of communities</param>
         /// <returns></returns>
-        static public List<HashSet<string>> SLPA(Network G, int iterations, double inclusionThreshold, int seed)
+        static public List<HashSet<uint>> SLPA(Network G, int iterations, double inclusionThreshold, int seed)
         {
             Random randSrc = new Random(seed);
-            List<string> vertices = G.Vertices;
-            Dictionary<string,Dictionary<int, int>> nodeLabelMemory = new Dictionary<string, Dictionary<int, int>>();
+            List<uint> vertices = G.Vertices;
+            Dictionary<uint,Dictionary<int, int>> nodeLabelMemory = new Dictionary<uint, Dictionary<int, int>>();
 
             InitLabels(G, ref nodeLabelMemory);
 
@@ -283,13 +283,13 @@ namespace Networks.Algorithms
                 // each pass has each vertex function as a listener
                 foreach(int nodeIdx in order)
                 {
-                    Dictionary<string, float> adjacencyList = G.GetNeighbors(vertices[nodeIdx]);
+                    Dictionary<uint, float> adjacencyList = G.GetNeighbors(vertices[nodeIdx]);
 
                     // keep track of the labels sent to the listener
                     Dictionary<int, int> labelsSeen = new Dictionary<int, int>();
 
                     // iterate through all neighbors of the listener vertex
-                    foreach (string neighbor in adjacencyList.Keys)
+                    foreach (uint neighbor in adjacencyList.Keys)
                     {
                         // Obtain the labels seen by the neighbor and make a random selection weighted by the frequency seen
                         Dictionary<int, int> labelDict;
@@ -358,21 +358,21 @@ namespace Networks.Algorithms
         /// <param name="G">network to be partitioned</param>
         /// <param name="lambda">relative weighting between density measures</param>
         /// <returns>sorted dictionary of components sorted by density</returns>
-        private static SortedDictionary<double, HashSet<string>> Components(HashSet<string> seedCluster, Network G, double lambda)
+        private static SortedDictionary<double, HashSet<uint>> Components(HashSet<uint> seedCluster, Network G, double lambda)
         {
-            HashSet<string> visited = new HashSet<string>();
-            HashSet<string> seen = new HashSet<string>();
-            SortedDictionary<double, HashSet<string>> retVal = new SortedDictionary<double, HashSet<string>>();
+            HashSet<uint> visited = new HashSet<uint>();
+            HashSet<uint> seen = new HashSet<uint>();
+            SortedDictionary<double, HashSet<uint>> retVal = new SortedDictionary<double, HashSet<uint>>();
             
             // running total of edge weights within the component and from the component to outside the component
             double wIn = 0, wOut = 0;
 
-            foreach(string node in seedCluster)
+            foreach(uint node in seedCluster)
             {
                 wIn = 0;
                 wOut = 0;
-                HashSet<string> component = new HashSet<string>();
-                HashSet<string> toCheck = new HashSet<string>();
+                HashSet<uint> component = new HashSet<uint>();
+                HashSet<uint> toCheck = new HashSet<uint>();
 
                 if (seen.Contains(node))
                     continue;
@@ -381,16 +381,16 @@ namespace Networks.Algorithms
 
                 while (toCheck.Count() != 0)
                 {
-                    string first = toCheck.First();
+                    uint first = toCheck.First();
 
                     component.Add(first);
                     seen.Add(first);
 
-                    Dictionary<string, float> Neighborhood = G.GetNeighbors(first);
+                    Dictionary<uint, float> Neighborhood = G.GetNeighbors(first);
                     toCheck.Remove(first);
 
                     // expand by the neighbors of the node to check; must not have been previously seen and must be part of the seed cluster
-                    foreach(KeyValuePair<string, float> edge in Neighborhood)
+                    foreach(KeyValuePair<uint, float> edge in Neighborhood)
                     {
                         if (!seen.Contains(edge.Key) && seedCluster.Contains(edge.Key))
                         {
@@ -445,11 +445,11 @@ namespace Networks.Algorithms
         /// </summary>
         /// <param name="G">Graph</param>
         /// <param name="communityLabels">Dictionary of vertex ids and their associated dictionary of weighted labels</param>
-        private static void InitLabels(Network G, ref Dictionary<string, Dictionary<int, int>> communityLabels)
+        private static void InitLabels(Network G, ref Dictionary<uint, Dictionary<int, int>> communityLabels)
         {
-            List<string> vertices = G.Vertices;
+            List<uint> vertices = G.Vertices;
             int i = 0;
-            foreach (string id in vertices)
+            foreach (uint id in vertices)
             {
                 Dictionary<int, int> labels = new Dictionary<int, int>();
                 labels.Add(i++, 1);
@@ -465,16 +465,16 @@ namespace Networks.Algorithms
         /// <param name="threshold">Threshold [0..1.0] such that if a label's ratio of occurences to total label occurences is less than threshold, the labeled community is dropped. Threshold >= 0.5 results in disjoint communities.</param>
         /// <param name="minCommunitySize">Minimum size community to return (default is 2)</param>
         /// <returns>List of communities</returns>
-        private static List<HashSet<string>> PostProcess(Network G, Dictionary<string, Dictionary<int, int>> communityLabels, double threshold, int minCommunitySize = 2)
+        private static List<HashSet<uint>> PostProcess(Network G, Dictionary<uint, Dictionary<int, int>> communityLabels, double threshold, int minCommunitySize = 2)
         {
             foreach (Dictionary<int, int> dict in communityLabels.Values)
                 ApplyThreshold(dict, threshold);
 
             // Iterate through the surviving (significant) communities and place them in sets based on labels, i.e., assign vertices to communities
-            Dictionary<int, HashSet<string>> communities = new Dictionary<int, HashSet<string>>();
-            foreach (KeyValuePair<string, Dictionary<int, int>> vertexPair in communityLabels)
+            Dictionary<int, HashSet<uint>> communities = new Dictionary<int, HashSet<uint>>();
+            foreach (KeyValuePair<uint, Dictionary<int, int>> vertexPair in communityLabels)
             {
-                HashSet<string> community;
+                HashSet<uint> community;
                 foreach (int label in vertexPair.Value.Keys)
                 {
                     if (communities.TryGetValue(label, out community))
@@ -483,13 +483,13 @@ namespace Networks.Algorithms
                     }
                     else
                     {
-                        HashSet<string> newCommunity = new HashSet<string>();
+                        HashSet<uint> newCommunity = new HashSet<uint>();
                         newCommunity.Add(vertexPair.Key);
                         communities.Add(label, newCommunity);
                     }
                 }
             }
-            return communities.Values.Where(p=>p.Count >= minCommunitySize).ToList<HashSet<string>>();
+            return communities.Values.Where(p=>p.Count >= minCommunitySize).ToList<HashSet<uint>>();
         }
 
         /// <summary>

@@ -93,17 +93,17 @@ namespace Networks.Algorithms
             sum_nodes_w = nb_nodes;
             int sumDegree = 0;
             // get the list of vertices to aid in translating from string id to integer index
-            List<string> vertices = G.Vertices;
+            List<uint> vertices = G.Vertices;
 
             // populate the nodes, links, and weights collections
             for (int i = 0; i < G.Order; i++)
             {
-                string vertex = vertices[i];
+                uint vertex = vertices[i];
                 nodes_w.Add(1);
                 sumDegree += G.Degree(vertex);
                 degrees.Add((ulong)sumDegree);
-                Dictionary<string, float> neighbors = G.GetNeighbors(vertex);
-                foreach (KeyValuePair<string, float> kvp in neighbors)
+                Dictionary<uint, float> neighbors = G.GetNeighbors(vertex);
+                foreach (KeyValuePair<uint, float> kvp in neighbors)
                 {
                     links.Add(vertices.IndexOf(kvp.Key));
                     weights.Add(kvp.Value);

@@ -1,6 +1,6 @@
 ﻿// MIT License
 
-// Copyright(c) 2017 Stephen Mohr
+// Copyright(c) 2017 - 2019 Stephen Mohr
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ namespace Networks.Core
                 if (ct == 1)
                 {
                     // vertex only, so just add it
-                    retVal.AddVertex(fields[0]);
+                    retVal.AddVertex(Convert.ToUInt32(fields[0]));
                     continue;
                 }
                 if (ct > 3)
@@ -70,14 +70,14 @@ namespace Networks.Core
                 }
                 if (ct == 2 && fields[1] == "")
                 {
-                    retVal.AddVertex(fields[0]);
+                    retVal.AddVertex(Convert.ToUInt32(fields[0]));
                     continue;
                 }
 
                 if (ct == 2 && fields[0] == "")
                     continue;
 
-                retVal.AddEdge(fields[0], fields[1], wt);
+                retVal.AddEdge(Convert.ToUInt32(fields[0]), Convert.ToUInt32(fields[1]), wt);
             }
 
             return retVal;
@@ -96,7 +96,7 @@ namespace Networks.Core
         /// <param name="vertices">vertiex ids</param>
         /// <param name="weights">adjacency matrix</param>
         /// <param name="filename">name of file (fully qualified)</param>
-        public static void WriteAdjacencyMatrixToGephiFile(List<string> vertices, float[,] weights, string filename)
+        public static void WriteAdjacencyMatrixToGephiFile(List<uint> vertices, float[,] weights, string filename)
         {
             if (vertices == null)
                 throw new ArgumentNullException("Vertex list must be non-null");
@@ -127,7 +127,7 @@ namespace Networks.Core
         /// <param name="writer">Instantiated writer (file, typically, can be memory stream or other</param>
         /// <param name="vertices">List of vertex ids</param>
         /// <param name="weights">adjacency matrix to write</param>
-        public static void WriteMatrixForGephi(TextWriter writer, List<string> vertices, float[,] weights)
+        public static void WriteMatrixForGephi(TextWriter writer, List<uint> vertices, float[,] weights)
         {
             // writer the columns
             for (int i = 0; i < vertices.Count; i++)

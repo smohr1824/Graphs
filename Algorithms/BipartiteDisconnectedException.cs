@@ -1,6 +1,6 @@
 ﻿// MIT License
 
-// Copyright(c) 2017 - 2019 Stephen Mohr
+// Copyright(c) 2019 Stephen Mohr
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Networks.Core
+namespace Networks.Algorithms
 {
-
-    /// <summary>
-    ///  Used with LINQ Distinct to compare two sets and determine if they have the same members
-    /// </summary>
-    public class SetEqualityComparer : IEqualityComparer<HashSet<uint>>
+    public class BipartiteDisconnectedException : Exception
     {
-        bool  IEqualityComparer<HashSet<uint>>.Equals(HashSet<uint> x, HashSet<uint> y)
+        public BipartiteDisconnectedException() : base(@"Graph is disconnected")
         {
-            if (x.Count() == y.Count())
-            {
-                foreach (uint item in x)
-                {
-                    if (!y.Contains(item))
-                        return false;
-                }
-                return true;
-            }
-            else
-                return false;
-        }
 
-        int IEqualityComparer<HashSet<uint>>.GetHashCode(HashSet<uint> set)
-        {
-            int code = 0;
-            foreach (uint member in set)
-                code += member.GetHashCode();
-            return code;
         }
     }
 }

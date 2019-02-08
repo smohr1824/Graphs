@@ -1,6 +1,6 @@
 ﻿//// MIT License
 
-// Copyright(c) 2017 - 2018 Stephen Mohr
+// Copyright(c) 2017 - 2019 Stephen Mohr
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Networks.Core
 {
@@ -43,13 +41,13 @@ namespace Networks.Core
         private Dictionary<List<int>, ElementaryLayer> elementaryLayers;
 
         // concordance of vertex ids and the elementary layers in which they appear
-        private Dictionary<string, List<ElementaryLayer>> nodeIdsAndLayers;
+        private Dictionary<uint, List<ElementaryLayer>> nodeIdsAndLayers;
 
         public MultilayerNetwork(IEnumerable<Tuple<string, IEnumerable<string>>> dimensions, bool isdirected = true)
         {
             aspects = new List<string>();
             indices = new List<List<string>>();
-            nodeIdsAndLayers = new Dictionary<string, List<ElementaryLayer>>();
+            nodeIdsAndLayers = new Dictionary<uint, List<ElementaryLayer>>();
             elementaryLayers = new Dictionary<List<int>, ElementaryLayer>(new CoordinateTupleEqualityComparer());
 
             directed = isdirected;
@@ -86,9 +84,9 @@ namespace Networks.Core
 
         }
         // lists all the vertices in the multilayer network once, i.e., does not worry about how often a vertex appears in elementary layers
-        public List<string> UniqueVertices()
+        public List<uint> UniqueVertices()
         {
-            return nodeIdsAndLayers.Keys.ToList<string>();
+            return nodeIdsAndLayers.Keys.ToList();
         }
 
         // This holds iff. vertices are unique across the entire network and within any given elementary layer.  This is currently a constraint of the model.
@@ -685,10 +683,10 @@ namespace Networks.Core
         /// </remarks>
         private bool AddElementaryNetworkToMultiLayerNetwork(List<int> coords, Network G)
         {
-            List<string> inVertices = G.Vertices;
+            List<uint> inVertices = G.Vertices;
             ElementaryLayer layer = new ElementaryLayer(this, G, coords);
 
-            foreach (string vertex in inVertices)
+            foreach (uint vertex in inVertices)
             {
                 if (nodeIdsAndLayers.ContainsKey(vertex))
                 {
@@ -721,9 +719,9 @@ namespace Networks.Core
             if (ElementaryLayerExists(resolved))
             {
                 ElementaryLayer layer = elementaryLayers[resolved];
-                List<string> vertices = layer.Vertices;
+                List<uint> vertices = layer.Vertices;
 
-                foreach (string vertex in vertices)
+                foreach (uint vertex in vertices)
                 {
                     if (nodeIdsAndLayers.Keys.Contains(vertex))
                     {

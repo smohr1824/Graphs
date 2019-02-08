@@ -1,6 +1,6 @@
 ﻿// MIT License
 
-// Copyright(c) 2017 - 2018 Stephen Mohr 
+// Copyright(c) 2017 - 2019 Stephen Mohr 
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,26 +20,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Networks.Core
 {
 
     public class NodeLayerTuple 
     {
-        public string nodeId;
+        public uint nodeId;
         public List<string> coordinates;
-        public NodeLayerTuple(string id, string coords)
+        public NodeLayerTuple(uint id, string coords)
         {
             nodeId = id;
             coordinates = new List<string>(coords.Split(','));
         }
 
-        public NodeLayerTuple(string id, List<string> coords)
+        public NodeLayerTuple(uint id, List<string> coords)
         {
             nodeId = id;
             coordinates = coords;
@@ -47,7 +43,7 @@ namespace Networks.Core
 
         public override string ToString()
         {
-            return nodeId + ":" + string.Join(",", coordinates);
+            return nodeId + " : " + string.Join(",", coordinates);
         }
     }
 

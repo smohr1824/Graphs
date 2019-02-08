@@ -48,9 +48,9 @@ namespace Networks.Algorithms
         /// <returns>true if G is bipartite, false otherwise. If bipartite, the two disjoint sets of vertices are returned.</returns>
         /// <remarks>If G has disconnected vertices, Red.Count() + Blue.Count() will be less than G.Order as the vertices will not be visited and may be included in either disjoint set</remarks>
         /// 
-        public static bool IsBipartite(Network G, out List<string> Red, out List<string> Blue)
+        public static bool IsBipartite(Network G, out List<uint> Red, out List<uint> Blue)
         {
-            string start = G.StartingVertex();
+            uint start = G.StartingVertex();
 
             // check for disconnected vertices
             if ((G.Directed && G.OutDegree(start) == 0) || (!G.Directed && G.Degree(start) == 0))
@@ -61,18 +61,13 @@ namespace Networks.Algorithms
         }
 
         #region private methods
-        private static bool IsBipartite(string start, Network G, out List<string> Red, out List<string> Blue)
+        private static bool IsBipartite(uint start, Network G, out List<uint> Red, out List<uint> Blue)
         {
-            Red = new List<string>();
-            Blue = new List<string>();
+            Red = new List<uint>();
+            Blue = new List<uint>();
 
-            // basic error check, plus traps the edge case of a network with no edges (completely disconnected)
-            // FindConnectedVertex when coming from the overload of this method will return string.Empty in such a case
-            if (start == string.Empty)
-                return false;
-
-            Queue<string> tovisit = new Queue<string>();
-            Dictionary<string, color> coloring = new Dictionary<string, color>(G.Order);
+            Queue<uint> tovisit = new Queue<uint>();
+            Dictionary<uint, color> coloring = new Dictionary<uint, color>(G.Order);
 
             // BFS traversal of the network
             coloring[start] = color.red;
@@ -81,7 +76,7 @@ namespace Networks.Algorithms
 
             while (tovisit.Count() != 0)
             {
-                string parent = tovisit.Dequeue();
+                uint parent = tovisit.Dequeue();
                 color parentColor = coloring[parent];
                 color tocolor = color.uncolored;
                 if (parentColor == color.red)
@@ -89,14 +84,14 @@ namespace Networks.Algorithms
                 else
                     tocolor = color.red;
 
-                Dictionary<string, float> neighbors = G.GetNeighbors(parent);
+                Dictionary<uint, float> neighbors = G.GetNeighbors(parent);
 
                 // this is painful, but necessary to ensure reachability in directed graphs
                 // Petri nets do not have this problem, but we are trying for generality here
                 if (G.Directed)
                 {
-                    Dictionary<string, float> predecessors = G.GetSources(parent);
-                    foreach (KeyValuePair<string, float> kvp in predecessors)
+                    Dictionary<uint, float> predecessors = G.GetSources(parent);
+                    foreach (KeyValuePair<uint, float> kvp in predecessors)
                     {
                         neighbors.Add(kvp.Key, kvp.Value);
                     }
@@ -104,7 +99,7 @@ namespace Networks.Algorithms
 
                 // check for conflicts in coloring between parent and child
                 // do the coloring otpimistically and compose the lists for the two disjoint sets
-                foreach (string vertex in neighbors.Keys)
+                foreach (uint vertex in neighbors.Keys)
                 {
                     color childColor = new color();
                     if (!coloring.TryGetValue(vertex, out childColor))
@@ -134,23 +129,28 @@ namespace Networks.Algorithms
         // Now we're down in the weeds
         // If a starting point is a disconnected vertex, traverse the list of vertices until a vertex with at least
         // one adjacent vertex is found.
-        private static string FindConnectedVertex(Network G)
+        private static uint FindConnectedVertex(Network G)
         {
-            List<string> vertices = G.Vertices;
+            List<uint> vertices = G.Vertices;
 
-            string retVal = string.Empty;
+            uint retVal = 0;
+            bool foundOne = false;
 
-            foreach (string vertex in vertices)
+            foreach (uint vertex in vertices)
             {
 
                 if ((G.Directed && G.OutDegree(vertex) > 0) || (!G.Directed && G.Degree(vertex) > 0))
                 {
                     retVal = vertex;
+                    foundOne = true;
                     break;
                 }
             }
 
-            return retVal;
+            if (foundOne)
+                return retVal;
+            else
+                throw new BipartiteDisconnectedException();
         }
 
         #endregion

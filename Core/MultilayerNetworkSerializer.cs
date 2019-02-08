@@ -127,9 +127,9 @@ namespace Networks.Core
                             if (edgeParams.Length == 3)
                             {
                                 string[] tupleParams = edgeParams[0].Split(':');
-                                NodeLayerTuple tupleFrom = new NodeLayerTuple(tupleParams[0], tupleParams[1]);
+                                NodeLayerTuple tupleFrom = new NodeLayerTuple(Convert.ToUInt32(tupleParams[0]), tupleParams[1]);
                                 tupleParams = edgeParams[1].Split(':');
-                                NodeLayerTuple tupleTo = new NodeLayerTuple(tupleParams[0], tupleParams[1]);
+                                NodeLayerTuple tupleTo = new NodeLayerTuple(Convert.ToUInt32(tupleParams[0]), tupleParams[1]);
                                 float wt = Convert.ToSingle(edgeParams[2]);
                                 Tuple<NodeLayerTuple, NodeLayerTuple, float> tpl = new Tuple<NodeLayerTuple, NodeLayerTuple, float>(tupleFrom, tupleTo, wt);
 

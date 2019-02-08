@@ -299,7 +299,7 @@ namespace Networks.Algorithms
         /// <param name="communities">List of HashSets denoting members of communities.  On the first pass, each vertex of the network occupies its own community.
         /// On subsequent passes, the existing communities are merged to reflect the new communties and the resulting list is returned.</param>
         /// <returns>List of hash sets of strings denoting the members of the current iteratrion's communities.</returns>
-        public List<HashSet<string>> display_partition(List<HashSet<string>> communities)
+        public List<HashSet<uint>> display_partition(List<HashSet<uint>> communities)
         {
             List<int> renumber = new List<int>(); 
             for (int node = 0; node < qual.size; node++)
@@ -318,11 +318,11 @@ namespace Networks.Algorithms
                 if (renumber[i] != -1)
                     renumber[i] = end++;
 
-            List<HashSet<string>> retVal = new List<HashSet<string>>();
+            List<HashSet<uint>> retVal = new List<HashSet<uint>>();
 
             int commCt = qual.n2c.Max() + 1;
             for (int i = 0; i < commCt; i++)
-                retVal.Add(new HashSet<string>());
+                retVal.Add(new HashSet<uint>());
 
             for (int i = 0; i < qual.size; i++)
             {

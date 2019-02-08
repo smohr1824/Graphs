@@ -1,6 +1,6 @@
 ﻿// MIT License
 
-// Copyright(c) 2017 - 2018 Stephen Mohr
+// Copyright(c) 2017 - 2019 Stephen Mohr
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ namespace Networks.Core
 {
     internal class ResolvedNodeLayerTuple 
     {
-        public string nodeId;
+        public uint nodeId;
         public List<int> coordinates;
 
         public ResolvedNodeLayerTuple()
@@ -39,7 +39,7 @@ namespace Networks.Core
             coordinates = new List<int>();
         }
 
-        public ResolvedNodeLayerTuple(string id, List<int> coords)
+        public ResolvedNodeLayerTuple(uint id, List<int> coords)
         {
             nodeId = id;
             coordinates = coords;

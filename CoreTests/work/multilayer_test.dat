@@ -3,49 +3,49 @@ process: electrical,flow,control
 site: PHL,SLTC
 
 :Layer (electrical,PHL)
-A|B|1
-A|C|1
-B|C|1
-C
+1|2|1
+1|3|1
+2|3|1
+3
 
 :Layer (flow,PHL)
-A|D|1
-A|E|1
-D
-E
+1|4|1
+1|5|1
+4
+5
 
 :Layer (control,PHL)
-A|B|1
-A|C|1
-B|D|1
-C|E|1
-D
-E
-S
+1|2|1
+1|3|1
+2|4|1
+3|5|1
+4
+5
+19
 :Interlayer edges
-C:control,PHL|A:control,SLTC|4
+3:control,PHL|1:control,SLTC|4
 
 :Layer (electrical,SLTC)
-A|B|1
-A|C|1
-B|C|1
-C
+1|2|1
+1|3|1
+2|3|1
+3
 :Interlayer edges
-A:electrical,SLTC|B:control,SLTC|2
-B:electrical,SLTC|C:control,SLTC|2
+1:electrical,SLTC|2:control,SLTC|2
+2:electrical,SLTC|3:control,SLTC|2
 
 :Layer (flow,SLTC)
-A|D|1
-A|E|1
-D|E|2
-E
-Z|B|2
-B
+1|4|1
+1|5|1
+4|5|2
+5
+26|2|2
+2
 
 :Layer (control,SLTC)
-A|B|1
-A|C|1
-B|D|1
-C|E|1
-D
-E
+1|2|1
+1|3|1
+2|4|1
+3|5|1
+4
+5

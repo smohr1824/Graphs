@@ -56,15 +56,15 @@ namespace Networks.Algorithms
         /// <param name="metric">which quality metric class to use</param>
         /// <param name="improvement">improvement threshold</param>
         /// <returns></returns>
-        public static List<HashSet<string>> Louvain(Network G, LouvainMetric metric, double improvement = 0.000001)
+        public static List<HashSet<uint>> Louvain(Network G, LouvainMetric metric, double improvement = 0.000001)
         {
-            List<HashSet<string>> retVal = new List<HashSet<string>>();
+            List<HashSet<uint>> retVal = new List<HashSet<uint>>();
             LouvainGraph g = new LouvainGraph(G);
             ushort nb_calls = 1;
-            List<string> vertices = G.Vertices;
+            List<uint> vertices = G.Vertices;
             for (int i = 0; i < G.Order; i++)
             {
-                retVal.Add(new HashSet<string>());
+                retVal.Add(new HashSet<uint>());
                 retVal[i].Add(vertices[i]);
             }
 
@@ -101,15 +101,15 @@ namespace Networks.Algorithms
         /// <param name="resolution">theoretically on the range -1..1, but typically 0.5..1, with r=1 equivalent to the Modularity metric</param>
         /// <param name="improvement">minimum improvement threshold to continue</param>
         /// <returns></returns>
-        public static List<HashSet<string>> Louvain(Network G, double resolution, double improvement = 0.000001)
+        public static List<HashSet<uint>> Louvain(Network G, double resolution, double improvement = 0.000001)
         {
-            List<HashSet<string>> retVal = new List<HashSet<string>>();
+            List<HashSet<uint>> retVal = new List<HashSet<uint>>();
             LouvainGraph g = new LouvainGraph(G);
             ushort nb_calls = 1;
-            List<string> vertices = G.Vertices;
+            List<uint> vertices = G.Vertices;
             for (int i = 0; i < G.Order; i++)
             {
-                retVal.Add(new HashSet<string>());
+                retVal.Add(new HashSet<uint>());
                 retVal[i].Add(vertices[i]);
             }
 

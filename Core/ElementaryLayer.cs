@@ -1,6 +1,6 @@
 ﻿// MIT License
 
-// Copyright(c) 2017 - 2018 Stephen Mohr
+// Copyright(c) 2017 - 2019 Stephen Mohr
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Networks.Core
 {
@@ -48,7 +46,7 @@ namespace Networks.Core
             layerCoordinates = coordinates;
         }
 
-        public List<string> Vertices
+        public List<uint> Vertices
         {
             get { return G.Vertices;  }
         }
@@ -89,12 +87,12 @@ namespace Networks.Core
             return G.Clone();
         }
 
-        public bool HasVertex(string vertex)
+        public bool HasVertex(uint vertex)
         {
             return G.HasVertex(vertex);
         }
 
-        public void AddVertex(string vertex)
+        public void AddVertex(uint vertex)
         {
             G.AddVertex(vertex);
         }
@@ -104,12 +102,12 @@ namespace Networks.Core
             return G.Order;
         }
 
-        public int Degree(string vertex)
+        public int Degree(uint vertex)
         {
             return G.Degree(vertex);
         }
 
-        internal int InterLayerDegree(string vertex)
+        internal int InterLayerDegree(uint vertex)
         {
             if (!HasVertex(vertex))
                 throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
@@ -136,7 +134,7 @@ namespace Networks.Core
             }
         }
 
-        internal int InDegree(string vertex)
+        internal int InDegree(uint vertex)
         {
             ResolvedNodeLayerTuple tuple = new ResolvedNodeLayerTuple();
             tuple.nodeId = vertex;
@@ -159,7 +157,7 @@ namespace Networks.Core
             return retVal;
         }
 
-        internal int OutDegree(string vertex)
+        internal int OutDegree(uint vertex)
         {
             ResolvedNodeLayerTuple tuple = new ResolvedNodeLayerTuple();
             tuple.nodeId = vertex;
@@ -182,7 +180,7 @@ namespace Networks.Core
             return retVal;
         }
 
-        public void RemoveVertex(string vertex)
+        public void RemoveVertex(uint vertex)
         {
             // remove from the network
             G.RemoveVertex(vertex);
@@ -309,19 +307,19 @@ namespace Networks.Core
                 
         }
 
-        internal Dictionary<NodeLayerTuple, float> GetNeighbors(string vertex)
+        internal Dictionary<NodeLayerTuple, float> GetNeighbors(uint vertex)
         {
             if (!HasVertex(vertex))
                 throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
 
             Dictionary<NodeLayerTuple, float> retVal = new Dictionary<NodeLayerTuple, float>();
 
-            Dictionary<string, float> graphNeighbors = G.GetNeighbors(vertex);
+            Dictionary<uint, float> graphNeighbors = G.GetNeighbors(vertex);
 
             List<string> layerAspectCoords = M.UnaliasCoordinates(layerCoordinates);
 
             // get the neighbors in the layer
-            foreach (string node in graphNeighbors.Keys)
+            foreach (uint node in graphNeighbors.Keys)
             {
                 NodeLayerTuple local = new NodeLayerTuple(node, layerAspectCoords);
                 retVal.Add(local, graphNeighbors[node]);
@@ -342,19 +340,19 @@ namespace Networks.Core
             return retVal;
         }
 
-        internal Dictionary<NodeLayerTuple, float> GetSources(string vertex)
+        internal Dictionary<NodeLayerTuple, float> GetSources(uint vertex)
         {
             if (!HasVertex(vertex))
                 throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
 
             Dictionary<NodeLayerTuple, float> retVal = new Dictionary<NodeLayerTuple, float>();
 
-            Dictionary<string, float> graphSources = G.GetSources(vertex);
+            Dictionary<uint, float> graphSources = G.GetSources(vertex);
 
             List<string> layerAspectCoords = M.UnaliasCoordinates(layerCoordinates);
 
             // get the neighbors in the layer
-            foreach (string node in graphSources.Keys)
+            foreach (uint node in graphSources.Keys)
             {
                 NodeLayerTuple local = new NodeLayerTuple(node, layerAspectCoords);
                 retVal.Add(local, graphSources[node]);
@@ -386,7 +384,7 @@ namespace Networks.Core
                 Dictionary<ResolvedNodeLayerTuple, float> targets = EdgeList[from];
                 foreach (ResolvedNodeLayerTuple to in targets.Keys)
                 {
-                    writer.WriteLine(from.nodeId + ":" + string.Join(",", M.UnaliasCoordinates(from.coordinates)) + delimiter + to.nodeId + ":" + string.Join(",", M.UnaliasCoordinates(to.coordinates)) + delimiter + targets[to].ToString());
+                    writer.WriteLine(from.nodeId.ToString() + ":" + string.Join(",", M.UnaliasCoordinates(from.coordinates)) + delimiter + to.nodeId.ToString() + ":" + string.Join(",", M.UnaliasCoordinates(to.coordinates)) + delimiter + targets[to].ToString());
                 }
             }
         }

@@ -1,6 +1,6 @@
 ﻿// MIT License
 
-// Copyright(c) 2017 - 2018 Stephen Mohr
+// Copyright(c) 2017 - 2019 Stephen Mohr
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Networks.Core;
 using Networks.Algorithms;
 
@@ -46,13 +44,13 @@ namespace TestApp
             //TestLouvainResolution();
             //return;
             //TestRemove();
-            //TestCommunityDetection();
+            TestCommunityDetection();
             //TestGephiOutput();
             //TestBig();
             //TestNewAdj();
             //WriteGML();
             //TestEdgeWeight();
-            TestBigBipartite();
+            //TestBigBipartite();
             return;
 
 
@@ -63,7 +61,7 @@ namespace TestApp
             Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\python_reqs.csv", true, ',');
             Console.WriteLine($"Read {G.Order} vertices");
             DateTime start = DateTime.Now;
-            List<HashSet<string>> communities = CommunityDetection.SLPA(G, 20, .4, 123456);
+            List<HashSet<uint>> communities = CommunityDetection.SLPA(G, 20, .4, 123456);
             DateTime end = DateTime.Now;
             TimeSpan dur = end - start;
             Console.WriteLine($"Found {communities.Count} in {dur.TotalSeconds} seconds");
@@ -74,25 +72,31 @@ namespace TestApp
         {
             Random rnd = new Random();
             Network G = new Network(true);
+            Dictionary<string, uint> concordance = new Dictionary<string, uint>();
+            for (uint i = 0; i < 100000; i++)
+            {
+                concordance.Add($"{i}A", (uint)i);
+                concordance.Add($"A{i}", (uint)i +100000);
+            }
             long start = DateTime.UtcNow.Ticks;
             for (int i = 0; i < 100000; i++)
             {
                 int degree = rnd.Next(21); // up to 20 additional edges
                 string id = i.ToString();
                 // make a graph in which numbers first nodes are matched to "A"+ numbers second nodes, hence known bipartite
-                G.AddEdge(id + "A", "A" + id, 1.0F);
+                G.AddEdge(concordance[id + "A"], concordance["A" + id], 1.0F);
                 // make degree edges while maintaining the bipartite nature -- goal is to compare to concurrent version, so must have enough neighbors to make it worthwhile
                 for (int j = 0; j < degree; j++)
                 {
                     int right = rnd.Next(100000);
-                    G.AddEdge(id + "A", "A" + right.ToString(), 1.0F);
+                    G.AddEdge(concordance[id + "A"], concordance["A" + right.ToString()], 1.0F);
                 }
             }
             long end = DateTime.UtcNow.Ticks;
             Console.WriteLine($"Building 200,000 node graph took {(end - start) / 10000} milliseconds");
 
-            List<string> R = null;
-            List<string> B = null;
+            List<uint> R = null;
+            List<uint> B = null;
             bool res = false;
             start = DateTime.UtcNow.Ticks;
             res = Bipartite.IsBipartite(G, out R, out B);
@@ -104,9 +108,9 @@ namespace TestApp
             Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\newadjtest.dat", false);
             Console.WriteLine($"Read {G.Order} vertices");
             Console.WriteLine($"Edge count is {G.Size}");
-            Dictionary<string, float> nghrs = G.GetNeighbors("D");
-            Console.Write(@"Neighbors of D: ");
-            foreach (KeyValuePair<string, float> kvp in nghrs)
+            Dictionary<uint, float> nghrs = G.GetNeighbors(4);
+            Console.Write(@"Neighbors of 4: ");
+            foreach (KeyValuePair<uint, float> kvp in nghrs)
             {
                 Console.Write(kvp.Key + " ");
             }
@@ -120,16 +124,16 @@ namespace TestApp
             Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\hasedgestest.dat", false);
             Console.WriteLine($"Read graph with {G.Order} vertices and {G.Size} edges");
 
-            if (!G.HasEdge("C", "A"))
+            if (!G.HasEdge(3, 1))
             {
                 Console.WriteLine(@"Well, shoot, that's bad...");
                 return;
             }
             else
             {
-                float wt = G.EdgeWeight("C", "A");
-                wt = G.EdgeWeight("A", "B");
-                bool test = G.HasEdge("A", "B");
+                float wt = G.EdgeWeight(3, 1);
+                wt = G.EdgeWeight(1, 2);
+                bool test = G.HasEdge(1, 2);
             }
 
         }
@@ -137,18 +141,18 @@ namespace TestApp
         private static void TestRemove()
         {
             Network G = new Network(false);
-            G.AddEdge("A", "B", 1.0F);
-            G.AddEdge("B", "C", 2.0F);
-            G.AddEdge("B", "D", 3.0F);
-            G.AddEdge("C", "D", 2.0F);
-            G.AddEdge("D", "B", 1.0F);
-            G.RemoveVertex("C");
+            G.AddEdge(1, 2, 1.0F);
+            G.AddEdge(2, 3, 2.0F);
+            G.AddEdge(2, 4, 3.0F);
+            G.AddEdge(3, 4, 2.0F);
+            G.AddEdge(4, 2, 1.0F);
+            G.RemoveVertex(3);
         }
         private static void TestLouvain()
         {
             Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\louvain_prime.dat", false);
 
-            List<HashSet<string>> res = CommunityDetection.Louvain(G, LouvainMetric.Modularity);
+            List<HashSet<uint>> res = CommunityDetection.Louvain(G, LouvainMetric.Modularity);
             res = CommunityDetection.Louvain(G, LouvainMetric.Goldberg);
 
             Console.ReadLine();
@@ -158,7 +162,7 @@ namespace TestApp
         {
             Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\louvain_prime.dat", false);
 
-            List<HashSet<string>> res = CommunityDetection.Louvain(G, 0.5);
+            List<HashSet<uint>> res = CommunityDetection.Louvain(G, 0.5);
             res = CommunityDetection.Louvain(G, 0.6);
             res = CommunityDetection.Louvain(G, 0.7);
             res = CommunityDetection.Louvain(G, 0.8);
@@ -178,7 +182,7 @@ namespace TestApp
         {
             Network G = new Network(false);
 
-            HashSet<HashSet<string>> seeds = null;
+            HashSet<HashSet<uint>> seeds = null;
             try
             {
                 G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\displays2.dat", false);
@@ -196,19 +200,19 @@ namespace TestApp
                 return;
             }
 
-            Dictionary<string, float> sources = G.GetSources("5");
+            Dictionary<uint, float> sources = G.GetSources(5);
 
             NetworkSerializer.WriteNetworkToFile(G, @"..\..\work\nettest.out");
-            List<HashSet<string>> communities = CommunityDetection.SLPA(G, 20, 0.3, DateTime.Now.Millisecond);
-            IEnumerable<HashSet<string>> unique = communities.Distinct(new SetEqualityComparer());
+            List<HashSet<uint>> communities = CommunityDetection.SLPA(G, 20, 0.3, DateTime.Now.Millisecond);
+            IEnumerable<HashSet<uint>> unique = communities.Distinct(new SetEqualityComparer());
             Console.WriteLine($"Found {unique.Count()} communities via SLPA in a graph of {G.Order} vertices, writing to slpa.out");
             Console.ReadLine();
 
             ClusterSerializer.WriteClustersToFileByLine(unique, @"..\..\work\slpa.out");
-            List<HashSet<string>> expanded = new List<HashSet<string>>();
+            List<HashSet<uint>> expanded = new List<HashSet<uint>>();
             for (int i = 0; i< unique.Count(); i++)
             {
-                HashSet < string > work = unique.ElementAt(i);
+                HashSet < uint > work = unique.ElementAt(i);
                 CommunityDetection.CISExpandSeed(ref work, G, 0.5);
                 expanded.Add(work);
             }
@@ -218,21 +222,21 @@ namespace TestApp
             Console.ReadLine();
             ClusterSerializer.WriteClustersToFileByLine(unique, @"..\..\work\slpa_cis.out");
 
-            seeds = new HashSet<HashSet<string>>();
-            foreach (string vertex in G.Vertices)
+            seeds = new HashSet<HashSet<uint>>();
+            foreach (uint vertex in G.Vertices)
             {
-                HashSet<string> seed = new HashSet<string>();
+                HashSet<uint> seed = new HashSet<uint>();
                 seed.Add(vertex);
                 seeds.Add(seed);
 
             }
             for (int i = 0; i < seeds.Count(); i++)
             {
-                HashSet<string> seed = seeds.ElementAt(i);
+                HashSet<uint> seed = seeds.ElementAt(i);
                 CommunityDetection.CISExpandSeed(ref seed, G, 0.5);
             }
 
-            IEnumerable<HashSet<string>> best = seeds.Distinct<HashSet<string>>(new SetEqualityComparer());
+            IEnumerable<HashSet<uint>> best = seeds.Distinct<HashSet<uint>>(new SetEqualityComparer());
             Console.WriteLine($"Found {best.Count()} communities with CIS, writing to cis.out");
             Console.ReadLine();
             ClusterSerializer.WriteClustersToFileByLine(best, @"..\..\work\cis.out");
@@ -317,18 +321,18 @@ namespace TestApp
             Q.AddElementaryLayer(index, L); // control,SLTC
 
             // add interlayer edges
-            Q.AddEdge(new NodeLayerTuple("A", "electrical,SLTC"), new NodeLayerTuple("B", "control,SLTC"), 2);
-            Q.AddEdge(new NodeLayerTuple("B", "electrical,SLTC"), new NodeLayerTuple("C", "control,SLTC"), 2);
-            Q.AddEdge(new NodeLayerTuple("C", "control,PHL"), new NodeLayerTuple("A", "control,SLTC"), 4);
+            Q.AddEdge(new NodeLayerTuple(1, "electrical,SLTC"), new NodeLayerTuple(2, "control,SLTC"), 2);
+            Q.AddEdge(new NodeLayerTuple(2, "electrical,SLTC"), new NodeLayerTuple(3, "control,SLTC"), 2);
+            Q.AddEdge(new NodeLayerTuple(3, "control,PHL"), new NodeLayerTuple(1, "control,SLTC"), 4);
 
             // add intralayer edge
-            Q.AddEdge(new NodeLayerTuple("D", "flow,SLTC"), new NodeLayerTuple("E", "flow,SLTC"), 2);
+            Q.AddEdge(new NodeLayerTuple(4, "flow,SLTC"), new NodeLayerTuple(5, "flow,SLTC"), 2);
 
             // try to add edge with non-existent vertex
             try
             {
                 // layer does not exist
-                Q.AddEdge(new NodeLayerTuple("G", "fusion,SLTC"), new NodeLayerTuple("H", "fusion, SLTC"), 1);
+                Q.AddEdge(new NodeLayerTuple(7, "fusion,SLTC"), new NodeLayerTuple(8, "fusion, SLTC"), 1);
             }
             catch (ArgumentException)
             {
@@ -339,7 +343,7 @@ namespace TestApp
             try
             {
                 // interlayer, vertex does not exist -- vertex should NOT be added
-                Q.AddEdge(new NodeLayerTuple("Z", "electrical,PHL"), new NodeLayerTuple("A", "flow,PHL"), 2);
+                Q.AddEdge(new NodeLayerTuple(26, "electrical,PHL"), new NodeLayerTuple(1, "flow,PHL"), 2);
             }
             catch (ArgumentException)
             {
@@ -349,32 +353,32 @@ namespace TestApp
             try
             {
                 // intralayer, vertex does not exist -- vertex should be added
-                Q.AddEdge(new NodeLayerTuple("Z", "flow,SLTC"), new NodeLayerTuple("B", "flow,SLTC"), 2);
+                Q.AddEdge(new NodeLayerTuple(26, "flow,SLTC"), new NodeLayerTuple(2, "flow,SLTC"), 2);
             }
             catch (ArgumentException)
             {
 
             }
-            double edgeWt = Q.EdgeWeight(new NodeLayerTuple("D", "flow,SLTC"), new NodeLayerTuple("E", "flow,SLTC"));
-            edgeWt = Q.EdgeWeight(new NodeLayerTuple("C", "control,PHL"), new NodeLayerTuple("A", "control,SLTC"));
+            double edgeWt = Q.EdgeWeight(new NodeLayerTuple(4, "flow,SLTC"), new NodeLayerTuple(5, "flow,SLTC"));
+            edgeWt = Q.EdgeWeight(new NodeLayerTuple(3, "control,PHL"), new NodeLayerTuple(1, "control,SLTC"));
 
-            Dictionary<NodeLayerTuple, float> neighbors = Q.GetNeighbors(new NodeLayerTuple("A", "electrical,SLTC"));
-            neighbors = Q.GetNeighbors(new NodeLayerTuple("Z", "flow,SLTC"));
-            neighbors = Q.GetNeighbors(new NodeLayerTuple("D", "flow,SLTC"));
-            neighbors = Q.GetNeighbors(new NodeLayerTuple("C", "electrical,PHL"));
+            Dictionary<NodeLayerTuple, float> neighbors = Q.GetNeighbors(new NodeLayerTuple(1, "electrical,SLTC"));
+            neighbors = Q.GetNeighbors(new NodeLayerTuple(26, "flow,SLTC"));
+            neighbors = Q.GetNeighbors(new NodeLayerTuple(4, "flow,SLTC"));
+            neighbors = Q.GetNeighbors(new NodeLayerTuple(3, "electrical,PHL"));
 
-            neighbors = Q.CategoricalGetNeighbors(new NodeLayerTuple("B", "electrical,PHL"), "process");
-            neighbors = Q.CategoricalGetNeighbors(new NodeLayerTuple("B", "electrical,PHL"), "process", true);
+            neighbors = Q.CategoricalGetNeighbors(new NodeLayerTuple(2, "electrical,PHL"), "process");
+            neighbors = Q.CategoricalGetNeighbors(new NodeLayerTuple(2, "electrical,PHL"), "process", true);
 
-            neighbors = Q.CategoricalGetNeighbors(new NodeLayerTuple("A", "flow,PHL"), "process");
+            neighbors = Q.CategoricalGetNeighbors(new NodeLayerTuple(1, "flow,PHL"), "process");
 
-            List<string> verts = Q.UniqueVertices();
+            List<uint> verts = Q.UniqueVertices();
 
-           // Q.RemoveVertex(new NodeLayerTuple("A", "control,SLTC"));
-            Q.AddVertex(new NodeLayerTuple("S", "control,PHL"));
-            //Q.RemoveVertex(new NodeLayerTuple("S", "control,PHL"));
+           // Q.RemoveVertex(new NodeLayerTuple(1, "control,SLTC"));
+            Q.AddVertex(new NodeLayerTuple(19, "control,PHL"));
+            //Q.RemoveVertex(new NodeLayerTuple(19, "control,PHL"));
 
-            //Q.RemoveEdge(new NodeLayerTuple("A", "electrical,SLTC"), new NodeLayerTuple("B", "control,SLTC"));
+            //Q.RemoveEdge(new NodeLayerTuple(1, "electrical,SLTC"), new NodeLayerTuple(2, "control,SLTC"));
            // Q.RemoveElementaryLayer(index); // remove (control, SLTC)
             string[] coord = { "electrical", "SLTC" };
             MultilayerNetworkSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\work\multilayer_test.dat");

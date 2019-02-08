@@ -51,7 +51,7 @@ namespace CoreTests
             // MakeRandomMultilayerNetwork(ref M, 4, 5, 1000, 100, 10);
         }
 
-        [Ignore]
+        //[Ignore]
         [TestCategory("Performance")]
         [TestMethod]
         public void BasicNumberNetwork()
@@ -74,21 +74,21 @@ namespace CoreTests
         public void TestAdjacencyConstructor()
         {
             float[,] weights = { { 0.0F, 1.0F, 2.0F, 0.0F }, { 0.0F, 0.0F, 1.0F, 3.5F }, { 1.0F, 2.1F, 0.0F, 2.0F }, { 1.0F, 0.0F, 0.0F, 0.0F } };
-            string[] nodes = { "A", "B", "C", "D" };
-            List<string> vertices = new List<string>(nodes);
+            uint[] nodes = { 1, 2, 3, 4 };
+            List<uint> vertices = new List<uint>(nodes);
 
             Network G = new Network(vertices, weights, true);
 
             float[,] ewts = G.AdjacencyMatrix;
-            List<string> outV = G.Vertices;
+            List<uint> outV = G.Vertices;
 
             Assert.AreEqual(nodes.Length, outV.Count, $"Count of vertices input {nodes.Length} does not equal count of vertices output {outV.Count}");
 
-            Assert.AreEqual(G.HasEdge("B", "C"), true);
+            Assert.AreEqual(G.HasEdge(2, 3), true);
 
-            Assert.AreEqual(G.EdgeWeight("B", "D"), 3.5, 0.05);
+            Assert.AreEqual(G.EdgeWeight(2, 4), 3.5, 0.05);
 
-            Assert.AreEqual(G.EdgeWeight("D", "C"), 0.0, 0.05);
+            Assert.AreEqual(G.EdgeWeight(4, 3), 0.0, 0.05);
         }
 
         [TestCategory("Basic")]
@@ -96,13 +96,13 @@ namespace CoreTests
         public void TestConnectedProperty()
         {
             Network G = new Network(false);
-            G.AddEdge("A", "B", 1);
-            G.AddVertex("C"); // C is unreachable
+            G.AddEdge(1, 2, 1);
+            G.AddVertex(3); // C is unreachable
             Assert.IsTrue(!G.Connected);
 
             G = new Network(true);
-            G.AddEdge("A", "B", 1);
-            G.AddVertex("C"); // C is unreachable
+            G.AddEdge(1, 2, 1);
+            G.AddVertex(3); // C is unreachable
             Assert.IsTrue(!G.Connected);
         }
         
@@ -112,20 +112,20 @@ namespace CoreTests
         public void TestNetworkVertex()
         {
             Network G = new Network(true);
-            G.AddEdge("A", "B", 1);
-            G.AddEdge("A", "C", 1);
-            G.AddEdge("B", "C", 2);
-            G.AddEdge("A", "D", 3);
+            G.AddEdge(1, 2, 1);
+            G.AddEdge(1, 3, 1);
+            G.AddEdge(2, 3, 2);
+            G.AddEdge(1, 4, 3);
 
             Assert.AreEqual(4, G.Order);
-            Assert.AreEqual(3, G.GetNeighbors("A").Keys.Count);
-            Assert.AreEqual(true, G.HasEdge("B", "C"));
-            Assert.AreEqual(false, G.HasEdge("B", "A"));
-            Assert.AreEqual(3, G.OutDegree("A"));
+            Assert.AreEqual(3, G.GetNeighbors(1).Keys.Count);
+            Assert.AreEqual(true, G.HasEdge(2, 3));
+            Assert.AreEqual(false, G.HasEdge(2, 1));
+            Assert.AreEqual(3, G.OutDegree(1));
 
-            G.RemoveVertex("C");
-            Assert.AreEqual(false, G.HasVertex("C"));
-            Assert.AreEqual(false, G.HasEdge("A", "C"));
+            G.RemoveVertex(3);
+            Assert.AreEqual(false, G.HasVertex(3));
+            Assert.AreEqual(false, G.HasEdge(1, 3));
         }
 
         [TestCategory("Basic")]
@@ -133,19 +133,19 @@ namespace CoreTests
         public void TestDensity()
         {
             Network G = new Network(true);
-            G.AddEdge("A", "B", 1);
-            G.AddEdge("A", "C", 1);
-            G.AddEdge("B", "C", 2);
-            G.AddEdge("A", "D", 3);
+            G.AddEdge(1, 2, 1);
+            G.AddEdge(1, 3, 1);
+            G.AddEdge(2, 3, 2);
+            G.AddEdge(1, 4, 3);
 
             double density = G.Density;
             Assert.AreEqual(0.33, density, 0.01);
 
             G = new Network(false);
-            G.AddEdge("A", "B", 1);
-            G.AddEdge("A", "C", 1);
-            G.AddEdge("B", "C", 2);
-            G.AddEdge("A", "D", 3);
+            G.AddEdge(1, 2, 1);
+            G.AddEdge(1, 3, 1);
+            G.AddEdge(2, 3, 2);
+            G.AddEdge(1, 4, 3);
 
             density = G.Density;
             Assert.AreEqual(0.66, density, 0.01);
@@ -166,15 +166,15 @@ namespace CoreTests
         private Network MakeSimple(Boolean directed)
         {
             Network G = new Network(directed);
-            G.AddEdge("A", "B", 1);
-            G.AddEdge("A", "C", 1);
-            G.AddEdge("A", "F", 1);
-            G.AddEdge("B", "D", 1);
-            G.AddEdge("D", "F", 1);
-            G.AddEdge("C", "E", 1);
-            G.AddEdge("E", "F", 1);
-            G.AddEdge("B", "E", 1);
-            G.AddEdge("C", "D", 1);
+            G.AddEdge(1, 2, 1);
+            G.AddEdge(1, 3, 1);
+            G.AddEdge(1, 6, 1);
+            G.AddEdge(2, 4, 1);
+            G.AddEdge(4, 6, 1);
+            G.AddEdge(3, 5, 1);
+            G.AddEdge(5, 6, 1);
+            G.AddEdge(2, 5, 1);
+            G.AddEdge(3, 4, 1);
             return G;
         }
         [TestCategory("Multilayer")]
@@ -182,29 +182,29 @@ namespace CoreTests
         public void TestMultilayerSources()
         {
             MultilayerNetwork Q = MultilayerNetworkSerializer.ReadMultilayerNetworkFromFile(@"..\..\work\multilayer_test.dat", true);
-            Dictionary<NodeLayerTuple, float> sources = Q.GetSources(new NodeLayerTuple("B", "control,SLTC"));
+            Dictionary<NodeLayerTuple, float> sources = Q.GetSources(new NodeLayerTuple(2, "control,SLTC"));
             Assert.AreEqual(sources.Count, 5);
-            NodeLayerTuple test = new NodeLayerTuple("A", "control,PHL");
+            NodeLayerTuple test = new NodeLayerTuple(1, "control,PHL");
             bool check = sources.ContainsKey(test);
             float wt = sources[test];
             Assert.AreEqual(sources.ContainsKey(test), true);
             Assert.AreEqual(sources[test], 1.0F, 0.01F);
 
-            sources = Q.CategoricalGetSources(new NodeLayerTuple("A", "control,SLTC"), "process");
+            sources = Q.CategoricalGetSources(new NodeLayerTuple(1, "control,SLTC"), "process");
             Assert.AreEqual(sources.Count, 1);
-            test = new NodeLayerTuple("C", "control,PHL");
+            test = new NodeLayerTuple(3, "control,PHL");
             Assert.AreEqual(sources.ContainsKey(test), true);
             Assert.AreEqual(sources[test], 4.0F, 0.01F);
 
-            sources = Q.CategoricalGetSources(new NodeLayerTuple("D", "flow,PHL"), "site");
-            test = new NodeLayerTuple("A", "flow,PHL");
-            NodeLayerTuple test2 = new NodeLayerTuple("B", "control,PHL");
+            sources = Q.CategoricalGetSources(new NodeLayerTuple(4, "flow,PHL"), "site");
+            test = new NodeLayerTuple(1, "flow,PHL");
+            NodeLayerTuple test2 = new NodeLayerTuple(2, "control,PHL");
             Assert.AreEqual(sources.Count, 2);
             Assert.AreEqual(sources.ContainsKey(test), true);
             Assert.AreEqual(sources[test], 1.0F, 0.01F);
             Assert.AreEqual(sources.ContainsKey(test2), true);
 
-            Dictionary<NodeLayerTuple, float> neighbors = Q.CategoricalGetNeighbors(new NodeLayerTuple("A", "control,PHL"), "site");
+            Dictionary<NodeLayerTuple, float> neighbors = Q.CategoricalGetNeighbors(new NodeLayerTuple(1, "control,PHL"), "site");
             Assert.AreEqual(neighbors.Count, 6);
             Assert.AreEqual(neighbors.ContainsKey(test2), true);
         }
@@ -244,18 +244,18 @@ namespace CoreTests
             }
 
             int vtx = 0;
-            while (!M.HasVertex(new NodeLayerTuple($"V{vtx}", coord1)) && vtx < M.UniqueVertices().Count())
+            while (!M.HasVertex(new NodeLayerTuple((uint)vtx, coord1)) && vtx < M.UniqueVertices().Count())
                 vtx++;
 
-            int degree1 = M.Degree(new NodeLayerTuple($"V{vtx}", coord1));
+            int degree1 = M.Degree(new NodeLayerTuple((uint)vtx, coord1));
 
             int vtx2 = 0;
-            while (!M.HasVertex(new NodeLayerTuple($"V{vtx2}", coord1)) && vtx2 < M.UniqueVertices().Count())
+            while (!M.HasVertex(new NodeLayerTuple((uint)vtx2, coord1)) && vtx2 < M.UniqueVertices().Count())
                 vtx2++;
 
-            int degree2 = M.Degree(new NodeLayerTuple($"V{vtx2}", coord2));
+            int degree2 = M.Degree(new NodeLayerTuple((uint)vtx2, coord2));
 
-            string testFile = "TestMulti.txt";
+            string testFile = "c:\\\\temp\\TestMulti.txt";
 
             try
             {
@@ -294,8 +294,8 @@ namespace CoreTests
             try
             {
                 orderPrime = MPrime.Order;
-                degree1Prime = M.Degree(new NodeLayerTuple($"V{vtx}", coord1));
-                degree2Prime = M.Degree(new NodeLayerTuple($"V{vtx2}", coord2));
+                degree1Prime = M.Degree(new NodeLayerTuple((uint)vtx, coord1));
+                degree2Prime = M.Degree(new NodeLayerTuple((uint)vtx2, coord2));
             }
             catch (Exception ex)
             {
@@ -385,16 +385,16 @@ namespace CoreTests
                     target = rand.Next(elementaryCt);
 
                 int srcV = rand.Next(maxVertices);
-                while (!mNet.HasVertex(new NodeLayerTuple($"V{srcV}", coords[source])))
+                while (!mNet.HasVertex(new NodeLayerTuple((uint)srcV, coords[source])))
                     srcV = rand.Next(maxVertices);
 
                 int tgtV = rand.Next(maxVertices);
-                while (!mNet.HasVertex(new NodeLayerTuple($"V{tgtV}", coords[target])) || srcV == tgtV)
+                while (!mNet.HasVertex(new NodeLayerTuple((uint)tgtV, coords[target])) || srcV == tgtV)
                     tgtV = rand.Next(maxVertices);
 
                 // If the edge already exists, skip it.
-                if (!mNet.HasEdge(new NodeLayerTuple($"V{srcV}", coords[source]), new NodeLayerTuple($"V{tgtV}", coords[target])))
-                    mNet.AddEdge(new NodeLayerTuple($"V{srcV}", coords[source]), new NodeLayerTuple($"V{tgtV}", coords[target]), 1);
+                if (!mNet.HasEdge(new NodeLayerTuple((uint)srcV, coords[source]), new NodeLayerTuple((uint)tgtV, coords[target])))
+                    mNet.AddEdge(new NodeLayerTuple((uint)srcV, coords[source]), new NodeLayerTuple((uint)tgtV, coords[target]), 1);
                 
             }
 
@@ -420,7 +420,7 @@ namespace CoreTests
 
                 for (int i = 0; i < order; i++)
                 {
-                    net.AddVertex($"V{i}");
+                    net.AddVertex((uint)i);
                 }
 
                 for (int j = 0; j < order; j++)
@@ -435,8 +435,8 @@ namespace CoreTests
                         while (tgt == j)
                             tgt = rand.Next(maxVertices);
 
-                        if (!net.HasEdge($"V{j}", $"V{tgt}"))
-                            net.AddEdge($"V{j}", $"V{tgt}", 1);
+                        if (!net.HasEdge((uint)j, (uint)tgt))
+                            net.AddEdge((uint)j, (uint)tgt, 1);
                     }
                 }
             }
