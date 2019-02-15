@@ -26,6 +26,7 @@ using System.IO;
 using System.Linq;
 using Networks.Core;
 using Networks.Algorithms;
+using Networks.FCM;
 
 namespace TestApp
 {
@@ -44,13 +45,14 @@ namespace TestApp
             //TestLouvainResolution();
             //return;
             //TestRemove();
-            TestCommunityDetection();
+            //TestCommunityDetection();
             //TestGephiOutput();
             //TestBig();
             //TestNewAdj();
             //WriteGML();
             //TestEdgeWeight();
             //TestBigBipartite();
+            TestFCM();
             return;
 
 
@@ -102,6 +104,40 @@ namespace TestApp
             res = Bipartite.IsBipartite(G, out R, out B);
             end = DateTime.UtcNow.Ticks;
             Console.WriteLine($"Graph of 200,000 nodes is  bipartite {res}, took {(end - start) / 10000} milliseconds");
+        }
+
+        private static void TestFCM()
+        {
+            FuzzyCognitiveMap fcm = new FuzzyCognitiveMap(false);
+            fcm.AddConcept("A", 1.0F, 1.0F);
+            fcm.AddConcept("B", 0.0F, 0.0F);
+            fcm.AddConcept("C", 1.0F, 1.0F);
+            fcm.AddConcept("D", 0.0F, 0.0F);
+            fcm.AddConcept("E", 0.0F, 0.0F);
+
+            fcm.AddInfluence("B", "A", 1.0F);
+            fcm.AddInfluence("A", "C", 1.0F);
+            fcm.AddInfluence("C", "E", 1.0F);
+            fcm.AddInfluence("E", "D", 1.0F);
+            fcm.AddInfluence("D", "C", -1.0F);
+            fcm.AddInfluence("B", "E", -1.0F);
+            fcm.AddInfluence("E", "A", -1.0F);
+            fcm.AddInfluence("D", "B", 1.0F);
+
+            WriteStateVector(fcm);
+            for (int i = 0; i < 5; i++)
+            {
+                fcm.Step();
+                WriteStateVector(fcm);
+            }
+        }
+
+        private static void WriteStateVector(FuzzyCognitiveMap map)
+        {
+            Console.Write("( ");
+            foreach (float val in map.StateVector)
+                Console.Write(val.ToString("F1") + " ");
+            Console.WriteLine(")");
         }
         private static void TestNewAdj()
         {
