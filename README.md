@@ -2,14 +2,14 @@
 Research code for working with graphs
 
 ## Basic classes
-Graphs are represented by the Network class.  Clusters are represented by HashSet<string>, where the string is a vertex id.  Graphs are loaded
+Graphs are represented by the Network class.  Clusters are represented by HashSet&lt;uint&gt;, where the uint is a vertex id.  Graphs are loaded
 via the static NetworkSerializer class, while the similar ClusterSerializer class exists for clusters. 
 
 Mulitlayer graphs are implemented via the MultilayerNetwork class and serialized via the MultilayerNetworkSerializer class.  Multilayer graphs explicitly store intralayer and non-node coupled interlayer edges in adjacency lists.  Node coupled interlayer edges are supported algorithmically.  Node coupling may be limited to a single aspect.  When so constrained, node coupling may be further limited to ordinal coupling, herein defined as a layer immediately adjacent to the source layer.
 
 ### Serialization Format
-Each line of a graph represents an edge adjacency list.  The first string is the from vertex, followed by the delimiter character, followed by,
-the to vertext, followed by the delimiter and the edge weight.  Edge weights are integers.  Graphs are assumed to be directed, unless the 
+Each line of a graph represents an edge adjacency list.  The first uint is the from vertex, followed by the delimiter character, followed by,
+the to vertex, followed by the delimiter and the edge weight.  Edge weights are floats.  Graphs are assumed to be directed, unless the 
 file is loaded with the directed parameter of LoadNetwork set to false.  
 
 # Community detection algorithms 
