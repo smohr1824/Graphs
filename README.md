@@ -29,6 +29,8 @@ Journal of Statistical Mechanics: Theory and Experiment, Issue 10, pp. 10008, 20
 
 IsBipartite tests a network for bipartness.  If successful, the two sets of vertices are returned as List&lt;uint&gt; where the uint is the vertex id.
 
-The FCM namespace adds basic fuzzy cognitive map capability utilizing the Network class behind the scenes. The threshold function for map inference may be set to bivalent, trivalent, or logistic by specifying an enumerated type, or the user may implement a custom function by creating a delegate of the form float f(float sum). If no threshold function is specified, the map defaults to bivalent. Similarly, the user may select the classic or modified Kosko equation for map inference.  The default is classic.
-
 Additional algorithm implementations are planned.
+
+The FCM namespace adds basic fuzzy cognitive map capability utilizing the Network class behind the scenes. The threshold function for map inference may be set to bivalent, trivalent, or logistic by specifying an enumerated type, or the user may implement a custom function by creating a delegate of the form float f(float sum). If no threshold function is specified, the map defaults to bivalent. Similarly, the user may select the classic or modified Kosko equation for map inference.  The default is classic. Multiple cores are used to improve performance when the number of cencepts exceeds 100.
+
+
