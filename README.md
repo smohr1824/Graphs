@@ -1,4 +1,4 @@
-# Graphs
+﻿# Graphs
 Research code for working with graphs
 
 ## Basic classes
@@ -26,5 +26,9 @@ SLPA is described in Xie, Jierui and Szymanski, Boleslaw, Towards Linear Time Ov
 Louvain is described in Campigotto, R., Céspedes, P. , and Guillaume, JL., A Generalized and Adaptive Method for Community Detection,
 arxiv:1406.2518v1, 2014 and Blondel, V., Guillaume JL., Lambiotte, R., and Lefebvre, E, Fast Unfolding of Communities in Large Networks,
 Journal of Statistical Mechanics: Theory and Experiment, Issue 10, pp. 10008, 2008.  The algorithmic code is greatly adapted under the GPL Lesser Public License from https://sourceforge.net/projects/louvain/.
+
+IsBipartite tests a network for bipartness.  If successful, the two sets of vertices are returned as List&lt;uint&gt; where the uint is the vertex id.
+
+The FCM namespace adds basic fuzzy cognitive map capability utilizing the Network class behind the scenes. The threshold function for map inference may be set to bivalent, trivalent, or logistic by specifying an enumerated type, or the user may implement a custom function by creating a delegate of the form float f(float sum). If no threshold function is specified, the map defaults to bivalent. Similarly, the user may select the classic or modified Kosko equation for map inference.  The default is classic.
 
 Additional algorithm implementations are planned.
