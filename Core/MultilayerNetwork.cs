@@ -644,12 +644,48 @@ namespace Networks.Core
             }
         }
 
-        internal void RemoveOutEdge(ResolvedNodeLayerTuple from, ResolvedNodeLayerTuple to)
+        public float[,] MakeSupraAdjacencyMatrix()
         {
-            if (ElementaryLayerExists(from.coordinates))
+            if (!IsNodeAligned())
+                return null;
+
+            int dimension = GetDimension();
+            float[,] retVal = new float[dimension, dimension];
+            List<List<string>> layerList = new List<List<string>>();
+            string aspect = aspects[0];
+            List<string> coords = new List<string>();
+            foreach (string mark in indices[0])
             {
-                elementaryLayers[from.coordinates].RemoveOutEdge(from, to);
+                coords.Add(mark);
+                RecurseAdjacencyMatrix(ref layerList, aspect, 0, 0, coords);
+                coords.RemoveAt(0);
             }
+
+            // now we have a list of all elementary layer coordinates (row/column indices); build the supraadjacency matrix
+            int blockCt = layerList.Count();
+            for (int row = 0; row < blockCt; row++)
+            {
+                for (int column = 0; column < blockCt; column++)
+                {
+                    List<string> rowCoord = layerList[row];
+                    List<string> colCoord = layerList[column];
+                    List<int> rowResolved = ResolveCoordinates(rowCoord);
+                    List<int> colResolved = ResolveCoordinates(colCoord);
+
+                    ElementaryLayer layer = elementaryLayers[rowResolved];
+                    if (row == column)
+                    {
+                        // insert the elementary layer adjacency matrix in the appropriate location
+                        InsertLayerAdjacencies(ref retVal, layer.LayerAdjacencyMatrix, row, column);
+                    }
+                    else
+                    {
+                        // insert the interlayer edges from row to column
+                        InsertLayerAdjacencies(ref retVal, layer.InterlayerAdjacencies(colResolved), row, column);
+                    }
+                }
+            }
+            return retVal;
         }
 
         public Network GetLayer(string layerCoordinates)
@@ -674,6 +710,61 @@ namespace Networks.Core
         #endregion
 
         #region private methods
+        private int GetDimension()
+        {
+            int elemSize = nodeIdsAndLayers.Keys.Count();
+            int ct = 1;
+            foreach (string aspect in aspects)
+                ct *= indices[aspects.IndexOf(aspect)].Count();
+
+            return ct * elemSize;
+        }
+
+        private void RecurseAdjacencyMatrix(ref List<List<string>> allCoords, string aspect, uint blockRow, uint blockColumn, List<string> layerCoords)
+        {
+            int index = aspects.IndexOf(aspect) + 1;
+            if (index == aspects.Count() - 1)
+            {
+                // innermost aspect
+                foreach (string stop in indices[index])
+                {
+                    List<string> elemlayerCoords = new List<string>(layerCoords);
+                    elemlayerCoords.Add(stop);
+                    allCoords.Add(elemlayerCoords);
+                }
+            }
+            else
+            {
+                string curAspect = aspects.ElementAt<string>(index);
+                foreach (string stop in indices[index])
+                {
+                    layerCoords.Add(stop);
+                    RecurseAdjacencyMatrix(ref allCoords, curAspect, blockRow, blockColumn, layerCoords);
+                    layerCoords.RemoveAt(layerCoords.Count - 1);
+                }
+            }
+        }
+
+        private void InsertLayerAdjacencies(ref float[,] supra, float[,] layerMatrix, int rowBlock, int colBlock)
+        {
+            int size = layerMatrix.GetLength(0);
+            int rowOffset = size * rowBlock;
+            int colOffset = size * colBlock;
+            for (int i = 0; i < size; i++)
+            {
+                for (int j = 0; j < size; j++)
+                {
+                    supra[rowOffset + i, colOffset + j] = layerMatrix[i, j];
+                }
+            }
+        }
+        internal void RemoveOutEdge(ResolvedNodeLayerTuple from, ResolvedNodeLayerTuple to)
+        {
+            if (ElementaryLayerExists(from.coordinates))
+            {
+                elementaryLayers[from.coordinates].RemoveOutEdge(from, to);
+            }
+        }
         /// <summary>
         /// 
         /// </summary>

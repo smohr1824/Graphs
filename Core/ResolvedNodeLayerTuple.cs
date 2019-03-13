@@ -57,6 +57,18 @@ namespace Networks.Core
             return true;
         }
 
+        public bool IsSameElementaryLayer(List<int> b)
+        {
+            for (int i = 0; i < coordinates.Count(); i++)
+            {
+                if (coordinates[i] != b[i])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public void List(TextWriter writer)
         {
             writer.Write(this.ToString());

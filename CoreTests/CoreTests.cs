@@ -209,6 +209,24 @@ namespace CoreTests
             Assert.AreEqual(neighbors.ContainsKey(test2), true);
         }
 
+        [TestCategory("Multilayer")]
+        [TestMethod]
+        public void TestSupraAdjacencyMatrix()
+        {
+            MultilayerNetwork Q = MultilayerNetworkSerializer.ReadMultilayerNetworkFromFile(@"..\..\work\multilayer_three_aspects.dat", true);
+            float[,] mtx = Q.MakeSupraAdjacencyMatrix();
+            
+            for (int i = 0; i < 36; i++)
+            {
+                for (int j = 0; j < 36; j++)
+                {
+                    Console.Write(mtx[i, j] + " ");
+                }
+                Console.WriteLine();
+            }
+
+        }
+
         //[TestMethod]
         //public void TestRandomGraph()
         //{

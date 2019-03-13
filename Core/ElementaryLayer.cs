@@ -30,10 +30,10 @@ namespace Networks.Core
     internal class ElementaryLayer
     {
         // adjacency list of interlayer edges
-        private Dictionary<ResolvedNodeLayerTuple, Dictionary<ResolvedNodeLayerTuple, float>> EdgeList;
+        private Dictionary<uint, Dictionary<ResolvedNodeLayerTuple, float>> EdgeList;
         
         // reference count of inbound interlayer edges
-        private Dictionary<ResolvedNodeLayerTuple, Dictionary<ResolvedNodeLayerTuple, float>> InEdges;
+        private Dictionary<uint, Dictionary<ResolvedNodeLayerTuple, float>> InEdges;
         private Network G;
         private MultilayerNetwork M;
         private List<int> layerCoordinates;
@@ -41,8 +41,8 @@ namespace Networks.Core
         {
             M = m;
             G = g;
-            EdgeList = new Dictionary<ResolvedNodeLayerTuple, Dictionary<ResolvedNodeLayerTuple, float>>(new ResolvedNodeLayerTupleEqualityComparer());
-            InEdges = new Dictionary<ResolvedNodeLayerTuple, Dictionary<ResolvedNodeLayerTuple, float>>(new ResolvedNodeLayerTupleEqualityComparer());
+            EdgeList = new Dictionary<uint, Dictionary<ResolvedNodeLayerTuple, float>>();
+            InEdges = new Dictionary<uint, Dictionary<ResolvedNodeLayerTuple, float>>();
             layerCoordinates = coordinates;
         }
 
@@ -70,9 +70,9 @@ namespace Networks.Core
             }
             else
             {
-                if (EdgeList.Keys.Contains(from))
+                if (EdgeList.Keys.Contains(from.nodeId))
                 {
-                    if (EdgeList[from].Keys.Contains(to))
+                    if (EdgeList[from.nodeId].Keys.Contains(to))
                         return true;
                     else
                         return false;
@@ -81,6 +81,32 @@ namespace Networks.Core
                     return false;
             }
         }
+
+        public float[,] InterlayerAdjacencies(List<int> to)
+        {
+            int size = G.Order;
+            List<uint> vertices = G.Vertices;
+            float[,] retVal = new float[size,size];
+            
+            foreach (uint from in EdgeList.Keys)
+            {
+                Dictionary<ResolvedNodeLayerTuple, float> adjList = EdgeList[from];
+                int fromIndex = vertices.IndexOf(from);
+                foreach (ResolvedNodeLayerTuple tgt in adjList.Keys)
+                {
+                    if (tgt.IsSameElementaryLayer(to))
+                    {
+                        // place the edge weight at the correct location
+                        int toIndex = vertices.IndexOf(tgt.nodeId);
+                        retVal[fromIndex, toIndex] = adjList[tgt];
+                    }
+                }
+            }
+            return retVal;
+
+        }
+
+        public float[,] LayerAdjacencyMatrix => G.AdjacencyMatrix;
 
         public Network CopyGraph()
         {
@@ -112,14 +138,14 @@ namespace Networks.Core
             if (!HasVertex(vertex))
                 throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
 
-            ResolvedNodeLayerTuple tuple = new ResolvedNodeLayerTuple();
-            tuple.nodeId = vertex;
-            tuple.coordinates = layerCoordinates;
+            //ResolvedNodeLayerTuple tuple = new ResolvedNodeLayerTuple();
+            //tuple.nodeId = vertex;
+            //tuple.coordinates = layerCoordinates;
 
             int retVal = 0;
 
-            if (EdgeList.Keys.Contains(tuple))
-               retVal = EdgeList[tuple].Keys.Count;
+            if (EdgeList.Keys.Contains(vertex))
+               retVal = EdgeList[vertex].Keys.Count;
 
             if (!G.Directed)
             {
@@ -127,8 +153,8 @@ namespace Networks.Core
             }
             else
             {
-                if (InEdges.Keys.Contains(tuple))
-                    retVal += InEdges[tuple].Keys.Count;
+                if (InEdges.Keys.Contains(vertex))
+                    retVal += InEdges[vertex].Keys.Count;
 
                 return retVal;
             }
@@ -136,9 +162,9 @@ namespace Networks.Core
 
         internal int InDegree(uint vertex)
         {
-            ResolvedNodeLayerTuple tuple = new ResolvedNodeLayerTuple();
-            tuple.nodeId = vertex;
-            tuple.coordinates = layerCoordinates;
+            //ResolvedNodeLayerTuple tuple = new ResolvedNodeLayerTuple();
+            //tuple.nodeId = vertex;
+            //tuple.coordinates = layerCoordinates;
 
             int retVal = 0;
 
@@ -151,17 +177,17 @@ namespace Networks.Core
                 throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
             }
 
-            if (InEdges.Keys.Contains(tuple))
-                retVal += InEdges[tuple].Keys.Count;
+            if (InEdges.Keys.Contains(vertex))
+                retVal += InEdges[vertex].Keys.Count;
 
             return retVal;
         }
 
         internal int OutDegree(uint vertex)
         {
-            ResolvedNodeLayerTuple tuple = new ResolvedNodeLayerTuple();
-            tuple.nodeId = vertex;
-            tuple.coordinates = layerCoordinates;
+            //ResolvedNodeLayerTuple tuple = new ResolvedNodeLayerTuple();
+            //tuple.nodeId = vertex;
+            //tuple.coordinates = layerCoordinates;
 
             int retVal = 0;
 
@@ -174,8 +200,8 @@ namespace Networks.Core
                 throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
             }
 
-            if (EdgeList.Keys.Contains(tuple))
-                retVal += EdgeList[tuple].Keys.Count;
+            if (EdgeList.Keys.Contains(vertex))
+                retVal += EdgeList[vertex].Keys.Count;
 
             return retVal;
         }
@@ -190,18 +216,18 @@ namespace Networks.Core
             nodeT.nodeId = vertex;
             nodeT.coordinates = layerCoordinates;
 
-            if (EdgeList.Keys.Contains(nodeT))
+            if (EdgeList.Keys.Contains(vertex))
             {
-                EdgeList.Remove(nodeT);
+                EdgeList.Remove(vertex);
             }
 
-            if (InEdges.Keys.Contains(nodeT))
+            if (InEdges.Keys.Contains(vertex))
             {
-                foreach (ResolvedNodeLayerTuple target in InEdges[nodeT].Keys)
+                foreach (ResolvedNodeLayerTuple target in InEdges[vertex].Keys)
                 {
                     M.RemoveOutEdge(target, nodeT);
                 }
-                InEdges.Remove(nodeT);
+                InEdges.Remove(vertex);
             }
 
         }
@@ -210,13 +236,13 @@ namespace Networks.Core
         {
             if (HasVertex(from.nodeId))
             {
-                if (InEdges.Keys.Contains(from))
-                    InEdges[from].Add(to, wt);
+                if (InEdges.Keys.Contains(from.nodeId))
+                    InEdges[from.nodeId].Add(to, wt);
                 else
                 {
                     Dictionary<ResolvedNodeLayerTuple, float> dict = new Dictionary<ResolvedNodeLayerTuple, float>(new ResolvedNodeLayerTupleEqualityComparer());
                     dict.Add(to, wt);
-                    InEdges.Add(from, dict);
+                    InEdges.Add(from.nodeId, dict);
                 }
             }
 
@@ -224,15 +250,15 @@ namespace Networks.Core
         public void RemoveOutEdge(ResolvedNodeLayerTuple from, ResolvedNodeLayerTuple to)
         {
             // Don't use RemoveEdge so as to avoid endless cycle of DeleteInEdge
-            if (EdgeList.Keys.Contains(from))
-                EdgeList[from].Remove(to);
+            if (EdgeList.Keys.Contains(from.nodeId))
+                EdgeList[from.nodeId].Remove(to);
         }
 
         public void RemoveInEdge(ResolvedNodeLayerTuple tgt, ResolvedNodeLayerTuple src)
         {
             // src is the from vertex with an edge to this layer's tgt vertex
-            if (InEdges.Keys.Contains(tgt))
-                InEdges[tgt].Remove(src);
+            if (InEdges.Keys.Contains(tgt.nodeId))
+                InEdges[tgt.nodeId].Remove(src);
         }
 
         public float EdgeWeight(ResolvedNodeLayerTuple rFrom, ResolvedNodeLayerTuple rTo)
@@ -244,12 +270,12 @@ namespace Networks.Core
             }
             else
             {
-                if (EdgeList.Keys.Contains(rFrom))
+                if (EdgeList.Keys.Contains(rFrom.nodeId))
                 {
-                    if (EdgeList[rFrom].Keys.Contains(rTo))
+                    if (EdgeList[rFrom.nodeId].Keys.Contains(rTo))
                     {
                         float retVal;
-                        EdgeList[rFrom].TryGetValue(rTo, out retVal);
+                        EdgeList[rFrom.nodeId].TryGetValue(rTo, out retVal);
                         return retVal;
                     }
                     else
@@ -271,18 +297,18 @@ namespace Networks.Core
             }
             else
             {
-                if (EdgeList.Keys.Contains(from))
+                if (EdgeList.Keys.Contains(from.nodeId))
                 {
-                    if (EdgeList[from].Keys.Contains(to))
-                        EdgeList[from][to] = wt;
+                    if (EdgeList[from.nodeId].Keys.Contains(to))
+                        EdgeList[from.nodeId][to] = wt;
                     else
-                        EdgeList[from].Add(to, wt);
+                        EdgeList[from.nodeId].Add(to, wt);
                 }
                 else
                 {
                     Dictionary<ResolvedNodeLayerTuple, float> dict = new Dictionary<ResolvedNodeLayerTuple, float>(new ResolvedNodeLayerTupleEqualityComparer());
                     dict.Add(to, wt);
-                    EdgeList.Add(from, dict);
+                    EdgeList.Add(from.nodeId, dict);
                 }
             }
 
@@ -299,9 +325,9 @@ namespace Networks.Core
             }
             else
             {
-                if (EdgeList.Keys.Contains(from))
+                if (EdgeList.Keys.Contains(from.nodeId))
                 {
-                    EdgeList[from].Remove(to);
+                    EdgeList[from.nodeId].Remove(to);
                 }
             }
                 
@@ -326,14 +352,14 @@ namespace Networks.Core
             }
 
             // add out of layer neighbors, i.e., targets of interlayer edges
-            ResolvedNodeLayerTuple refTuple = new ResolvedNodeLayerTuple(vertex, layerCoordinates);
+            //ResolvedNodeLayerTuple refTuple = new ResolvedNodeLayerTuple(vertex, layerCoordinates);
 
-            if (EdgeList.Keys.Contains(refTuple))
+            if (EdgeList.Keys.Contains(vertex))
             {
-                foreach (ResolvedNodeLayerTuple tuple in EdgeList[refTuple].Keys)
+                foreach (ResolvedNodeLayerTuple tuple in EdgeList[vertex].Keys)
                 {
                     NodeLayerTuple tgt = new NodeLayerTuple(tuple.nodeId, M.UnaliasCoordinates(tuple.coordinates));
-                    retVal.Add(tgt, EdgeList[refTuple][tuple]);
+                    retVal.Add(tgt, EdgeList[vertex][tuple]);
                 }
             }
 
@@ -359,14 +385,14 @@ namespace Networks.Core
             }
 
             // add out of layer neighbors, i.e., targets of interlayer edges
-            ResolvedNodeLayerTuple refTuple = new ResolvedNodeLayerTuple(vertex, layerCoordinates);
+            //ResolvedNodeLayerTuple refTuple = new ResolvedNodeLayerTuple(vertex, layerCoordinates);
 
-            if (InEdges.Keys.Contains(refTuple))
+            if (InEdges.Keys.Contains(vertex))
             {
-                foreach (ResolvedNodeLayerTuple tuple in InEdges[refTuple].Keys)
+                foreach (ResolvedNodeLayerTuple tuple in InEdges[vertex].Keys)
                 {
                     NodeLayerTuple tgt = new NodeLayerTuple(tuple.nodeId, M.UnaliasCoordinates(tuple.coordinates));
-                    retVal.Add(tgt, InEdges[refTuple][tuple]);
+                    retVal.Add(tgt, InEdges[vertex][tuple]);
                 }
             }
 
@@ -379,12 +405,12 @@ namespace Networks.Core
 
             if (EdgeList.Keys.Count() > 0)
                 writer.WriteLine(@":Interlayer edges");
-            foreach (ResolvedNodeLayerTuple from in EdgeList.Keys)
+            foreach (uint from in EdgeList.Keys)
             {
                 Dictionary<ResolvedNodeLayerTuple, float> targets = EdgeList[from];
                 foreach (ResolvedNodeLayerTuple to in targets.Keys)
                 {
-                    writer.WriteLine(from.nodeId.ToString() + ":" + string.Join(",", M.UnaliasCoordinates(from.coordinates)) + delimiter + to.nodeId.ToString() + ":" + string.Join(",", M.UnaliasCoordinates(to.coordinates)) + delimiter + targets[to].ToString());
+                    writer.WriteLine(from.ToString() + ":" + string.Join(",", M.UnaliasCoordinates(layerCoordinates)) + delimiter + to.nodeId.ToString() + ":" + string.Join(",", M.UnaliasCoordinates(to.coordinates)) + delimiter + targets[to].ToString());
                 }
             }
         }
