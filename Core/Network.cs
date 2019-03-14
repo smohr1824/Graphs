@@ -102,7 +102,12 @@ namespace Networks.Core
         /// </summary>
         public List<uint> Vertices
         {
-             get { return EdgeList.Keys.ToList<uint>(); }
+            get
+            {
+                List<uint> retVal = EdgeList.Keys.ToList<uint>();
+                retVal.Sort();
+                return retVal;
+            }
         }
 
         /// <summary>
