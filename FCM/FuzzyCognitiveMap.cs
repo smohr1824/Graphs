@@ -39,28 +39,19 @@ namespace Networks.FCM
         private uint nextNodeId = 0;
         private bool dirty = false;
         private float[,] adjacencyMatrix = null;
-        private float[] conceptVector = null;
+        private uint[] currentKeys = null;
         public delegate float threshold(float f);
-        private bool modified;
+        private bool modifiedKosko;
         private threshold tfunc;
 
-        public float[] StateVector
-        {
-            get
-            {
-                if (conceptVector == null)
-                    Prepare();
-                return conceptVector;
-            }
-        }
-
+        #region constructors
         public FuzzyCognitiveMap()
         {
             Concepts = new Dictionary<uint, CognitiveConcept>();
             reverseLookup = new Dictionary<string, uint>();
             model = new Network(true);
             tfunc = new threshold(bivalent);
-            modified = false;
+            modifiedKosko = false;
         }
 
         public FuzzyCognitiveMap(bool useModifiedKosko)
@@ -69,7 +60,7 @@ namespace Networks.FCM
             reverseLookup = new Dictionary<string, uint>();
             model = new Network(true);
             tfunc = new threshold(bivalent);
-            modified = useModifiedKosko;
+            modifiedKosko = useModifiedKosko;
         }
 
         public FuzzyCognitiveMap(threshold func)
@@ -78,7 +69,7 @@ namespace Networks.FCM
             reverseLookup = new Dictionary<string, uint>();
             model = new Network(true);
             tfunc = func;
-            modified = false;
+            modifiedKosko = false;
         }
 
         public FuzzyCognitiveMap(threshold func, bool useModifiedKosko)
@@ -87,9 +78,11 @@ namespace Networks.FCM
             reverseLookup = new Dictionary<string, uint>();
             model = new Network(true);
             tfunc = func;
-            modified = useModifiedKosko;
+            modifiedKosko = useModifiedKosko;
         }
+        #endregion
 
+        #region public methods
         public bool AddConcept(string conceptName, float initial = 0.0F, float level = 0.0F)
         {
             if (!reverseLookup.ContainsKey(conceptName))
@@ -139,20 +132,49 @@ namespace Networks.FCM
             }
         }
 
+        public float GetActivationLevel(string conceptName)
+        {
+            uint key;
+            float retVal = 0.0F;
+            if (reverseLookup.TryGetValue(conceptName, out key))
+            {
+                retVal = Concepts[key].ActivationLevel;
+            }
+            else
+            {
+                throw new Exception(conceptName + " not found in map");
+            }
+            return retVal;
+        }
+
         public void Step()
         {
             if (dirty)
                 Prepare();
 
             if (Concepts.Keys.Count > 100)
-                ParallelMultiply(modified);
+                ParallelMultiply(modifiedKosko);
             else
-                Multiply(modified);
+                Multiply(modifiedKosko);
+        }
 
-            for (uint i = 0; i < Concepts.Keys.Count; i++)
+        public FCMState ReportState()
+        {
+            int dim = Concepts.Keys.Count;
+            string[] retConcepts = new string[dim];
+            float[] retValues = new float[dim];
+
+            int i = 0;
+            foreach (KeyValuePair<uint, CognitiveConcept> kvp in Concepts)
             {
-                Concepts[i].ActivationLevel = conceptVector[i];
+                retConcepts[i] = kvp.Value.Name;
+                retValues[i] = kvp.Value.ActivationLevel;
+                i++;
             }
+            FCMState retState = new FCMState();
+            retState.ConceptNames = retConcepts;
+            retState.ActivationValues = retValues;
+            return retState;
         }
 
         public void Reset()
@@ -189,16 +211,20 @@ namespace Networks.FCM
 
         public void SetActivationRule(bool useModifiedKosko)
         {
-            modified = useModifiedKosko;
+            modifiedKosko = useModifiedKosko;
         }
+        #endregion
 
         private float[] MakeConceptVector()
         {
             float[] vector = new float[Concepts.Keys.Count];
-            int i = 0;
-            foreach (KeyValuePair<uint, CognitiveConcept> kvp in Concepts)
+
+            // the supra-adjacency matrix is constructed in ascending order of the uint id assigned to each concept, hence we MUST use Concepts to correctly match matrix elements to
+            // named concepts
+            int dim = Concepts.Keys.Count;
+            for (uint i = 0; i < dim; i++)
             {
-                vector[i++] = kvp.Value.ActivationLevel;
+                vector[i] = Concepts[i].ActivationLevel;
             }
             return vector;
         }
@@ -216,21 +242,24 @@ namespace Networks.FCM
 
         private void Multiply(bool modified)
         {
-            int dim = conceptVector.Length;
+            int dim = Concepts.Keys.Count;
             float[] newConceptVector = new float[dim];
-            for (uint i = 0; i < dim; i++)
-                newConceptVector[i] = conceptVector[i];
 
-            for (int i = 0; i < dim; i++)
+            // This hideous bit is due to a. the ability to add and delete Concepts, b. Concepts are id'd in the graph with uint's, and c. the adjacency matrix is constructed
+            // in ascending sort order -- the id's may not be contiguous due to deletes, but they will be in order. 
+
+            for (uint i = 0; i < dim; i++)
             {
                 float sum = 0.0F;
-                for (int j = 0; j < dim; j++)
+                for (uint j = 0; j < dim; j++)
                 {
-                    sum += conceptVector[j] * adjacencyMatrix[j, i]; 
+
+                    
+                    sum += Concepts[currentKeys[j]].ActivationLevel * adjacencyMatrix[j, i]; 
                 }
                 if (modified)
                 {
-                    newConceptVector[i] = tfunc(conceptVector[i] + sum);
+                    newConceptVector[i] = tfunc(Concepts[i].ActivationLevel + sum);
                 }
                 else
                 {
@@ -238,50 +267,48 @@ namespace Networks.FCM
                 }
             }
 
-            for (uint j = 0; j < dim; j++)
-                conceptVector[j] = newConceptVector[j];
+            for (int k = 0; k < dim; k++)
+                Concepts[currentKeys[k]].ActivationLevel = newConceptVector[k];
+
         }
 
         private void ParallelMultiply(bool modified)
         {
-            if (conceptVector.Length == Concepts.Keys.Count)
+
+            int dim = Concepts.Keys.Count;
+            float[] newConceptVector = new float[dim];
+
+            var result = Parallel.For(0, dim, i =>
             {
-                int dim = conceptVector.Length;
-                float[] newConceptVector = new float[dim];
-                for (uint i = 0; i < dim; i++)
-                    newConceptVector[i] = conceptVector[i];
-
-                var result = Parallel.For(0, dim, i =>
+                float sum = 0.0F;
+                for (uint j = 0; j < dim; ++j) // each col of B
                 {
-                    float sum = 0.0F;
-                    for (int j = 0; j < dim; ++j) // each col of B
-                    {
-                        sum += conceptVector[j] * adjacencyMatrix[j, i];
-                    }
-                    if (modified)
-                    {
-                        newConceptVector[i] = tfunc(conceptVector[i] + sum);
-                    }
-                    else
-                    {
-                        newConceptVector[i] = tfunc(sum);
-                    }
+                    sum += Concepts[j].ActivationLevel * adjacencyMatrix[j, i];
                 }
-                );
-
-                for (uint j = 0; j < dim; j++)
-                    conceptVector[j] = newConceptVector[j];
+                if (modified)
+                {
+                    newConceptVector[i] = tfunc(Concepts[(uint)i].ActivationLevel + sum);
+                }
+                else
+                {
+                    newConceptVector[i] = tfunc(sum);
+                }
             }
+            );
+
+            for (int k = 0; k < dim; k++)
+                Concepts[currentKeys[k]].ActivationLevel = newConceptVector[k];
         }
 
         private void Prepare()
         {
             adjacencyMatrix = model.AdjacencyMatrix;
-            conceptVector = new float[Concepts.Keys.Count];
-            for (uint i = 0; i < Concepts.Keys.Count; i++)
-            {
-                conceptVector[i] = Concepts[i].ActivationLevel;
-            }
+            uint[] keys = new uint[Concepts.Count];
+            Concepts.Keys.CopyTo(keys, 0);
+            List<uint> keySorter = new List<uint>(keys);
+            keySorter.Sort();
+            currentKeys = keySorter.ToArray();
+
             dirty = false;
         }
 

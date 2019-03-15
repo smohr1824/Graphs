@@ -134,9 +134,12 @@ namespace TestApp
 
         private static void WriteStateVector(FuzzyCognitiveMap map)
         {
+            FCMState state = map.ReportState();
             Console.Write("( ");
-            foreach (float val in map.StateVector)
-                Console.Write(val.ToString("F1") + " ");
+            for (int i = 0; i < state.ConceptNames.Length; i++)
+            {
+                Console.Write(state.ConceptNames[i] + ": " + state.ActivationValues[i].ToString("F1") + " ");
+            }
             Console.WriteLine(")");
         }
         private static void TestNewAdj()
