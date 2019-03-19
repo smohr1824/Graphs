@@ -313,7 +313,7 @@ namespace Networks.FCM
                 float sum = 0.0F;
                 for (uint j = 0; j < dim; ++j) // each col of B
                 {
-                    sum += Concepts[j].ActivationLevel * adjacencyMatrix[j, i];
+                    sum += Concepts[currentKeys[j]].ActivationLevel * adjacencyMatrix[j, i];
                 }
                 if (modified)
                 {
