@@ -52,7 +52,8 @@ namespace TestApp
             //WriteGML();
             //TestEdgeWeight();
             //TestBigBipartite();
-            TestFCM();
+            //TestFCM();
+            PerfTestFCM();
             return;
 
 
@@ -123,13 +124,78 @@ namespace TestApp
             fcm.AddInfluence("B", "E", -1.0F);
             fcm.AddInfluence("E", "A", -1.0F);
             fcm.AddInfluence("D", "B", 1.0F);
+            fcm.AddInfluence("E", "F", -1.0F);
 
+            Console.WriteLine("Algebraic inference");
             WriteStateVector(fcm);
             for (int i = 0; i < 5; i++)
             {
                 fcm.Step();
                 WriteStateVector(fcm);
             }
+
+            fcm.Reset();
+            Console.WriteLine("Algorithmic inference");
+            WriteStateVector(fcm);
+            for (int i = 0; i < 5; i++)
+            {
+                fcm.StepWalk();
+                WriteStateVector(fcm);
+            }
+        }
+
+        private static void PerfTestFCM()
+        {
+            FuzzyCognitiveMap fcm = new FuzzyCognitiveMap(false);
+            fcm.AddConcept("A", 1.0F, 1.0F);
+            fcm.AddConcept("B", 0.0F, 0.0F);
+            fcm.AddConcept("C", 1.0F, 1.0F);
+            fcm.AddConcept("D", 0.0F, 0.0F);
+            fcm.AddConcept("E", 0.0F, 0.0F);
+            fcm.AddConcept("F", 1.0F, 1.0F);
+            fcm.AddConcept("G", 1.0F, 1.0F);
+            fcm.AddConcept("H", 0.0F, 0.0F);
+            fcm.AddConcept("I", 0.0F, 0.0F);
+            fcm.AddConcept("J", 0.0F, 0.0F);
+
+            fcm.AddInfluence("B", "A", 1.0F);
+            fcm.AddInfluence("A", "C", 1.0F);
+            fcm.AddInfluence("C", "E", 1.0F);
+            fcm.AddInfluence("E", "D", 1.0F);
+            fcm.AddInfluence("D", "C", -1.0F);
+            fcm.AddInfluence("B", "E", -1.0F);
+            fcm.AddInfluence("E", "A", -1.0F);
+            fcm.AddInfluence("D", "B", 1.0F);
+            fcm.AddInfluence("F", "E", 1.0F);
+            fcm.AddInfluence("F", "B", 1.0F);
+            fcm.AddInfluence("F", "A", 1.0F);
+            fcm.AddInfluence("G", "C", -1.0F);
+            fcm.AddInfluence("H", "G", -1.0F);
+            fcm.AddInfluence("C", "H", 1.0F);
+            fcm.AddInfluence("H", "J", 1.0F);
+            fcm.AddInfluence("H", "I", 1.0F);
+            fcm.AddInfluence("I", "J", -1.0F);
+            fcm.AddInfluence("E", "J", 1.0F);
+
+            long start = DateTime.UtcNow.Ticks;
+            for (int i = 0; i < 100000; i++)
+            {
+                fcm.Step();
+            }
+            long end = DateTime.UtcNow.Ticks;
+            Console.WriteLine($"100,000 inferences algebraically took {(end - start) / 10000} milliseconds");
+            WriteStateVector(fcm);
+
+            fcm.Reset();
+            start = DateTime.UtcNow.Ticks;
+            for (int k = 0; k < 100000; k++)
+            {
+                fcm.StepWalk();
+            }
+            end = DateTime.UtcNow.Ticks;
+            Console.WriteLine($"100,000 inferences algorithmically took {(end - start) / 10000} milliseconds");
+            WriteStateVector(fcm);
+            Console.ReadLine();
         }
 
         private static void WriteStateVector(FuzzyCognitiveMap map)

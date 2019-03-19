@@ -147,6 +147,8 @@ namespace Networks.FCM
             return retVal;
         }
 
+        // perform one iteration of inference algebraically using the adjacency matrix and the state activation vector
+        // Parallel multiplication is used when the number of concepts exceeds 100
         public void Step()
         {
             if (dirty)
@@ -156,6 +158,34 @@ namespace Networks.FCM
                 ParallelMultiply(modifiedKosko);
             else
                 Multiply(modifiedKosko);
+        }
+
+        // perform one iteration of inference algorithmically using the incoming edges of each concept node
+        public void StepWalk()
+        {
+            int dim = Concepts.Keys.Count;
+            float[] newConceptVector = new float[dim];
+            PrepareKeys();
+            for (uint i = 0; i < dim; i++)
+            {
+                float sum = 0.0F;
+                Dictionary<uint, float> influences = model.GetSources(currentKeys[i]);
+                foreach (KeyValuePair<uint, float> influence in influences)
+                {
+                    sum += Concepts[influence.Key].ActivationLevel * influence.Value;
+                }
+                if (modifiedKosko)
+                {
+                    newConceptVector[i] = tfunc(Concepts[i].ActivationLevel + sum);
+                }
+                else
+                {
+                    newConceptVector[i] = tfunc(sum);
+                }
+            }
+
+            for (int k = 0; k < dim; k++)
+                Concepts[currentKeys[k]].ActivationLevel = newConceptVector[k];
         }
 
         public FCMState ReportState()
@@ -303,13 +333,17 @@ namespace Networks.FCM
         private void Prepare()
         {
             adjacencyMatrix = model.AdjacencyMatrix;
+            PrepareKeys();
+            dirty = false;
+        }
+
+        private void PrepareKeys()
+        {
             uint[] keys = new uint[Concepts.Count];
             Concepts.Keys.CopyTo(keys, 0);
             List<uint> keySorter = new List<uint>(keys);
             keySorter.Sort();
             currentKeys = keySorter.ToArray();
-
-            dirty = false;
         }
 
         private float bivalent(float f)
