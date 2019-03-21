@@ -5,7 +5,8 @@ Research code for working with graphs
 Graphs are represented by the Network class.  Clusters are represented by HashSet&lt;uint&gt;, where the uint is a vertex id.  Graphs are loaded
 via the static NetworkSerializer class, while the similar ClusterSerializer class exists for clusters. 
 
-Mulitlayer graphs are implemented via the MultilayerNetwork class and serialized via the MultilayerNetworkSerializer class.  Multilayer graphs explicitly store intralayer and non-node coupled interlayer edges in adjacency lists.  Node coupled interlayer edges are supported algorithmically.  Node coupling may be limited to a single aspect.  When so constrained, node coupling may be further limited to ordinal coupling, herein defined as a layer immediately adjacent to the source layer.
+Multilayer graphs are implemented via the MultilayerNetwork class and serialized via the MultilayerNetworkSerializer class.  Multilayer graphs explicitly store intralayer and non-node coupled interlayer edges in adjacency lists.  Node coupled interlayer edges are supported algorithmically.  Node coupling may be limited to a single aspect.  When so constrained, node coupling may be further limited to ordinal coupling, herein defined as a layer immediately adjacent to the source layer.
+Elementary layers may be flattened to create a supra-adjacency matrix if and only if the multilayer network is node-aligned.  The capability to pad non-node-aligned networks when creating this matrix is planned.
 
 ### Serialization Format
 Each line of a graph represents an edge adjacency list.  The first uint is the from vertex, followed by the delimiter character, followed by,
@@ -32,5 +33,11 @@ IsBipartite tests a network for bipartness.  If successful, the two sets of vert
 Additional algorithm implementations are planned.
 
 The FCM namespace adds basic fuzzy cognitive map capability utilizing the Network class behind the scenes. The threshold function for map inference may be set to bivalent, trivalent, or logistic by specifying an enumerated type, or the user may implement a custom function by creating a delegate of the form float f(float sum). If no threshold function is specified, the map defaults to bivalent. Similarly, the user may select the classic or modified Kosko equation for map inference.  The default is classic. Multiple cores are used to improve performance when the number of cencepts exceeds 100.
+The Step method of the FuzzyCognitiveMap class performs one generation of inference using algebraic methods, while the StepWalk method performs the same task by walking the list of concepts and performing the calculation algorithmically.  Step executes with O(N^3) complexity, while
+StepWalk executes with O(|V| + |E|) complexity.
+
+Multilayer fuzzy cognitive maps are added as well. Presently, inference is only supported algorithmically.
+
+Serialization of fuzzy cognitive maps and multilayer fuzzy cognitive maps is planned.
 
 

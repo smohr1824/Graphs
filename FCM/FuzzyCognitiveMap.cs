@@ -25,12 +25,7 @@ using Networks.Core;
 
 namespace Networks.FCM
 {
-    public enum thresholdType
-    {
-        BIVALENT = 0,
-        TRIVALENT = 1,
-        LOGISTIC = 2
-    } ;
+
     public class FuzzyCognitiveMap
     {
         public Dictionary<uint, CognitiveConcept> Concepts { get; private set; }

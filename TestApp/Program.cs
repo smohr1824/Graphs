@@ -53,7 +53,8 @@ namespace TestApp
             //TestEdgeWeight();
             //TestBigBipartite();
             //TestFCM();
-            PerfTestFCM();
+            //PerfTestFCM();
+            TestMLFCMBasic();
             return;
 
 
@@ -198,6 +199,50 @@ namespace TestApp
             Console.ReadLine();
         }
 
+        private static void TestMLFCMBasic()
+        {
+
+            List<string> indices = new List<string>();
+            indices.Add("I");
+            indices.Add("II");
+            List<Tuple<string, IEnumerable<string>>> dimensions = new List<Tuple<string, IEnumerable<string>>>();
+            dimensions.Add(new Tuple<string, IEnumerable<string>>("levels", indices));
+
+            MultilayerFuzzyCognitiveMap fcm = new MultilayerFuzzyCognitiveMap(dimensions);
+            List<string> layer1 = new List<string>();
+            layer1.Add("I");
+            List<string> layer2 = new List<string>();
+            layer2.Add("II");
+            fcm.AddConcept("A", layer1, 1.0F, 1.0F);
+            fcm.AddConcept("B", layer1, 0.0F, 0.0F);
+            fcm.AddConcept("C", layer1, 0.0F, 0.0F);
+
+            fcm.AddConcept("A", layer2, 1.0F, 1.0F);
+            fcm.AddConcept("D", layer2, 0.0F, 0.0F);
+            fcm.AddConcept("E", layer2, 0.0F, 0.0F);
+
+            fcm.AddInfluence("A", layer1, "B", layer1, 1.0F);
+            fcm.AddInfluence("A", layer1, "C", layer1, 1.0F);
+            fcm.AddInfluence("A", layer2, "D", layer2, 1.0F);
+            fcm.AddInfluence("D", layer2, "E", layer2, 1.0F);
+            fcm.AddInfluence("E", layer2, "A", layer1, 1.0F);
+
+            List<string> concepts = fcm.ListConcepts();
+            for (int i = 0; i < 4; i++)
+            {
+                Console.WriteLine($"Step {i}");
+                fcm.StepWalk();
+                foreach (string concept in concepts)
+                {
+                    MLConceptState state = fcm.ReportConceptState(concept);
+                    Console.WriteLine($"{concept}: {state.AggregateLevel}");
+                    int dim = state.LayerLevels.Count();
+                    for (int k = 0; k < dim; k++)
+                        Console.WriteLine($"\tLayer {string.Join(",", state.Layers[k])}: {state.LayerLevels[k]}");
+                }
+                Console.WriteLine();
+            }
+        }
         private static void WriteStateVector(FuzzyCognitiveMap map)
         {
             FCMState state = map.ReportState();

@@ -182,13 +182,21 @@ namespace CoreTests
         public void TestMultilayerSources()
         {
             MultilayerNetwork Q = MultilayerNetworkSerializer.ReadMultilayerNetworkFromFile(@"..\..\work\multilayer_test.dat", true);
-            Dictionary<NodeLayerTuple, float> sources = Q.GetSources(new NodeLayerTuple(2, "control,SLTC"));
+            Dictionary<NodeLayerTuple, float> sources = Q.GetSources(new NodeLayerTuple(2, "control,SLTC"), true);
             Assert.AreEqual(sources.Count, 5);
             NodeLayerTuple test = new NodeLayerTuple(1, "control,PHL");
             bool check = sources.ContainsKey(test);
             float wt = sources[test];
             Assert.AreEqual(sources.ContainsKey(test), true);
             Assert.AreEqual(sources[test], 1.0F, 0.01F);
+
+            sources = Q.GetSources(new NodeLayerTuple(1, "control,SLTC"), false);
+            Assert.AreEqual(sources.Count, 1);
+            test = new NodeLayerTuple(3, "control,PHL");
+            check = sources.ContainsKey(test);
+            wt = sources[test];
+            Assert.AreEqual(sources.ContainsKey(test), true);
+            Assert.AreEqual(sources[test], 4.0F, 0.01F);
 
             sources = Q.CategoricalGetSources(new NodeLayerTuple(1, "control,SLTC"), "process");
             Assert.AreEqual(sources.Count, 1);

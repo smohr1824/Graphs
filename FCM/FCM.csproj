@@ -43,7 +43,11 @@
     <Compile Include="CognitiveConcept.cs" />
     <Compile Include="FCMState.cs" />
     <Compile Include="FuzzyCognitiveMap.cs" />
+    <Compile Include="MLConceptState.cs" />
+    <Compile Include="MultilayerCognitiveConcept.cs" />
+    <Compile Include="MultilayerFuzzyCognitiveMap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="thresholdType.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj">

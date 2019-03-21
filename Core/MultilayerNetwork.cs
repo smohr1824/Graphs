@@ -228,6 +228,21 @@ namespace Networks.Core
                 return 0F;
         }
 
+        public List<NodeLayerTuple> GetVertexInstances(uint id)
+        {
+            List<NodeLayerTuple> retVal = new List<NodeLayerTuple>();
+
+            List<ElementaryLayer> layers;
+            if (nodeIdsAndLayers.TryGetValue(id, out layers))
+            {
+                foreach (ElementaryLayer layer in layers)
+                {
+                    retVal.Add(new NodeLayerTuple(id, layer.AspectCoordinates));
+                }
+            }
+            return retVal;
+        }
+
         /// <summary>
         /// Returns a dictionary of vertices and the weights to reach them such that the vertices are adjacent to the given vertex, to include node-coupled neighbors.
         /// In other words, the neighbors will include those vertices neighboring any vertex with the same id in other layers.
@@ -271,7 +286,7 @@ namespace Networks.Core
             return retVal;
         }
 
-        public Dictionary<NodeLayerTuple, float> GetSources(NodeLayerTuple vertex)
+        public Dictionary<NodeLayerTuple, float> GetSources(NodeLayerTuple vertex, bool coupled)
         {
             if (!nodeIdsAndLayers.Keys.Contains(vertex.nodeId))
                 throw new ArgumentException($"Vertex {vertex.nodeId} does not exist anywhere in the multilayer network.");
@@ -283,24 +298,27 @@ namespace Networks.Core
             // Get the neighbors in the elementary layer and those neighbors explicitly linked by an interlayer edge
             Dictionary<NodeLayerTuple, float> retVal = new Dictionary<NodeLayerTuple, float>(elementaryLayers[resolvedCoords].GetSources(vertex.nodeId), new NodeLayerTupleEqualityComparer());
 
-            // Add node-coupled neighbors (zero-length, bidirectional)
-            // node coupling as implemented enables inter-aspect coupling
-            foreach (ElementaryLayer layer in nodeIdsAndLayers[vertex.nodeId])
+            if (coupled)
             {
-                if (layer.ResolvedCoordinates.SequenceEqual(resolvedCoords))
-                    continue;
-
-                Dictionary<NodeLayerTuple, float> nghrs = layer.GetSources(vertex.nodeId);
-                foreach (KeyValuePair<NodeLayerTuple, float> kvp in nghrs)
+                // Add node-coupled neighbors (zero-length, bidirectional)
+                // node coupling as implemented enables inter-aspect coupling
+                foreach (ElementaryLayer layer in nodeIdsAndLayers[vertex.nodeId])
                 {
-                    // an explicit interlayer edge may duplicate a node-coupled edge;
-                    // if so, it replaces it
-                    if (!retVal.ContainsKey(kvp.Key))
-                        retVal.Add(kvp.Key, kvp.Value);
-                    else
+                    if (layer.ResolvedCoordinates.SequenceEqual(resolvedCoords))
+                        continue;
+
+                    Dictionary<NodeLayerTuple, float> nghrs = layer.GetSources(vertex.nodeId);
+                    foreach (KeyValuePair<NodeLayerTuple, float> kvp in nghrs)
                     {
-                        retVal.Remove(kvp.Key);
-                        retVal.Add(kvp.Key, kvp.Value);
+                        // an explicit interlayer edge may duplicate a node-coupled edge;
+                        // if so, it replaces it
+                        if (!retVal.ContainsKey(kvp.Key))
+                            retVal.Add(kvp.Key, kvp.Value);
+                        else
+                        {
+                            retVal.Remove(kvp.Key);
+                            retVal.Add(kvp.Key, kvp.Value);
+                        }
                     }
                 }
             }
@@ -406,7 +424,7 @@ namespace Networks.Core
             if (!ordinal)
                 epsilon = indices[indexOfAspect].Count();
 
-            // Get node-coupled neighbors given the constrainsts on node coupling
+            // Get node-coupled neighbors given the constraints on node coupling
             foreach (ElementaryLayer layer in nodeIdsAndLayers[vertex.nodeId])
             {
                 if (layer.ResolvedCoordinates.SequenceEqual(resolvedCoords))
@@ -616,12 +634,15 @@ namespace Networks.Core
                 }
                 fromLayer.AddEdge(rFrom, rTo, wt);
             }
+            else
+            {
 
-            if (!fromLayer.HasVertex(from.nodeId) || !toLayer.HasVertex(to.nodeId))
-                throw new ArgumentException($"Edge cannot be added unless both vertices exist (from: {from}, to: {to}).");
+                if (!fromLayer.HasVertex(from.nodeId) || !toLayer.HasVertex(to.nodeId))
+                    throw new ArgumentException($"Edge cannot be added unless both vertices exist (from: {from}, to: {to}).");
 
-            elementaryLayers[rFrom.coordinates].AddEdge(rFrom, rTo, wt);
-            elementaryLayers[rTo.coordinates].AddInEdge(rTo, rFrom, wt);
+                elementaryLayers[rFrom.coordinates].AddEdge(rFrom, rTo, wt);
+                elementaryLayers[rTo.coordinates].AddInEdge(rTo, rFrom, wt);
+            }
 
         }
 
