@@ -55,6 +55,7 @@ namespace TestApp
             //TestFCM();
             //PerfTestFCM();
             TestMLFCMBasic();
+            Console.ReadLine();
             return;
 
 
@@ -228,24 +229,53 @@ namespace TestApp
             fcm.AddInfluence("E", layer2, "A", layer1, 1.0F);
 
             List<string> concepts = fcm.ListConcepts();
-            for (int i = 0; i < 4; i++)
+
+            string[] layerI = { "I" };
+            string[] layerII = { "II" };
+            List<string> levelICoords = new List<string>(layerI);
+            List<string> levelIICoords = new List<string>(layerII);
+            Console.WriteLine("Starting State");
+            FCMState initial = fcm.ReportLayerState(levelICoords);
+            WriteLayerState(levelICoords, initial);
+            
+            initial = fcm.ReportLayerState(levelIICoords);
+            WriteLayerState(levelIICoords, initial);
+            Console.WriteLine();
+
+            for (int i = 1; i < 4; i++)
             {
-                Console.WriteLine($"Step {i}");
+                // Console.WriteLine($"Step {i}");
                 fcm.StepWalk();
-                foreach (string concept in concepts)
-                {
-                    MLConceptState state = fcm.ReportConceptState(concept);
-                    Console.WriteLine($"{concept}: {state.AggregateLevel}");
-                    int dim = state.LayerLevels.Count();
-                    for (int k = 0; k < dim; k++)
-                        Console.WriteLine($"\tLayer {string.Join(",", state.Layers[k])}: {state.LayerLevels[k]}");
-                }
+                //foreach (string concept in concepts)
+                //{
+                //MLConceptState state = fcm.ReportConceptState(concept);
+                //Console.WriteLine($"{concept}: {state.AggregateLevel}");
+                //int dim = state.LayerLevels.Count();
+                //for (int k = 0; k < dim; k++)
+                //    Console.WriteLine($"\tLayer {string.Join(",", state.Layers[k])}: {state.LayerLevels[k]}");
+                //}
+                Console.WriteLine($"Iteration {i}");
+                FCMState state = fcm.ReportLayerState(levelICoords);
+                WriteLayerState(levelICoords, state);
+                state = fcm.ReportLayerState(levelIICoords);
+                WriteLayerState(levelIICoords, state);
                 Console.WriteLine();
             }
         }
         private static void WriteStateVector(FuzzyCognitiveMap map)
         {
             FCMState state = map.ReportState();
+            Console.Write("( ");
+            for (int i = 0; i < state.ConceptNames.Length; i++)
+            {
+                Console.Write(state.ConceptNames[i] + ": " + state.ActivationValues[i].ToString("F1") + " ");
+            }
+            Console.WriteLine(")");
+        }
+
+        private static void WriteLayerState(List<string> layerCoords, FCMState state)
+        {
+            Console.Write(string.Join(",", layerCoords) + ": ");
             Console.Write("( ");
             for (int i = 0; i < state.ConceptNames.Length; i++)
             {

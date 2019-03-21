@@ -1,4 +1,26 @@
-﻿using System;
+﻿// MIT License
+
+// Copyright(c) 2017 - 2019 Stephen Mohr 
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -82,6 +104,32 @@ namespace Networks.FCM
                 retState.Layers = retLayers;
             }
             return retState;
+        }
+
+        public FCMState ReportLayerState(List<string> layerCoords)
+        {
+            FCMState retVal = new FCMState();
+            List<string> retConcepts = new List<string>();
+            List<float> retLevels = new List<float>();
+
+            foreach (KeyValuePair<uint, MultilayerCognitiveConcept> kvp in Concepts)
+            {
+                // add the activation level if found; if the concept does not participate in the layer, GetLayerActivationLevel throws an exception
+                try
+                {
+                    float level = kvp.Value.GetLayerActivationLevel(layerCoords);
+                    retConcepts.Add(kvp.Value.Name);
+                    retLevels.Add(level);
+                }
+                catch (Exception)
+                {
+                    
+                }
+            }
+
+            retVal.ConceptNames = retConcepts.ToArray();
+            retVal.ActivationValues = retLevels.ToArray();
+            return retVal;
         }
 
         // Adds a concept to an elementary layer
@@ -181,6 +229,33 @@ namespace Networks.FCM
 
                 dirty = true;
             }
+        }
+
+        public float GetActivationLevel(string conceptName)
+        {
+            uint id;
+            if (!reverseLookup.TryGetValue(conceptName, out id))
+            {
+                throw new ArgumentException($"Concept {conceptName} not found in network.");
+            }
+
+            // concept found, return value
+            return Concepts[id].GetAggregateActivationLevel();
+        }
+
+        public float GetConceptLayerActivationLevel(string conceptName, List<string> coords)
+        {
+            uint id;
+            if (!reverseLookup.TryGetValue(conceptName, out id))
+            {
+                throw new ArgumentException($"Concept {conceptName} not found in network.");
+            }
+
+            MultilayerCognitiveConcept concept = Concepts[id];
+
+            // GetLayerActivationLevel throws an ArgumentException if the concept is not found in that layer
+            float retVal = concept.GetLayerActivationLevel(coords);
+            return retVal;
         }
 
         public void StepWalk()

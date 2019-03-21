@@ -1,4 +1,6 @@
-﻿// Copyright(c) 2017 - 2019 Stephen Mohr 
+﻿// MIT License
+
+// Copyright(c) 2017 - 2019 Stephen Mohr 
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +36,7 @@ namespace Networks.FCM
         private uint nextNodeId = 0;
         private bool dirty = false;
         private float[,] adjacencyMatrix = null;
+        // TODO: modify iteration to use enumerator instead of maintaining currentKeys
         private uint[] currentKeys = null;
         public delegate float threshold(float f);
         private bool modifiedKosko;
