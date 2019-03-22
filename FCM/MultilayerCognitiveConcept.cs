@@ -32,7 +32,7 @@ namespace Networks.FCM
     public class MultilayerCognitiveConcept : CognitiveConcept
     {
         // map of layer coordinates to the activation level of the concept in that elementary layer
-        Dictionary<List<string>, float> layerActivationLevels;
+        private Dictionary<List<string>, float> layerActivationLevels;
         public MultilayerCognitiveConcept(string name, float initialValue = 0.0F, float level = 0.0F) : base(name, initialValue, level)
         {
             layerActivationLevels = new Dictionary<List<string>, float>(new UnresolvedCoordinateTupleEqualityComparer());

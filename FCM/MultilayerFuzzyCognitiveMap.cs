@@ -36,7 +36,9 @@ namespace Networks.FCM
         private bool modifiedKosko;
         private threshold tfunc;
         private uint nextNodeId = 0;
-        private bool dirty = false;
+        
+        //uncomment when implementing algebraic inference
+        // private bool dirty = false;
         public Dictionary<uint, MultilayerCognitiveConcept> Concepts { get; private set; }
         private Dictionary<string, uint> reverseLookup;
 
@@ -147,7 +149,7 @@ namespace Networks.FCM
                     model.AddElementaryLayer(coords, new Network(true));
                 model.AddVertex(tuple);
                 nextNodeId++;
-                dirty = true;
+                //dirty = true;
                 return true;
             }
             else
@@ -162,7 +164,7 @@ namespace Networks.FCM
                     MultilayerCognitiveConcept concept = Concepts[existingKey];
                     concept.SetLayerLevel(coords, level);
                     model.AddVertex(tuple);
-                    dirty = true;
+                    //dirty = true;
                     return true;
                 }
                 else
@@ -186,7 +188,7 @@ namespace Networks.FCM
                     model.RemoveVertex(tuple);
                 }
                 Concepts.Remove(id);
-                dirty = true;
+                //dirty = true;
             }
         }
 
@@ -206,7 +208,7 @@ namespace Networks.FCM
                 {
                     return;
                 }
-                dirty = true;
+                //dirty = true;
             }
         }
 
@@ -227,7 +229,7 @@ namespace Networks.FCM
                     return;
                 }
 
-                dirty = true;
+                //dirty = true;
             }
         }
 

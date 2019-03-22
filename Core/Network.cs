@@ -523,15 +523,24 @@ namespace Networks.Core
             else
                 writer.WriteLine("\tdirected 0");
 
+            ListGMLNodes(writer);
+            ListGMLEdges(writer);
+
+            writer.WriteLine(@"]");
+        }
+
+        public void ListGMLNodes(TextWriter writer)
+        {
             foreach (uint key in Vertices)
             {
                 writer.WriteLine("\tnode [");
                 writer.WriteLine("\t\tid " + key);
                 writer.WriteLine("\t]");
             }
+        }
 
-            writer.WriteLine("\t]");
-
+        public void ListGMLEdges(TextWriter writer)
+        {
             foreach (uint key in EdgeList.Keys)
             {
                 Dictionary<uint, float> edges = EdgeList[key];
@@ -544,7 +553,6 @@ namespace Networks.Core
                     writer.WriteLine("\t]");
                 }
             }
-            writer.WriteLine(@"]");
         }
         #endregion
 

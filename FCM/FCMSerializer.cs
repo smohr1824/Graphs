@@ -27,33 +27,33 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Networks.Core
+namespace Networks.FCM
 {
-    public class GMLNetworkSerializer
+    public class FCMSerializer
     {
 
-        public static void WriteNetworkToFile(Network net, string filename)
+        public static void WriteNetworkToFile(FuzzyCognitiveMap net, string filename)
         {
             StreamWriter writer = new StreamWriter(filename);
             WriteNetwork(net, writer);
             writer.Close();
         }
 
-        public static void WriteNetwork(Network net, TextWriter writer)
+        public static void WriteNetwork(FuzzyCognitiveMap net, TextWriter writer)
         {
             net.ListGML(writer);
         }
 
-        public static Network ReadNetworkFromFile(string filename)
+        public static FuzzyCognitiveMap ReadNetworkFromFile(string filename)
         {
 
             StreamReader reader = new StreamReader(filename);   // don't catch any exceptions, let the caller respond
-            Network retVal = ReadNetwork(reader);
+            FuzzyCognitiveMap retVal = ReadNetwork(reader);
             reader.Close();
             return retVal;
         }
 
-        public static Network ReadNetwork(TextReader stIn)
+        public static FuzzyCognitiveMap ReadNetwork(TextReader stIn)
         {
             throw new NotImplementedException();
 

@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Networks.Core;
@@ -240,6 +241,31 @@ namespace Networks.FCM
         public void SetActivationRule(bool useModifiedKosko)
         {
             modifiedKosko = useModifiedKosko;
+        }
+
+        public void ListGML(TextWriter writer)
+        {
+            writer.WriteLine(@"graph [");
+            writer.WriteLine("\tdirected 1");
+
+            ListConcepts(writer);
+            model.ListGMLEdges(writer);
+
+            writer.WriteLine(@"]");
+        }
+
+        // List concepts as GML nodes so that Gephi, et al can be used for visualization
+        private void ListConcepts(TextWriter writer)
+        {
+            foreach (KeyValuePair<uint, CognitiveConcept> kvp in Concepts)
+            {
+                writer.WriteLine("\tnode [");
+                writer.WriteLine("\t\tid " + kvp.Key);
+                writer.WriteLine("\t\tlabel " + kvp.Value.Name);
+                writer.WriteLine("\t\tactivation " + kvp.Value.ActivationLevel.ToString("F4"));
+                writer.WriteLine("\t\tinitial " + kvp.Value.InitialValue.ToString("F4"));
+                writer.WriteLine("\t]");
+            }
         }
         #endregion
 

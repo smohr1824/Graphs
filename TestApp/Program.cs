@@ -54,7 +54,8 @@ namespace TestApp
             //TestBigBipartite();
             //TestFCM();
             //PerfTestFCM();
-            TestMLFCMBasic();
+            // TestMLFCMBasic();
+            TestWriteFCM();
             Console.ReadLine();
             return;
 
@@ -109,7 +110,7 @@ namespace TestApp
             Console.WriteLine($"Graph of 200,000 nodes is  bipartite {res}, took {(end - start) / 10000} milliseconds");
         }
 
-        private static void TestFCM()
+        private static FuzzyCognitiveMap MakeBasicFCM()
         {
             FuzzyCognitiveMap fcm = new FuzzyCognitiveMap(false);
             fcm.AddConcept("A", 1.0F, 1.0F);
@@ -127,6 +128,12 @@ namespace TestApp
             fcm.AddInfluence("E", "A", -1.0F);
             fcm.AddInfluence("D", "B", 1.0F);
             fcm.AddInfluence("E", "F", -1.0F);
+
+            return fcm;
+        }
+        private static void TestFCM()
+        {
+            FuzzyCognitiveMap fcm = MakeBasicFCM();
 
             Console.WriteLine("Algebraic inference");
             WriteStateVector(fcm);
@@ -198,6 +205,12 @@ namespace TestApp
             Console.WriteLine($"100,000 inferences algorithmically took {(end - start) / 10000} milliseconds");
             WriteStateVector(fcm);
             Console.ReadLine();
+        }
+
+        private static void TestWriteFCM()
+        {
+            FuzzyCognitiveMap fcm = MakeBasicFCM();
+            FCMSerializer.WriteNetworkToFile(fcm, @"..\..\work\basic.fcm");
         }
 
         private static void TestMLFCMBasic()
@@ -440,7 +453,7 @@ namespace TestApp
         private static void WriteGML()
         {
             Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\newadjtest.dat", false);
-            GMLNetworkSerializer.WriteNetworkToFile(G, @"..\..\work\newadjtest.gml");
+            GMLNetworkSerializer.WriteNetworkToFile(G, @"..\..\work\newadjtest2.gml");
         }
 
         private static void TestReadMultilayer()
