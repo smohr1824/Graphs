@@ -50,12 +50,13 @@ namespace TestApp
             //TestBig();
             //TestNewAdj();
             //WriteGML();
+            ReadGML();
             //TestEdgeWeight();
             //TestBigBipartite();
             //TestFCM();
             //PerfTestFCM();
             // TestMLFCMBasic();
-            TestWriteFCM();
+            //TestWriteFCM();
             Console.ReadLine();
             return;
 
@@ -453,7 +454,17 @@ namespace TestApp
         private static void WriteGML()
         {
             Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\newadjtest.dat", false);
-            GMLNetworkSerializer.WriteNetworkToFile(G, @"..\..\work\newadjtest2.gml");
+            GMLNetworkSerializer.WriteNetworkToFile(G, @"..\..\work\newadjtest.gml");
+        }
+
+        private static void ReadGML()
+        {
+            Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\work\newadjtest.dat", false);
+            GMLNetworkSerializer.WriteNetworkToFile(G, @"..\..\work\newadjtest.gml");
+
+            Network N = GMLNetworkSerializer.ReadNetworkFromFile(@"..\..\work\newadjtest.gml");
+            Console.WriteLine($"Input graph has {G.Order} nodes and {G.Size} edges");
+            Console.WriteLine($"Read graph has {N.Order} nodes and {N.Size} edges");
         }
 
         private static void TestReadMultilayer()

@@ -55,16 +55,24 @@ namespace Networks.FCM
 
         public static FuzzyCognitiveMap ReadNetwork(TextReader stIn)
         {
-            throw new NotImplementedException();
-
+            FuzzyCognitiveMap fcm = null;
+            string[] fields;
+            string line = string.Empty;
+            while ((line = stIn.ReadLine()) != null)
+            {
+                fields = SplitAndClean(line);
+                if (fields.Count() == 2)
+                {
+                    //swit
+                }
+            }
+            return fcm;
         }
 
-
-
         // split a line on whitespace -- we expect a name, value pair delimited by whitespace
-        private static string[] SplitAndClean()
+        private static string[] SplitAndClean(string line)
         {
-            string[] fields = Regex.Split("your string here", @"\s+");
+            string[] fields = Regex.Split(line, @"\s+");
             int len = fields.Count();
             for (int i = 0; i < len; i++)
             {
