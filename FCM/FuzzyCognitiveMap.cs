@@ -192,29 +192,35 @@ namespace Networks.FCM
         // perform one iteration of inference algorithmically using the incoming edges of each concept node
         public void StepWalk()
         {
+            Dictionary<uint, CognitiveConcept> nextConcepts = new Dictionary<uint, CognitiveConcept>();
             int dim = Concepts.Keys.Count;
-            float[] newConceptVector = new float[dim];
             PrepareKeys();
-            for (uint i = 0; i < dim; i++)
+            foreach (KeyValuePair<uint, CognitiveConcept> kvp in Concepts)
             {
                 float sum = 0.0F;
-                Dictionary<uint, float> influences = model.GetSources(currentKeys[i]);
+                CognitiveConcept concept = kvp.Value;
+                CognitiveConcept next = new CognitiveConcept(concept.Name);
+                Dictionary<uint, float> influences = model.GetSources(kvp.Key);
                 foreach (KeyValuePair<uint, float> influence in influences)
                 {
                     sum += Concepts[influence.Key].ActivationLevel * influence.Value;
                 }
                 if (modifiedKosko)
                 {
-                    newConceptVector[i] = tfunc(Concepts[i].ActivationLevel + sum);
+                    next.ActivationLevel = tfunc(Concepts[kvp.Key].ActivationLevel + sum);
                 }
                 else
                 {
-                    newConceptVector[i] = tfunc(sum);
+                    next.ActivationLevel = tfunc(sum);
                 }
+                nextConcepts.Add(kvp.Key, next);
             }
 
-            for (int k = 0; k < dim; k++)
-                Concepts[currentKeys[k]].ActivationLevel = newConceptVector[k];
+            
+            foreach (KeyValuePair<uint, CognitiveConcept> kvp in Concepts)
+            {
+                Concepts[kvp.Key].ActivationLevel = nextConcepts[kvp.Key].ActivationLevel;
+            }
         }
 
         public FCMState ReportState()
@@ -357,8 +363,6 @@ namespace Networks.FCM
                 float sum = 0.0F;
                 for (uint j = 0; j < dim; j++)
                 {
-
-                    
                     sum += Concepts[currentKeys[j]].ActivationLevel * adjacencyMatrix[j, i]; 
                 }
                 if (modified)

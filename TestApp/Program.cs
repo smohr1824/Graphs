@@ -53,10 +53,10 @@ namespace TestApp
             //ReadGML();
             //TestEdgeWeight();
             //TestBigBipartite();
-            //TestFCM();
+            TestFCM();
             //PerfTestFCM();
-            // TestMLFCMBasic();
-            TestWriteFCM();
+            //TestMLFCMBasic();
+            //TestWriteFCM();
             Console.ReadLine();
             return;
 
