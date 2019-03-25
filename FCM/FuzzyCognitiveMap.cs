@@ -28,7 +28,7 @@ using Networks.Core;
 
 namespace Networks.FCM
 {
-
+    public delegate float threshold(float f);
     public class FuzzyCognitiveMap
     {
         public Dictionary<uint, CognitiveConcept> Concepts { get; private set; }
@@ -39,8 +39,10 @@ namespace Networks.FCM
         private float[,] adjacencyMatrix = null;
         // TODO: modify iteration to use enumerator instead of maintaining currentKeys
         private uint[] currentKeys = null;
-        public delegate float threshold(float f);
+        
         private bool modifiedKosko;
+        private thresholdType tType;
+
         private threshold tfunc;
 
         #region constructors
@@ -49,6 +51,7 @@ namespace Networks.FCM
             Concepts = new Dictionary<uint, CognitiveConcept>();
             reverseLookup = new Dictionary<string, uint>();
             model = new Network(true);
+            tType = thresholdType.BIVALENT;
             tfunc = new threshold(bivalent);
             modifiedKosko = false;
         }
@@ -58,6 +61,7 @@ namespace Networks.FCM
             Concepts = new Dictionary<uint, CognitiveConcept>();
             reverseLookup = new Dictionary<string, uint>();
             model = new Network(true);
+            tType = thresholdType.BIVALENT;
             tfunc = new threshold(bivalent);
             modifiedKosko = useModifiedKosko;
         }
@@ -67,6 +71,7 @@ namespace Networks.FCM
             Concepts = new Dictionary<uint, CognitiveConcept>();
             reverseLookup = new Dictionary<string, uint>();
             model = new Network(true);
+            tType = thresholdType.CUSTOM;
             tfunc = func;
             modifiedKosko = false;
         }
@@ -76,12 +81,39 @@ namespace Networks.FCM
             Concepts = new Dictionary<uint, CognitiveConcept>();
             reverseLookup = new Dictionary<string, uint>();
             model = new Network(true);
+            tType = thresholdType.CUSTOM;
             tfunc = func;
+            modifiedKosko = useModifiedKosko;
+        }
+
+        public FuzzyCognitiveMap(thresholdType type, bool useModifiedKosko)
+        {
+            Concepts = new Dictionary<uint, CognitiveConcept>();
+            reverseLookup = new Dictionary<string, uint>();
+            model = new Network(true);
+            tType = type;
+            switch (type)
+            {
+                case thresholdType.BIVALENT:
+                    tfunc = new threshold(bivalent);
+                    break;
+                case thresholdType.TRIVALENT:
+                    tfunc = new threshold(trivalent);
+                    break;
+                case thresholdType.LOGISTIC:
+                    tfunc = new threshold(logistic);
+                    break;
+                case thresholdType.CUSTOM:
+                    tfunc = new threshold(bivalent);
+                    break;
+            }
             modifiedKosko = useModifiedKosko;
         }
         #endregion
 
         #region public methods
+
+        public thresholdType ThresholdType { get { return tType; } }
         public bool AddConcept(string conceptName, float initial = 0.0F, float level = 0.0F)
         {
             if (!reverseLookup.ContainsKey(conceptName))
@@ -247,6 +279,26 @@ namespace Networks.FCM
         {
             writer.WriteLine(@"graph [");
             writer.WriteLine("\tdirected 1");
+            writer.Write("\tthreshold ");
+            switch (tType)
+            {
+                case thresholdType.BIVALENT:
+                    writer.WriteLine("\"bivalent\"");
+                    break;
+                case thresholdType.TRIVALENT:
+                    writer.WriteLine("\"trivalent\"");
+                    break;
+                case thresholdType.LOGISTIC:
+                    writer.WriteLine("\"logistic\"");
+                    break;
+                case thresholdType.CUSTOM:
+                    writer.WriteLine("\"custom\"");
+                    break;
+            }
+            if (modifiedKosko)
+                writer.WriteLine("\trule \"modified\"");
+            else
+                writer.WriteLine("\trule \"kosko\"");
 
             ListConcepts(writer);
             model.ListGMLEdges(writer);
@@ -261,7 +313,7 @@ namespace Networks.FCM
             {
                 writer.WriteLine("\tnode [");
                 writer.WriteLine("\t\tid " + kvp.Key);
-                writer.WriteLine("\t\tlabel " + kvp.Value.Name);
+                writer.WriteLine("\t\tlabel " + "\"" + kvp.Value.Name + "\"");
                 writer.WriteLine("\t\tactivation " + kvp.Value.ActivationLevel.ToString("F4"));
                 writer.WriteLine("\t\tinitial " + kvp.Value.InitialValue.ToString("F4"));
                 writer.WriteLine("\t]");

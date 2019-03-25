@@ -32,6 +32,7 @@ namespace Networks.FCM
     {
         BIVALENT = 0,
         TRIVALENT = 1,
-        LOGISTIC = 2
+        LOGISTIC = 2,
+        CUSTOM = 3
     };
 }

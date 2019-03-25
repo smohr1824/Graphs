@@ -36,8 +36,10 @@ The FCM namespace adds basic fuzzy cognitive map capability utilizing the Networ
 The Step method of the FuzzyCognitiveMap class performs one generation of inference using algebraic methods, while the StepWalk method performs the same task by walking the list of concepts and performing the calculation algorithmically.  Step executes with O(N^3) complexity, while
 StepWalk executes with O(|V| + |E|) complexity.
 
-Multilayer fuzzy cognitive maps are added as well. Presently, inference is only supported algorithmically.
+Multilayer fuzzy cognitive maps are added as well. Presently, inference for FCMs is supported both algorithmically and by linear algebra. Multilayer FCM inference is only supported algorithmically at the moment.
+Serialization of FCMs uses GML so that Gephi may be used for visualization.  GML will be the supported serialization format for all networks going forward. When a custom threshold function is used and the FCM is serialized, then deserialized, the ThresholdType property
+will accurately reflect the threshold type, but the actual threshold function must be set as the custom function cannot be serialized. If this is not done, inference will be performed using the bivalent threshold function.
 
-Serialization of fuzzy cognitive maps and multilayer fuzzy cognitive maps is planned.
+Serialization of multilayer fuzzy cognitive maps is planned.
 
 

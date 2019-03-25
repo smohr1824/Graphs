@@ -50,13 +50,13 @@ namespace TestApp
             //TestBig();
             //TestNewAdj();
             //WriteGML();
-            ReadGML();
+            //ReadGML();
             //TestEdgeWeight();
             //TestBigBipartite();
             //TestFCM();
             //PerfTestFCM();
             // TestMLFCMBasic();
-            //TestWriteFCM();
+            TestWriteFCM();
             Console.ReadLine();
             return;
 
@@ -212,6 +212,18 @@ namespace TestApp
         {
             FuzzyCognitiveMap fcm = MakeBasicFCM();
             FCMSerializer.WriteNetworkToFile(fcm, @"..\..\work\basic.fcm");
+
+            FuzzyCognitiveMap newFcm = FCMSerializer.ReadNetworkFromFile(@"..\..\work\basic.fcm");
+
+            for (int i = 0; i < 4; i++)
+            {
+                fcm.StepWalk();
+                newFcm.StepWalk();
+                Console.WriteLine($"Original: ");
+                WriteStateVector(fcm);
+                Console.WriteLine("Read: ");
+                WriteStateVector(newFcm);
+            }
         }
 
         private static void TestMLFCMBasic()
