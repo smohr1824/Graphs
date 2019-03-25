@@ -41,8 +41,6 @@ namespace Networks.FCM
         private uint[] currentKeys = null;
         
         private bool modifiedKosko;
-        private thresholdType tType;
-
         private threshold tfunc;
 
         #region constructors
@@ -51,7 +49,7 @@ namespace Networks.FCM
             Concepts = new Dictionary<uint, CognitiveConcept>();
             reverseLookup = new Dictionary<string, uint>();
             model = new Network(true);
-            tType = thresholdType.BIVALENT;
+            ThresholdType = thresholdType.BIVALENT;
             tfunc = new threshold(bivalent);
             modifiedKosko = false;
         }
@@ -61,7 +59,7 @@ namespace Networks.FCM
             Concepts = new Dictionary<uint, CognitiveConcept>();
             reverseLookup = new Dictionary<string, uint>();
             model = new Network(true);
-            tType = thresholdType.BIVALENT;
+            ThresholdType = thresholdType.BIVALENT;
             tfunc = new threshold(bivalent);
             modifiedKosko = useModifiedKosko;
         }
@@ -71,7 +69,7 @@ namespace Networks.FCM
             Concepts = new Dictionary<uint, CognitiveConcept>();
             reverseLookup = new Dictionary<string, uint>();
             model = new Network(true);
-            tType = thresholdType.CUSTOM;
+            ThresholdType = thresholdType.CUSTOM;
             tfunc = func;
             modifiedKosko = false;
         }
@@ -81,7 +79,7 @@ namespace Networks.FCM
             Concepts = new Dictionary<uint, CognitiveConcept>();
             reverseLookup = new Dictionary<string, uint>();
             model = new Network(true);
-            tType = thresholdType.CUSTOM;
+            ThresholdType = thresholdType.CUSTOM;
             tfunc = func;
             modifiedKosko = useModifiedKosko;
         }
@@ -91,7 +89,7 @@ namespace Networks.FCM
             Concepts = new Dictionary<uint, CognitiveConcept>();
             reverseLookup = new Dictionary<string, uint>();
             model = new Network(true);
-            tType = type;
+            ThresholdType = type;
             switch (type)
             {
                 case thresholdType.BIVALENT:
@@ -113,7 +111,7 @@ namespace Networks.FCM
 
         #region public methods
 
-        public thresholdType ThresholdType { get { return tType; } }
+        public thresholdType ThresholdType { get; }
         public bool AddConcept(string conceptName, float initial = 0.0F, float level = 0.0F)
         {
             if (!reverseLookup.ContainsKey(conceptName))
@@ -280,7 +278,7 @@ namespace Networks.FCM
             writer.WriteLine(@"graph [");
             writer.WriteLine("\tdirected 1");
             writer.Write("\tthreshold ");
-            switch (tType)
+            switch (ThresholdType)
             {
                 case thresholdType.BIVALENT:
                     writer.WriteLine("\"bivalent\"");
