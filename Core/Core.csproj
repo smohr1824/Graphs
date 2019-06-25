@@ -46,6 +46,7 @@
     <Compile Include="GMLNetworkSerializer.cs" />
     <Compile Include="LayerSet.cs" />
     <Compile Include="MultilayerNetwork.cs" />
+    <Compile Include="MultilayerNetworkGMLSerializer.cs" />
     <Compile Include="MultilayerNetworkSerializer.cs" />
     <Compile Include="Network.cs" />
     <Compile Include="NetworkSerializer.cs" />

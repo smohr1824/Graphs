@@ -415,5 +415,38 @@ namespace Networks.Core
             }
         }
 
+        public void ListGML(TextWriter writer)
+        {
+            G.ListGML(writer, 2);
+            if (EdgeList.Keys.Count() > 0)
+                writer.WriteLine("\t\tinterlayer [");
+
+            string indent = "\t\t\t";
+            foreach (uint from in EdgeList.Keys)
+            {
+                Dictionary<ResolvedNodeLayerTuple, float> targets = EdgeList[from];
+                foreach (ResolvedNodeLayerTuple to in targets.Keys)
+                {
+                    writer.WriteLine(indent + "edge [");
+
+                    writer.WriteLine(indent +"\tsource [");
+                    writer.WriteLine(indent + "\t\tid " + from.ToString());
+                    writer.WriteLine(indent + "\t\tcoordinates " + string.Join(",", M.UnaliasCoordinates(layerCoordinates)));
+                    writer.WriteLine(indent + "\t]");
+
+                    writer.WriteLine(indent + "\ttarget [");
+                    writer.WriteLine(indent + "\t\tid " + to.nodeId.ToString());
+                    writer.WriteLine(indent + "\t\tcoordinates " + string.Join(",", M.UnaliasCoordinates(to.coordinates)));
+                    writer.WriteLine(indent + "\t]");
+
+                    writer.WriteLine(indent + "\tweight " + targets[to].ToString());
+                    writer.WriteLine(indent + "]");
+                }
+            }
+
+            if (EdgeList.Keys.Count() > 0)
+                writer.WriteLine("\t\t]");
+        }
+
     }
 }

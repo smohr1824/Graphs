@@ -51,9 +51,10 @@ namespace TestApp
             //TestNewAdj();
             //WriteGML();
             //ReadGML();
+            TestWriteMultilayerGML();
             //TestEdgeWeight();
             //TestBigBipartite();
-            TestFCM();
+            //TestFCM();
             //PerfTestFCM();
             //TestMLFCMBasic();
             //TestWriteFCM();
@@ -487,6 +488,12 @@ namespace TestApp
             string[] indicesSite = Q.Indices("site");
             MultilayerNetworkSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\work\multitest_out.dat");
 
+        }
+
+        private static void TestWriteMultilayerGML()
+        {
+            MultilayerNetwork Q = MultilayerNetworkSerializer.ReadMultilayerNetworkFromFile(@"..\..\work\multilayer_test.dat", true);
+            MultilayerNetworkGMLSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\work\multilayer_test.gml");
         }
         private static void TestBasicMultiLayer()
         {

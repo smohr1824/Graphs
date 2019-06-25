@@ -515,49 +515,60 @@ namespace Networks.Core
             }
         }
 
-        public void ListGML(TextWriter writer)
+        public void ListGML(TextWriter writer, int level = 0)
         {
-            writer.WriteLine(@"graph [");
+            string basicIndent = IndentForLevel(level);
+            writer.WriteLine(basicIndent + @"graph [");
             if (Directed)
-                writer.WriteLine("\tdirected 1");
+                writer.WriteLine(basicIndent + "\tdirected 1");
             else
-                writer.WriteLine("\tdirected 0");
+                writer.WriteLine(basicIndent + "\tdirected 0");
 
-            ListGMLNodes(writer);
-            ListGMLEdges(writer);
+            ListGMLNodes(writer, basicIndent);
+            ListGMLEdges(writer, basicIndent);
 
-            writer.WriteLine(@"]");
+            writer.WriteLine(basicIndent + @"]");
         }
 
-        public void ListGMLNodes(TextWriter writer)
+        public void ListGMLNodes(TextWriter writer, string indent ="")
         {
             foreach (uint key in Vertices)
             {
-                writer.WriteLine("\tnode [");
-                writer.WriteLine("\t\tid " + key);
-                writer.WriteLine("\t]");
+                writer.WriteLine(indent + "\tnode [");
+                writer.WriteLine(indent + "\t\tid " + key);
+                writer.WriteLine(indent + "\t]");
             }
         }
 
-        public void ListGMLEdges(TextWriter writer)
+        public void ListGMLEdges(TextWriter writer, string indent = "")
         {
             foreach (uint key in EdgeList.Keys)
             {
                 Dictionary<uint, float> edges = EdgeList[key];
                 foreach (KeyValuePair<uint, float> kvp in edges)
                 {
-                    writer.WriteLine("\tedge [");
-                    writer.WriteLine("\t\tsource " + key);
-                    writer.WriteLine("\t\ttarget " + kvp.Key);
-                    writer.WriteLine("\t\tweight " + kvp.Value.ToString("F4"));
-                    writer.WriteLine("\t]");
+                    writer.WriteLine(indent + "\tedge [");
+                    writer.WriteLine(indent + "\t\tsource " + key);
+                    writer.WriteLine(indent + "\t\ttarget " + kvp.Key);
+                    writer.WriteLine(indent + "\t\tweight " + kvp.Value.ToString("F4"));
+                    writer.WriteLine(indent + "\t]");
                 }
             }
         }
+
+
         #endregion
 
         #region private methods
-
+        private string IndentForLevel(int level)
+        {
+            string retVal = "";
+            for (int i = 0; i < level; i++)
+            {
+                retVal += "\t";
+            }
+            return retVal;
+        }
         private float[,] MakeAdjacencyMatrix()
         {
             int dimension = EdgeList.Keys.Count();

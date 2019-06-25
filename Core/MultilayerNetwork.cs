@@ -529,6 +529,36 @@ namespace Networks.Core
 
         }
 
+        public void ListGML(TextWriter writer)
+        {
+            writer.WriteLine(@"multilayer_network [");
+            if (directed)
+                writer.WriteLine("\tdirected 1");
+            else
+                writer.WriteLine("\tdirected 0");
+
+            writer.WriteLine("\taspects [");
+
+            for (int i = 0; i < aspects.Count(); i++)
+            {
+                writer.Write("\t\t" + aspects[i] + " ");
+                writer.WriteLine(string.Join(",", indices[i]));
+            }
+            writer.WriteLine("\t]");
+
+            foreach (List<int> layerCoord in elementaryLayers.Keys)
+            {
+                writer.WriteLine("\tlayer [");
+                List<string> aspectCoords = UnaliasCoordinates(layerCoord);
+                writer.WriteLine("\t\tcoordinates " + string.Join(",", aspectCoords));
+                elementaryLayers[layerCoord].ListGML(writer);
+                writer.WriteLine("\t]");
+            }
+
+            writer.WriteLine(@"]");
+
+        }
+
         public void AddVertex(NodeLayerTuple vertex)
         {
             ResolvedNodeLayerTuple rVertex = ResolveNodeLayerTuple(vertex);
