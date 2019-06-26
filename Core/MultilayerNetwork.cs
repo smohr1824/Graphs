@@ -546,15 +546,22 @@ namespace Networks.Core
             }
             writer.WriteLine("\t]");
 
+            // Serialize the coordinates of the elementary layer and its constituent graph, but defer writing the interlayer edges
             foreach (List<int> layerCoord in elementaryLayers.Keys)
             {
                 writer.WriteLine("\tlayer [");
                 List<string> aspectCoords = UnaliasCoordinates(layerCoord);
                 writer.WriteLine("\t\tcoordinates " + string.Join(",", aspectCoords));
-                elementaryLayers[layerCoord].ListGML(writer);
+                elementaryLayers[layerCoord].ListLayerGML(writer);
                 writer.WriteLine("\t]");
             }
 
+            // Now that all the layers are written, do the interlayer edges -- this is similar to the node-first, then edge philosophy of GML
+            // This requires two passes of the elementary layers as well as unaliasing the coords twice, but the cardinality of elementary layers should be relatively low
+            foreach (List<int> layerCoord in elementaryLayers.Keys)
+            {
+                elementaryLayers[layerCoord].ListInterlayerGML(writer);
+            }
             writer.WriteLine(@"]");
 
         }
