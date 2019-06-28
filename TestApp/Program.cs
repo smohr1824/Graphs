@@ -508,7 +508,6 @@ namespace TestApp
             {
                 string msg = ex.Message;
             }
-            string foo = @"bar";
         }
         private static void TestBasicMultiLayer()
         {

@@ -36,19 +36,17 @@ namespace Networks.Core
             int ch = reader.Peek();
             while (ch != -1 && !deadchars.Contains((char)ch))
             {
-                if ((char)ch == ']') // leave end bracket for next token
-                    break;
                 token += (char)reader.Read();
 
                 // return start and end brackets as tokens
-                if ((char)ch == '[')
+                if ((char)ch == '[' || (char)ch == ']')
                     break;
                 ch = reader.Peek();
             }
             return token;
         }
 
-        public static Dictionary<string, string> ReadSimpleRecordProperty(TextReader reader)
+        public static Dictionary<string, string> ReadFlatListProperty(TextReader reader)
         {
             Dictionary<string, string> props = new Dictionary<string, string>();
             EatWhitespace(reader);
@@ -131,6 +129,12 @@ namespace Networks.Core
                 }
             }
             return value;
+        }
+
+        public static float ProcessFloatProp(string prop)
+        {
+            // FormatException, OverflowException caught by caller so that context may be captured in the eventual exception
+            return Convert.ToSingle(prop);
         }
     }
 }

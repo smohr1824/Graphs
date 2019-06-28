@@ -84,7 +84,7 @@ namespace Networks.Core
                     case "aspects":
                         if (globalState == 1)
                         {
-                            Dictionary<string, string> aspectDictionary = GMLTokenizer.ReadSimpleRecordProperty(reader);
+                            Dictionary<string, string> aspectDictionary = GMLTokenizer.ReadFlatListProperty(reader);
                             List<Tuple<string, IEnumerable<string>>> aspects = new List<Tuple<string, IEnumerable<string>>>();
 
                             foreach (KeyValuePair<string, string> aspect in aspectDictionary)
@@ -134,14 +134,6 @@ namespace Networks.Core
                                         throw new MLNetworkSerializationException(MLEntityType.layer, $"Unknown error deserializing network for elementary layer {coords}", null, ex);
                                     }
                                     Q.AddElementaryLayer(aspectCoords, network);
-                                    // uncomment next block when GMLNetworkSerializer is refactored for stream reading instead of by-line reading
-                                    // use of by-line here has side effect of consuming the closing ']' of the layer record
-                                    /*GMLTokenizer.EatWhitespace(reader);
-                                    string ntoken = GMLTokenizer.ReadNextToken(reader);
-                                    if (ntoken != "]")
-                                    {
-                                        throw new MLNetworkSerializationException(MLEntityType.layer, @"Malformed layer record for elementary layer {coords} -- missing ']'", null, null);
-                                    }*/
                                 }
                                 else
                                 {
@@ -242,7 +234,7 @@ namespace Networks.Core
         {
             NodeLayerTuple nodeTuple = null;
 
-            Dictionary<string, string> nodeProps = GMLTokenizer.ReadSimpleRecordProperty(reader);
+            Dictionary<string, string> nodeProps = GMLTokenizer.ReadFlatListProperty(reader);
             if (!nodeProps.Keys.Contains<string>("id"))
                 ThrowInterlayerEdgeError("id", "<missing>");
             if (!nodeProps.Keys.Contains<string>("coordinates"))

@@ -9,9 +9,19 @@ Multilayer graphs are implemented via the MultilayerNetwork class and serialized
 Elementary layers may be flattened to create a supra-adjacency matrix if and only if the multilayer network is node-aligned.  The capability to pad non-node-aligned networks when creating this matrix is planned.
 
 ### Serialization Format
-Each line of a graph represents an edge adjacency list.  The first uint is the from vertex, followed by the delimiter character, followed by,
+The supported serialization format is GML. A streaming, tokenized approach is now supported providing some resiliancy in the face of variations in the use of whitespace (e.g., placement of opening and closing brackets). GML arrays are not yet supported, and 
+lists are only supported if they are lists of simple properties, i.e., no nested records. Low level routines are available for extracting all properties of a list including unknown properties, but unknown properties 
+are not retained in either the Network or MultilayerNetwork classes. These routines exist to support fuzzy cognitive maps, whether monolayer or multilayer.  GML support will be extended as needed by the research project.
+
+Network serialization supports the following deprecated legacy format. Each line of a graph represents an edge adjacency list.  The first uint is the from vertex, followed by the delimiter character, followed by,
 the to vertex, followed by the delimiter and the edge weight.  Edge weights are floats.  Graphs are assumed to be directed, unless the 
-file is loaded with the directed parameter of LoadNetwork set to false.  
+file is loaded with the directed parameter of LoadNetwork set to false. 
+
+Multilayer networks are serialized using extensions of the above formats.  The deprecated, legacy format places interlayer edges within the layer in which the originating node resides. The preferred format is an extension of 
+GML which is consist with the general structure and philosophy of GML for monolayer networks.  A multilayer GML document consists of the directed property, followed by one or more layer records.  Layer records contain the coordinates of the 
+layer followed by the GML serialization of the graph making up the layer.  After all layers are written, zero or more edge records are written to capture explicit interlayer edges.  Each edge contains lists for the source, target, and weight of the edge. 
+Unlike monolayer sources and targets, each node has id and coordinates properties in a list. The weight property is a simple property.
+
 
 # Community detection algorithms 
 Presently, the Partitioning class implements the following community detection algorithms:
@@ -40,6 +50,5 @@ Multilayer fuzzy cognitive maps are added as well. Presently, inference for FCMs
 Serialization of FCMs uses GML so that Gephi may be used for visualization.  GML will be the supported serialization format for all networks going forward. When a custom threshold function is used and the FCM is serialized, then deserialized, the ThresholdType property
 will accurately reflect the threshold type, but the actual threshold function must be set as the custom function cannot be serialized. If this is not done, inference will be performed using the bivalent threshold function.
 
-Serialization of multilayer fuzzy cognitive maps is planned.
 
 

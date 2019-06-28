@@ -46,85 +46,118 @@ namespace Networks.Core
 
         public static Network ReadNetworkFromFile(string filename)
         {
+            StreamReader reader = null;
+            Network retVal = null;
 
-            StreamReader reader = new StreamReader(filename);   // don't catch any exceptions, let the caller respond
-            Network retVal = ReadNetwork(reader);
-            reader.Close();
+            try
+            {
+                reader = new StreamReader(filename);   // don't catch any exceptions, let the caller respond
+                retVal = ReadNetwork(reader);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                reader.Close();
+
+            }
+
             return retVal;
         }
 
-        public static Network ReadNetwork(TextReader stIn)
+        public static Network ReadNetwork(TextReader reader)
         {
             Network net = null;
-            string[] fields;
-            string line = string.Empty;
-            while ((line = stIn.ReadLine()) != null)
+            GMLTokenizer.EatWhitespace(reader);
+            string top = GMLTokenizer.ReadNextToken(reader);
+            if (top == "graph")
             {
-                fields = SplitAndClean(line);
-                if (fields.Count() == 2)
+                GMLTokenizer.EatWhitespace(reader);
+                string start = GMLTokenizer.ReadNextToken(reader);
+                if (start == "[")
                 {
-                    switch (fields[0])
-                    {
-                        case "#":
-                            break;
-                        case "graph":
-                            ProcessGraph(stIn, ref net);
-                            continue;
-                            //break;
-                        // anything other than graph or a comment is invalid, so return
-                        default:
-                            continue;
-                            //break;
-                    }
+                    GMLTokenizer.EatWhitespace(reader);
+                    net = ProcessGraph(reader);
                 }
-                else
-                    return net;
             }
             return net;
-
         }
 
-        private static void ProcessGraph(TextReader stIn, ref Network graph)
+        private static Network ProcessGraph(TextReader reader)
         {
-            string[] fields;
-            string line = string.Empty;
-            while ((line = stIn.ReadLine()) != null)
+            uint globalState = 1;
+            Network net = null;
+            bool unfinished = true;
+            //while (reader.Peek() != -1)
+            while (unfinished && reader.Peek() != -1)
             {
-                fields = SplitAndClean(line);
-                if (fields.Count() == 1 && fields[0] == "]")
-                    return;
-                if (fields.Count() == 2)
+                GMLTokenizer.EatWhitespace(reader);
+                string token = GMLTokenizer.ReadNextToken(reader);
+                switch (token)
                 {
-                    try
-                    {
-                        switch (fields[0].ToLower())
-                        {
-                            case "directed":
-                                bool directed = false;
-                                if (fields[1] == "1")
-                                    directed = true;
-                                graph = new Network(directed);
-                                break;
-                            case "node":
-                                ProcessNode(stIn, ref graph);
-                                break;
-                            case "edge":
-                                ProcessEdge(stIn, ref graph);
-                                break;
-                        }
-                    }
-                    // catch conversion exceptions from ProcessNode and ProcessEdge only
-                    catch (FormatException fx)
-                    {
-                        throw new NetworkSerializationException(EntityType.property, @"FormatException deserializing network", fx);
-                    }
-                    catch (OverflowException ox)
-                    {
-                        throw new NetworkSerializationException(EntityType.property, @"Overflow exception deserializing network", ox);
-                    }
+                    case "directed":
+                        GMLTokenizer.EatWhitespace(reader);
+                        if (GMLTokenizer.ReadNextValue(reader) == "1")
+                            net = new Network(true);
+                        else
+                            net = new Network(false);
+                        break;
 
+                    case "node":
+                        if (globalState < 3)
+                        {
+                            globalState = 2;
+                            Dictionary<string, string> nodeDictionary = GMLTokenizer.ReadFlatListProperty(reader);
+                            if (nodeDictionary.Keys.Contains("id"))
+                            {
+                                uint id = ProcessNodeId(nodeDictionary["id"]);
+                                net.AddVertex(id);
+                            }
+                            else
+                                throw new NetworkSerializationException(EntityType.node, @"Missing node id", null);
+                        }
+                        else
+                        {
+                            throw new NetworkSerializationException(EntityType.node, @"node found out of place in file", null);
+                        }
+                        break;
+
+                    case "edge":
+                        if (globalState <= 3)
+                        {
+                            globalState = 3;
+                            Dictionary<string, string> edgeProps = GMLTokenizer.ReadFlatListProperty(reader);
+                            if (edgeProps.Keys.Contains("source") && edgeProps.Keys.Contains("target") && edgeProps.Keys.Contains("weight"))
+                            {
+                                uint srcId = ProcessNodeId(edgeProps["source"]);
+                                uint tgtId = ProcessNodeId(edgeProps["target"]);
+                                float wt = 0.0F;
+                                try
+                                {
+                                    wt = GMLTokenizer.ProcessFloatProp(edgeProps["weight"]);
+                                }
+                                catch (Exception ex)
+                                {
+                                    throw new NetworkSerializationException(EntityType.edge, $"Error processing weight for edge from {srcId} to {tgtId}", ex);
+                                }
+                                net.AddEdge(srcId, tgtId, wt);
+                            }
+                            else
+                            {
+                                throw new NetworkSerializationException(EntityType.edge, @"Edge missing required properties", null);
+                            }
+                        }
+                        break;
+
+                    case "]":
+                        unfinished = false;
+                        break;
                 }
-            }
+
+             }
+             return net;
         }
 
         private static void ProcessNode(TextReader stIn, ref Network graph)
@@ -202,6 +235,24 @@ namespace Networks.Core
                 fields[i] = fields[i].Trim();
             }
             return fields;
+        }
+
+        private static uint ProcessNodeId(string sId)
+        {
+            uint id;
+            try
+            {
+                id = Convert.ToUInt32(sId);
+            }
+            catch (FormatException fx)
+            {
+                throw new NetworkSerializationException(EntityType.node, $"Formatting error trying to convert id = {sId}", fx);
+            }
+            catch (OverflowException ovx)
+            {
+                throw new NetworkSerializationException(EntityType.node, $"Overflow error trying to convert id = {sId}", ovx);
+            }
+            return id;
         }
     }
 }
