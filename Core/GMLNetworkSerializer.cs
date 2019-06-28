@@ -114,13 +114,13 @@ namespace Networks.Core
                         }
                     }
                     // catch conversion exceptions from ProcessNode and ProcessEdge only
-                    catch (FormatException)
+                    catch (FormatException fx)
                     {
-                        return;
+                        throw new NetworkSerializationException(EntityType.property, @"FormatException deserializing network", fx);
                     }
-                    catch (OverflowException)
+                    catch (OverflowException ox)
                     {
-                        return;
+                        throw new NetworkSerializationException(EntityType.property, @"Overflow exception deserializing network", ox);
                     }
 
                 }

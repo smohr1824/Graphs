@@ -51,7 +51,8 @@ namespace TestApp
             //TestNewAdj();
             //WriteGML();
             //ReadGML();
-            TestWriteMultilayerGML();
+            //TestWriteMultilayerGML();
+            TestReadMultilayerGML();
             //TestEdgeWeight();
             //TestBigBipartite();
             //TestFCM();
@@ -494,6 +495,20 @@ namespace TestApp
         {
             MultilayerNetwork Q = MultilayerNetworkSerializer.ReadMultilayerNetworkFromFile(@"..\..\work\multilayer_test.dat", true);
             MultilayerNetworkGMLSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\work\multilayer_test.gml");
+        }
+
+        private static void TestReadMultilayerGML()
+        {
+            try
+            {
+                MultilayerNetwork Q = MultilayerNetworkGMLSerializer.ReadNetworkFromFile(@"..\..\work\multilayer_test.gml");
+                MultilayerNetworkGMLSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\work\multilayer_test_regurgitated.gml");
+            }
+            catch (Exception ex)
+            {
+                string msg = ex.Message;
+            }
+            string foo = @"bar";
         }
         private static void TestBasicMultiLayer()
         {

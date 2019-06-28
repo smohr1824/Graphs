@@ -44,11 +44,14 @@
     <Compile Include="CoordinateTupleEqualityComparator.cs" />
     <Compile Include="ElementaryLayer.cs" />
     <Compile Include="GMLNetworkSerializer.cs" />
+    <Compile Include="GMLTokenizer.cs" />
     <Compile Include="LayerSet.cs" />
+    <Compile Include="MLNetworkSerializationException.cs" />
     <Compile Include="MultilayerNetwork.cs" />
     <Compile Include="MultilayerNetworkGMLSerializer.cs" />
     <Compile Include="MultilayerNetworkSerializer.cs" />
     <Compile Include="Network.cs" />
+    <Compile Include="NetworkSerializationException.cs" />
     <Compile Include="NetworkSerializer.cs" />
     <Compile Include="NodeLayerTuple.cs" />
     <Compile Include="NodeLayerTupleEqualityComparer.cs" />
