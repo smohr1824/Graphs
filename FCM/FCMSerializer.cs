@@ -26,6 +26,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Threading.Tasks;
+using Networks.Core;
 
 namespace Networks.FCM
 {
@@ -46,209 +47,247 @@ namespace Networks.FCM
 
         public static FuzzyCognitiveMap ReadNetworkFromFile(string filename)
         {
-
-            StreamReader reader = new StreamReader(filename);   // don't catch any exceptions, let the caller respond
-            FuzzyCognitiveMap retVal = ReadNetwork(reader);
-            reader.Close();
+            StreamReader reader = null;
+            FuzzyCognitiveMap retVal = null;
+            try
+            {
+                reader = new StreamReader(filename);   // don't catch any exceptions, let the caller respond
+                retVal = ReadNetwork(reader);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                reader.Close();
+            }
             return retVal;
         }
 
-        public static FuzzyCognitiveMap ReadNetwork(TextReader stIn)
+        public static FuzzyCognitiveMap ReadNetwork(TextReader reader)
         {
             FuzzyCognitiveMap fcm = null;
-            string[] fields;
-            string line = string.Empty;
-            while ((line = stIn.ReadLine()) != null)
+
+            GMLTokenizer.EatWhitespace(reader);
+            string top = GMLTokenizer.ReadNextToken(reader);
+            if (top == "graph")
             {
-                fields = SplitAndClean(line);
-                if (fields.Count() == 2)
+                fcm = new FuzzyCognitiveMap();
+                GMLTokenizer.EatWhitespace(reader);
+                string start = GMLTokenizer.ReadNextToken(reader);
+                if (start == "[")
                 {
-                    switch (fields[0])
-                    {
-                        case "#":
-                            break;
-                        case "graph":
-                            fcm = new FuzzyCognitiveMap();
-                            ProcessGraph(stIn, ref fcm);
-                            continue;
-                        //break;
-                        // anything other than graph or a comment is invalid, so return
-                        default:
-                            continue;
-                            //break;
-                    }
+                    GMLTokenizer.EatWhitespace(reader);
+                    fcm = ProcessGraph(reader);
                 }
-                else
-                    return fcm;
             }
             return fcm;
+
         }
 
-        private static void ProcessGraph(TextReader stIn, ref FuzzyCognitiveMap graph)
+        private static FuzzyCognitiveMap ProcessGraph(TextReader reader)
         {
-            string[] fields;
-            string line = string.Empty;
-            bool modified = false;
+            uint globalState = 1;
+            bool unfinished = true;
             thresholdType type = thresholdType.BIVALENT;
+            FuzzyCognitiveMap graph = null;
             Dictionary<uint, string> conceptLookup = new Dictionary<uint, string>();
+            bool modified = false;
 
-            while ((line = stIn.ReadLine()) != null)
+            while (unfinished && reader.Peek() != -1)
             {
-                fields = SplitAndClean(line);
-                if (fields.Count() == 1 && fields[0] == "]")
-                    return;
-                if (fields.Count() == 2)
+                GMLTokenizer.EatWhitespace(reader);
+                string token = GMLTokenizer.ReadNextToken(reader);
+                switch (token.ToLower())
                 {
-                    try
-                    {
-                        switch (fields[0].ToLower())
+                    case "directed":
+                        if (globalState == 1)
                         {
-                            case "directed":
-                                if (fields[1] == "0")
-                                    graph = null;
-                                break;
-                            case "threshold":
-                                switch (fields[1].ToLower())
-                                {
-                                    case "bivalent":
-                                        type = thresholdType.BIVALENT;
-                                        break;
-                                    case "trivalent":
-                                        type = thresholdType.TRIVALENT;
-                                        break;
-                                    case "logistic":
-                                        type = thresholdType.LOGISTIC;
-                                        break;
-                                    case "custom":
-                                        type = thresholdType.CUSTOM;
-                                        break;
-                                }
-                                break;
-                            case "rule":
-                                if (fields[1].ToLower() == "modified")
-                                    modified = true;
-                                else
-                                    modified = false;
-                                break;
-
-                            case "node":
-                                if (graph == null)
-                                {
-                                    graph = new FuzzyCognitiveMap(type, modified);
-                                }  
-                                ProcessNode(stIn, ref graph, ref conceptLookup);
-                                break;
-                            case "edge":
-                                ProcessEdge(stIn, ref graph, ref conceptLookup);
-                                break;
+                            GMLTokenizer.EatWhitespace(reader);
+                            // why do I still serialize this?
+                            GMLTokenizer.ReadNextValue(reader);
                         }
-                    }
-                    // catch conversion exceptions from ProcessNode and ProcessEdge only
-                    catch (FormatException)
-                    {
-                        return;
-                    }
-                    catch (OverflowException)
-                    {
-                        return;
-                    }
+                        else
+                        {
+                            throw new NetworkSerializationException(EntityType.property, $"Property {token} found out of order", null);
+                        }
+                        break;
 
+                    case "threshold":
+                        if (globalState == 1)
+                        {
+                            GMLTokenizer.EatWhitespace(reader);
+                            string threshname = GMLTokenizer.ReadNextValue(reader);
+                            switch (threshname.ToLower())
+                            {
+                                case "bivalent":
+                                    type = thresholdType.BIVALENT;
+                                    break;
+                                case "trivalent":
+                                    type = thresholdType.TRIVALENT;
+                                    break;
+                                case "logistic":
+                                    type = thresholdType.LOGISTIC;
+                                    break;
+                                case "custom":
+                                    type = thresholdType.CUSTOM;
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            throw new NetworkSerializationException(EntityType.property, $"Property {token} foound out of order", null);
+                        }
+                        break;
+
+                    case "rule":
+                        if (globalState == 1)
+                        {
+                            GMLTokenizer.EatWhitespace(reader);
+                            string rulename = GMLTokenizer.ReadNextValue(reader);
+                            if (rulename.ToLower() == "modified")
+                                modified = true;
+                            else
+                                modified = false;
+                        }
+                        else
+                        {
+                            throw new NetworkSerializationException(EntityType.property, $"Property {token} found out of order", null);
+                        }
+                        break;
+
+                    case "node":
+                        if (globalState <= 2)
+                        {
+                            globalState = 2;
+                            if (graph == null)
+                            {
+                                graph = new FuzzyCognitiveMap(type, modified);
+                            }
+                            Dictionary<string, string> nodeDictionary = GMLTokenizer.ReadFlatListProperty(reader);
+                            ProcessConcept(nodeDictionary, ref graph, ref conceptLookup);
+                        }
+                        else
+                        {
+                            throw new NetworkSerializationException(EntityType.node, @"Node record found out of order", null);
+                        }
+                        break;
+
+                    case "edge":
+                        if (globalState > 1 && globalState <= 3)
+                        {
+                            globalState = 3;
+                            Dictionary<string, string> edgeDictionary = GMLTokenizer.ReadFlatListProperty(reader);
+                            ProcessEdge(edgeDictionary, ref graph, ref conceptLookup);
+                        }
+                        else
+                        {
+                            throw new NetworkSerializationException(EntityType.edge, @"Edgerecord found out of order", null);
+                        }
+                        break;
+
+                    case "]":
+                        unfinished = false;
+                        break;
                 }
+            }
+
+            return graph;
+        }
+
+        private static void ProcessConcept(Dictionary<string, string> properties, ref FuzzyCognitiveMap net, ref Dictionary<uint, string> lookup)
+        {
+            // id, label, and initial are required. If activation does not appear, default to initial
+            if (properties.Keys.Contains("id") && properties.Keys.Contains("label") && properties.Keys.Contains("initial"))
+            {
+                uint id;
+                float initial, activation;
+
+                id = ProcessNodeId(properties["id"]);
+                try
+                {
+                    initial = GMLTokenizer.ProcessFloatProp(properties["initial"]);
+                    if (properties.Keys.Contains("activation"))
+                        activation = GMLTokenizer.ProcessFloatProp(properties["activation"]);
+                    else
+                        activation = initial;
+                }
+                catch (FormatException fx)
+                {
+                    throw new NetworkSerializationException(EntityType.node, $"Error converting property value for concept {properties["label"]}", fx);
+                }
+                catch (OverflowException ovx)
+                {
+                    throw new NetworkSerializationException(EntityType.node, $"Error converting property value for concept {properties["label"]}", ovx);
+                }
+
+                lookup.Add(id, properties["label"]);
+                net.AddConcept(properties["label"], initial, activation);
+
+            }
+            else
+            {
+                string concept = string.Empty;
+                if (properties.Keys.Contains("label"))
+                    concept = properties["label"];
+
+                throw new NetworkSerializationException(EntityType.node, $"Concept {concept} missing one or more required properties");
             }
         }
 
-        private static void ProcessNode(TextReader stIn, ref FuzzyCognitiveMap graph, ref Dictionary<uint, string> lookup)
+        private static uint ProcessNodeId(string sId)
         {
-            string[] fields;
-            string line = string.Empty;
-            uint ID = 0;
-            string label = string.Empty;
-            float initial = 0.0F;
-            float level = 0.0F;
-
-            while ((line = stIn.ReadLine()) != null)
+            uint id;
+            try
             {
-                fields = SplitAndClean(line);
-                if (fields.Count() == 1 && fields[0] == "]")
-                {
-                    
-                    // nb: the id is reassigned by the FCM, hence the specific uint may change. This will
-                    // not effect deserialization as the ids are consistent in the file and withing the in-memory FCM.
-                    lookup.Add(ID, label);
-                    graph.AddConcept(label, initial, level);
-                    return;
-                }
-
-                if (fields.Count() == 2)
-                {
-                    switch (fields[0].ToLower())
-                    {
-                        case "id":
-                            ID = Convert.ToUInt32(fields[1]);
-                            break;
-                        case "label":
-                            label = fields[1];
-                            break;
-                        case "initial":
-                            initial = (float)Convert.ToDouble(fields[1]);
-                            break;
-                        case "activation":
-                            level = (float)Convert.ToDouble(fields[1]);
-                            break;
-
-                    }
-                }
+                id = Convert.ToUInt32(sId);
             }
-        }
-        private static void ProcessEdge(TextReader stIn, ref FuzzyCognitiveMap graph, ref Dictionary<uint, string> lookup)
-        {
-            string[] fields;
-            string line = string.Empty;
-            uint src = 0;
-            uint tgt = 0;
-            float wt = 0.0F;
-
-            while ((line = stIn.ReadLine()) != null)
+            catch (FormatException fx)
             {
-                fields = SplitAndClean(line);
-                if (fields.Count() == 1 && fields[0] == "]")
-                {
-
-                    graph.AddInfluence(lookup[src], lookup[tgt], wt);
-                    return;
-                }
-                if (fields.Count() == 2)
-                {
-                    switch (fields[0].ToLower())
-                    {
-                        case "source":
-                            src = Convert.ToUInt32(fields[1]);
-                            break;
-                        case "target":
-                            tgt = Convert.ToUInt32(fields[1]);
-                            break;
-                        case "weight":
-                            wt = (float)Convert.ToDouble(fields[1]);
-                            break;
-                    }
-                }
+                throw new NetworkSerializationException(EntityType.node, $"Formatting error trying to convert id = {sId}", fx);
             }
+            catch (OverflowException ovx)
+            {
+                throw new NetworkSerializationException(EntityType.node, $"Overflow error trying to convert id = {sId}", ovx);
+            }
+            return id;
         }
 
-        // split a line on whitespace -- we expect a name, value pair delimited by whitespace
-        private static string[] SplitAndClean(string incoming)
+        private static void ProcessEdge(Dictionary<string, string> properties, ref FuzzyCognitiveMap net, ref Dictionary<uint, string> lookup)
         {
-            char[] leading = { '\t', ' ' };
-            string line = incoming.Trim(leading);
-            string[] fields = Regex.Split(line, @"\s+");
-            // remove quotes from quoted strings
-            char[] quotes = {'"', '\''};
-            int len = fields.Count();
-            for (int i = 0; i < len; i++)
+            // source, target, and weight are required. 
+            if (properties.Keys.Contains("source") && properties.Keys.Contains("target") && properties.Keys.Contains("weight"))
             {
-                fields[i] = fields[i].Trim(quotes);
+                uint srcId, tgtId;
+                float weight;
+
+                srcId = ProcessNodeId(properties["source"]);
+                tgtId = ProcessNodeId(properties["target"]);
+                try
+                {
+                    weight = GMLTokenizer.ProcessFloatProp(properties["weight"]);
+                }
+                catch (FormatException fx)
+                {
+                    throw new NetworkSerializationException(EntityType.node, $"Error converting influence weight from concept, value is {properties["weight"]}", fx);
+                }
+                catch (OverflowException ovx)
+                {
+                    throw new NetworkSerializationException(EntityType.node, $"Error converting influence weight from concept, value is {properties["weight"]}", ovx);
+                }
+
+                net.AddInfluence(lookup[srcId], lookup[tgtId], weight);
+
             }
-            return fields;
+            else
+            {
+                string concept = string.Empty;
+                if (properties.Keys.Contains("label"))
+                    concept = properties["label"];
+
+                throw new NetworkSerializationException(EntityType.node, $"Concept {concept} missing one or more required properties");
+            }
         }
     }
 }

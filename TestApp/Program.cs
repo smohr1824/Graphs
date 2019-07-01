@@ -52,13 +52,13 @@ namespace TestApp
             //WriteGML();
             //ReadGML();
             //TestWriteMultilayerGML();
-            TestReadMultilayerGML();
+            //TestReadMultilayerGML();
             //TestEdgeWeight();
             //TestBigBipartite();
             //TestFCM();
             //PerfTestFCM();
             //TestMLFCMBasic();
-            //TestWriteFCM();
+            TestWriteFCM();
             Console.ReadLine();
             return;
 

@@ -61,7 +61,7 @@ namespace Networks.Core
                 {
                     try
                     {
-                        wt = (float)Convert.ToDouble(fields[2]);
+                        wt = Convert.ToSingle(fields[2]);
                     }
                     catch (Exception)
                     {

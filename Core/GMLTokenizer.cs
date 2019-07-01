@@ -118,7 +118,6 @@ namespace Networks.Core
                 else
                 {
                     // next char indicates a quoted string literal
-                    reader.Read();
                     char ch = (char)reader.Read();
                     // assume the string is closed before EOF
                     while (ch != '\'' && ch != '"')

@@ -215,7 +215,7 @@ namespace Networks.Core
                             tgt = Convert.ToUInt32(fields[1]);
                             break;
                         case "weight":
-                            wt = (float)Convert.ToDouble(fields[1]);
+                            wt = Convert.ToSingle(fields[1]);
                             break;
                     }
                 }
