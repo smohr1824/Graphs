@@ -73,9 +73,5 @@ namespace Networks.FCM
                 layerActivationLevels.Add(layerCoords, level);
             }
         }
-
-
-
-
     }
 }

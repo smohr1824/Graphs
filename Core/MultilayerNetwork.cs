@@ -552,7 +552,7 @@ namespace Networks.Core
                 writer.WriteLine("\tlayer [");
                 List<string> aspectCoords = UnaliasCoordinates(layerCoord);
                 writer.WriteLine("\t\tcoordinates " + string.Join(",", aspectCoords));
-                elementaryLayers[layerCoord].ListLayerGML(writer);
+                elementaryLayers[layerCoord].ListLayerGML(writer, 2);
                 writer.WriteLine("\t]");
             }
 
@@ -564,6 +564,26 @@ namespace Networks.Core
             }
             writer.WriteLine(@"]");
 
+        }
+
+        public void ListAllLayersGML(TextWriter writer, int level)
+        {
+            foreach (KeyValuePair<List<int>, ElementaryLayer> kvp in elementaryLayers)
+            {
+                writer.WriteLine("\tlayer [");
+                List<string> aspectCoords = UnaliasCoordinates(kvp.Key);
+                writer.WriteLine("\t\tcoordinates " + string.Join(",", aspectCoords));
+                kvp.Value.ListLayerGML(writer, level);
+                writer.WriteLine("\t]");
+            }
+        }
+
+        public void ListAllInterlayerEdges(TextWriter writer)
+        {
+            foreach (List<int> layerCoord in elementaryLayers.Keys)
+            {
+                elementaryLayers[layerCoord].ListInterlayerGML(writer);
+            }
         }
 
         public void AddVertex(NodeLayerTuple vertex)
@@ -918,6 +938,16 @@ namespace Networks.Core
                 }
             }
 
+            return retVal;
+        }
+
+        private string IndentForLevel(int level)
+        {
+            string retVal = "";
+            for (int i = 0; i < level; i++)
+            {
+                retVal += "\t";
+            }
             return retVal;
         }
 

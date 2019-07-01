@@ -38,6 +38,11 @@ namespace Networks.FCM
             InitialValue = initialValue;
             ActivationLevel = level;
         }
+
+        public void SetInitialLevel(float initial)
+        {
+            InitialValue = initial;
+        }
     }
 
 

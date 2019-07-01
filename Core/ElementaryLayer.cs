@@ -415,9 +415,9 @@ namespace Networks.Core
             }
         }
 
-        public void ListLayerGML(TextWriter writer)
+        public void ListLayerGML(TextWriter writer, int level)
         {
-            G.ListGML(writer, 2);
+            G.ListGML(writer, level);
 
         }
 

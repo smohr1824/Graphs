@@ -58,7 +58,8 @@ namespace TestApp
             //TestFCM();
             //PerfTestFCM();
             //TestMLFCMBasic();
-            TestWriteFCM();
+            //TestWriteFCM();
+            TestWriteMLFCM();
             Console.ReadLine();
             return;
 
@@ -226,6 +227,36 @@ namespace TestApp
                 Console.WriteLine("Read: ");
                 WriteStateVector(newFcm);
             }
+        }
+
+        private static void TestWriteMLFCM()
+        {
+            List<string> indices = new List<string>();
+            indices.Add("I");
+            indices.Add("II");
+            List<Tuple<string, IEnumerable<string>>> dimensions = new List<Tuple<string, IEnumerable<string>>>();
+            dimensions.Add(new Tuple<string, IEnumerable<string>>("levels", indices));
+
+            MultilayerFuzzyCognitiveMap fcm = new MultilayerFuzzyCognitiveMap(dimensions);
+            List<string> layer1 = new List<string>();
+            layer1.Add("I");
+            List<string> layer2 = new List<string>();
+            layer2.Add("II");
+            fcm.AddConcept("A", layer1, 1.0F, 1.0F);
+            fcm.AddConcept("B", layer1, 0.0F, 0.0F);
+            fcm.AddConcept("C", layer1, 0.0F, 0.0F);
+
+            fcm.AddConcept("A", layer2, 1.0F, 1.0F);
+            fcm.AddConcept("D", layer2, 0.0F, 0.0F);
+            fcm.AddConcept("E", layer2, 0.0F, 0.0F);
+
+            fcm.AddInfluence("A", layer1, "B", layer1, 1.0F);
+            fcm.AddInfluence("A", layer1, "C", layer1, 1.0F);
+            fcm.AddInfluence("A", layer2, "D", layer2, 1.0F);
+            fcm.AddInfluence("D", layer2, "E", layer2, 1.0F);
+            fcm.AddInfluence("E", layer2, "A", layer1, 1.0F);
+
+            MLFCMSerializer.WriteMultiLayerNetworkToFile(fcm, @"..\..\work\MLbasic.fcm");
         }
 
         private static void TestMLFCMBasic()

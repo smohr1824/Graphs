@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,16 +30,15 @@ using Networks.Core;
 
 namespace Networks.FCM
 {
+    
     public class MultilayerFuzzyCognitiveMap
     {
-        private MultilayerNetwork model;
         public delegate float threshold(float f);
+        private MultilayerNetwork model;
         private bool modifiedKosko;
         private threshold tfunc;
         private uint nextNodeId = 0;
         
-        //uncomment when implementing algebraic inference
-        // private bool dirty = false;
         public Dictionary<uint, MultilayerCognitiveConcept> Concepts { get; private set; }
         private Dictionary<string, uint> reverseLookup;
 
@@ -56,6 +56,7 @@ namespace Networks.FCM
             Concepts = new Dictionary<uint, MultilayerCognitiveConcept>();
             reverseLookup = new Dictionary<string, uint>();
             model = new MultilayerNetwork(dimensions, true);
+            ThresholdType = thresholdType.BIVALENT;
             tfunc = new threshold(bivalent);
             modifiedKosko = useModifiedKosko;
         }
@@ -65,8 +66,33 @@ namespace Networks.FCM
             Concepts = new Dictionary<uint, MultilayerCognitiveConcept>();
             reverseLookup = new Dictionary<string, uint>();
             model = new MultilayerNetwork(dimensions, true);
+            ThresholdType = thresholdType.CUSTOM;
             tfunc = func;
             modifiedKosko = false;
+        }
+
+        public MultilayerFuzzyCognitiveMap(IEnumerable<Tuple<string, IEnumerable<string>>> dimensions, thresholdType type, bool useModifiedKosko)
+        {
+            Concepts = new Dictionary<uint, MultilayerCognitiveConcept>();
+            reverseLookup = new Dictionary<string, uint>();
+            model = new MultilayerNetwork(dimensions, true);
+            ThresholdType = type;
+            switch (type)
+            {
+                case thresholdType.BIVALENT:
+                    tfunc = new threshold(bivalent);
+                    break;
+                case thresholdType.TRIVALENT:
+                    tfunc = new threshold(trivalent);
+                    break;
+                case thresholdType.LOGISTIC:
+                    tfunc = new threshold(logistic);
+                    break;
+                case thresholdType.CUSTOM:
+                    tfunc = new threshold(bivalent);
+                    break;
+            }
+            modifiedKosko = useModifiedKosko;
         }
 
         public MultilayerFuzzyCognitiveMap(IEnumerable<Tuple<string, IEnumerable<string>>> dimensions, threshold func, bool useModifiedKosko)
@@ -74,9 +100,12 @@ namespace Networks.FCM
             Concepts = new Dictionary<uint, MultilayerCognitiveConcept>();
             reverseLookup = new Dictionary<string, uint>();
             model = new MultilayerNetwork(dimensions, true);
+            ThresholdType = thresholdType.CUSTOM;
             tfunc = func;
             modifiedKosko = useModifiedKosko;
         }
+
+        public thresholdType ThresholdType { get; }
 
         public List<string> ListConcepts()
         {
@@ -134,9 +163,30 @@ namespace Networks.FCM
             return retVal;
         }
 
+        // Adds a concept with an initial activation level. The concept is not added to any
+        // elementary layers. AggregateLevel is set to initial.If the concept already exists under that name,
+        // the initial and aggregate levels are changed to initial.
+
+        public void AddConcept(string conceptName, float initial, bool fast = false)
+        {
+            if (!reverseLookup.ContainsKey(conceptName))
+            {
+                MultilayerCognitiveConcept concept = new MultilayerCognitiveConcept(conceptName, initial, initial);
+                Concepts.Add(nextNodeId, concept);
+                reverseLookup.Add(conceptName, nextNodeId);
+                nextNodeId++;
+            }
+            else
+            {
+                uint existingKey = reverseLookup[conceptName];
+                MultilayerCognitiveConcept concept = Concepts[existingKey];
+                concept.SetInitialLevel(initial);
+            }
+        }
+
         // Adds a concept to an elementary layer
         // If it does not currently appear anywhere in the ML FCM, a new concept is added
-        public bool AddConcept(string conceptName, List<string> coords, float level = 0.0F, float initial = 0.0F)
+        public bool AddConcept(string conceptName, List<string> coords, float level = 0.0F, float initial = 0.0F, bool fast = false)
         {
             if (!reverseLookup.ContainsKey(conceptName))
             {
@@ -149,7 +199,6 @@ namespace Networks.FCM
                     model.AddElementaryLayer(coords, new Network(true));
                 model.AddVertex(tuple);
                 nextNodeId++;
-                //dirty = true;
                 return true;
             }
             else
@@ -163,8 +212,10 @@ namespace Networks.FCM
 
                     MultilayerCognitiveConcept concept = Concepts[existingKey];
                     concept.SetLayerLevel(coords, level);
+                    if (!fast)
+                        RecomputeAggregateActivationLevel(concept.Name);
+
                     model.AddVertex(tuple);
-                    //dirty = true;
                     return true;
                 }
                 else
@@ -188,7 +239,6 @@ namespace Networks.FCM
                     model.RemoveVertex(tuple);
                 }
                 Concepts.Remove(id);
-                //dirty = true;
             }
         }
 
@@ -208,7 +258,6 @@ namespace Networks.FCM
                 {
                     return;
                 }
-                //dirty = true;
             }
         }
 
@@ -318,6 +367,92 @@ namespace Networks.FCM
                 }
             }
 
+        }
+
+        public void RecomputeAggregateActivationLevel(string conceptname)
+        {
+            uint id;
+            if (reverseLookup.TryGetValue(conceptname, out id))
+                RecomputeAggregateActivationLevel(id);
+        }
+
+        public void ListGML(TextWriter writer)
+        {
+            writer.WriteLine(@"multilayer_network [");
+            writer.WriteLine("\tdirected 1");
+            writer.Write("\tthreshold ");
+            switch (ThresholdType)
+            {
+                case thresholdType.BIVALENT:
+                    writer.WriteLine("\"bivalent\"");
+                    break;
+                case thresholdType.TRIVALENT:
+                    writer.WriteLine("\"trivalent\"");
+                    break;
+                case thresholdType.LOGISTIC:
+                    writer.WriteLine("\"logistic\"");
+                    break;
+                case thresholdType.CUSTOM:
+                    writer.WriteLine("\"custom\"");
+                    break;
+            }
+            if (modifiedKosko)
+                writer.WriteLine("\trule \"modified\"");
+            else
+                writer.WriteLine("\trule \"kosko\"");
+
+            foreach (KeyValuePair<uint, MultilayerCognitiveConcept> kvp in Concepts)
+            {
+                writer.WriteLine("\tconcept [");
+                writer.WriteLine("\t\tid " + kvp.Key);
+                writer.WriteLine("\t\tinitial " + kvp.Value.InitialValue); 
+                writer.WriteLine("\t\taggregate " + kvp.Value.ActivationLevel);
+                writer.WriteLine("\t\tlevels [");
+                List<List<string>> layers = kvp.Value.GetLayers();
+                foreach(List<string> layer in layers)
+                {
+                    writer.WriteLine("\t\t\t" + string.Join(",", layer) + " " + kvp.Value.GetLayerActivationLevel(layer));
+                }
+                writer.WriteLine("\t\t]");
+                writer.WriteLine("\t]");
+            }
+
+            writer.WriteLine("\taspects [");
+            string[] aspects = model.Aspects();
+            for (int i = 0; i < aspects.Count(); i++)
+            {
+                string[] indices = model.Indices(aspects[i]);
+                writer.Write("\t\t" + aspects[i] + " ");
+                writer.WriteLine(string.Join(",", indices));
+            }
+            writer.WriteLine("\t]");
+
+            model.ListAllLayersGML(writer, 2);
+            model.ListAllInterlayerEdges(writer);
+            writer.WriteLine(@"]");
+
+        }
+
+        private void RecomputeAggregateActivationLevel(uint id)
+        {
+            float total = 0.0F;
+            if (Concepts.Keys.Contains(id))
+            {
+                MultilayerCognitiveConcept concept = Concepts[id];
+                foreach (List<string> layer in concept.GetLayers())
+                {
+                    total += concept.GetLayerActivationLevel(layer);
+                }
+
+                if (modifiedKosko)
+                {
+                    concept.ActivationLevel = tfunc(concept.ActivationLevel + total);
+                }
+                else
+                {
+                    concept.ActivationLevel = tfunc(total);
+                }
+            }
         }
         private float bivalent(float f)
         {

@@ -45,6 +45,7 @@
     <Compile Include="FCMState.cs" />
     <Compile Include="FuzzyCognitiveMap.cs" />
     <Compile Include="MLConceptState.cs" />
+    <Compile Include="MLFCMSerializer.cs" />
     <Compile Include="MultilayerCognitiveConcept.cs" />
     <Compile Include="MultilayerFuzzyCognitiveMap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
