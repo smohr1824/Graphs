@@ -335,10 +335,9 @@ namespace Networks.Core
 
         internal Dictionary<NodeLayerTuple, float> GetNeighbors(uint vertex)
         {
-            if (!HasVertex(vertex))
-                throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
-
             Dictionary<NodeLayerTuple, float> retVal = new Dictionary<NodeLayerTuple, float>();
+            if (!HasVertex(vertex))
+                return retVal;
 
             Dictionary<uint, float> graphNeighbors = G.GetNeighbors(vertex);
 
@@ -368,10 +367,10 @@ namespace Networks.Core
 
         internal Dictionary<NodeLayerTuple, float> GetSources(uint vertex)
         {
-            if (!HasVertex(vertex))
-                throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
-
             Dictionary<NodeLayerTuple, float> retVal = new Dictionary<NodeLayerTuple, float>();
+
+            if (!HasVertex(vertex))
+                return retVal;
 
             Dictionary<uint, float> graphSources = G.GetSources(vertex);
 

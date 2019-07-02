@@ -184,6 +184,24 @@ namespace Networks.FCM
             }
         }
 
+        // Support for deserialization
+        // node id management is relaxed
+        internal bool AddConcept(MultilayerCognitiveConcept concept, uint id)
+        {
+            if (!reverseLookup.ContainsKey(concept.Name) && !Concepts.Keys.Contains(id))
+            {
+                Concepts.Add(id, concept);
+                reverseLookup.Add(concept.Name, id);
+                if (id >= nextNodeId)
+                    nextNodeId = id++;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         // Adds a concept to an elementary layer
         // If it does not currently appear anywhere in the ML FCM, a new concept is added
         public bool AddConcept(string conceptName, List<string> coords, float level = 0.0F, float initial = 0.0F, bool fast = false)
@@ -261,6 +279,14 @@ namespace Networks.FCM
             }
         }
 
+        public void AddInfluence(NodeLayerTuple influencesTuple, NodeLayerTuple influencedTuple, float weight)
+        {
+            if (Concepts.Keys.Contains(influencesTuple.nodeId) && Concepts.Keys.Contains(influencedTuple.nodeId))
+            {
+                model.AddEdge(influencesTuple, influencedTuple, weight);
+            }
+        }
+
         public void DeleteInfluence(string influences, List<string> influencesCoords, string influenced, List<string> influencedCoords)
         {
             uint from, to;
@@ -277,8 +303,6 @@ namespace Networks.FCM
                 {
                     return;
                 }
-
-                //dirty = true;
             }
         }
 
@@ -401,22 +425,6 @@ namespace Networks.FCM
             else
                 writer.WriteLine("\trule \"kosko\"");
 
-            foreach (KeyValuePair<uint, MultilayerCognitiveConcept> kvp in Concepts)
-            {
-                writer.WriteLine("\tconcept [");
-                writer.WriteLine("\t\tid " + kvp.Key);
-                writer.WriteLine("\t\tinitial " + kvp.Value.InitialValue); 
-                writer.WriteLine("\t\taggregate " + kvp.Value.ActivationLevel);
-                writer.WriteLine("\t\tlevels [");
-                List<List<string>> layers = kvp.Value.GetLayers();
-                foreach(List<string> layer in layers)
-                {
-                    writer.WriteLine("\t\t\t" + string.Join(",", layer) + " " + kvp.Value.GetLayerActivationLevel(layer));
-                }
-                writer.WriteLine("\t\t]");
-                writer.WriteLine("\t]");
-            }
-
             writer.WriteLine("\taspects [");
             string[] aspects = model.Aspects();
             for (int i = 0; i < aspects.Count(); i++)
@@ -427,13 +435,34 @@ namespace Networks.FCM
             }
             writer.WriteLine("\t]");
 
+            foreach (KeyValuePair<uint, MultilayerCognitiveConcept> kvp in Concepts)
+            {
+                writer.WriteLine("\tconcept [");
+                writer.WriteLine("\t\tid " + kvp.Key);
+                writer.WriteLine("\t\tlabel " + kvp.Value.Name);
+                writer.WriteLine("\t\tinitial " + kvp.Value.InitialValue);
+                writer.WriteLine("\t\taggregate " + kvp.Value.ActivationLevel);
+                writer.WriteLine("\t\tlevels [");
+                List<List<string>> layers = kvp.Value.GetLayers();
+                foreach (List<string> layer in layers)
+                {
+                    writer.WriteLine("\t\t\t" + string.Join(",", layer) + " " + kvp.Value.GetLayerActivationLevel(layer));
+                }
+                writer.WriteLine("\t\t]");
+                writer.WriteLine("\t]");
+            }
+
             model.ListAllLayersGML(writer, 2);
             model.ListAllInterlayerEdges(writer);
             writer.WriteLine(@"]");
 
         }
 
-        private void RecomputeAggregateActivationLevel(uint id)
+        internal void AddElementaryLayer(IEnumerable<string> coordinates, Network G)
+        {
+            model.AddElementaryLayer(coordinates, G);
+        }
+        internal void RecomputeAggregateActivationLevel(uint id)
         {
             float total = 0.0F;
             if (Concepts.Keys.Contains(id))

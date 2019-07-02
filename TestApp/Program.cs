@@ -51,7 +51,7 @@ namespace TestApp
             //TestNewAdj();
             //WriteGML();
             //ReadGML();
-            ReadGMLWithUnknown();
+            //ReadGMLWithUnknown();
             //TestWriteMultilayerGML();
             //TestReadMultilayerGML();
             //TestEdgeWeight();
@@ -59,8 +59,10 @@ namespace TestApp
             //TestFCM();
             //PerfTestFCM();
             //TestMLFCMBasic();
+            TestReadIterateMLFCMBasic();
             //TestWriteFCM();
-            TestWriteMLFCM();
+            //TestWriteMLFCM();
+            //TestReadMLFCM();
             Console.ReadLine();
             return;
 
@@ -260,6 +262,11 @@ namespace TestApp
             MLFCMSerializer.WriteMultiLayerNetworkToFile(fcm, @"..\..\work\MLbasic.fcm");
         }
 
+        private static void TestReadMLFCM()
+        {
+            MultilayerFuzzyCognitiveMap fcm = MLFCMSerializer.ReadNetworkFromFile(@"..\..\work\MLBasic.fcm");
+        }
+
         private static void TestMLFCMBasic()
         {
 
@@ -304,16 +311,7 @@ namespace TestApp
 
             for (int i = 1; i < 4; i++)
             {
-                // Console.WriteLine($"Step {i}");
                 fcm.StepWalk();
-                //foreach (string concept in concepts)
-                //{
-                //MLConceptState state = fcm.ReportConceptState(concept);
-                //Console.WriteLine($"{concept}: {state.AggregateLevel}");
-                //int dim = state.LayerLevels.Count();
-                //for (int k = 0; k < dim; k++)
-                //    Console.WriteLine($"\tLayer {string.Join(",", state.Layers[k])}: {state.LayerLevels[k]}");
-                //}
                 Console.WriteLine($"Iteration {i}");
                 FCMState state = fcm.ReportLayerState(levelICoords);
                 WriteLayerState(levelICoords, state);
@@ -321,6 +319,83 @@ namespace TestApp
                 WriteLayerState(levelIICoords, state);
                 Console.WriteLine();
             }
+        }
+
+        private static void TestReadIterateMLFCMBasic()
+        {
+            MultilayerFuzzyCognitiveMap fcm1 = BuildBasic();
+            MultilayerFuzzyCognitiveMap fcm2 = MLFCMSerializer.ReadNetworkFromFile(@"..\..\work\MLbasic.fcm");
+
+            string[] layerI = { "I" };
+            string[] layerII = { "II" };
+            List<string> levelICoords = new List<string>(layerI);
+            List<string> levelIICoords = new List<string>(layerII);
+            Console.WriteLine("Starting State");
+            FCMState initial = fcm1.ReportLayerState(levelICoords);
+            WriteLayerState(levelICoords, initial);
+
+            initial = fcm1.ReportLayerState(levelIICoords);
+            WriteLayerState(levelIICoords, initial);
+
+            Console.WriteLine("Start State as read");
+            initial = fcm2.ReportLayerState(levelICoords);
+            WriteLayerState(levelIICoords, initial);
+
+            initial = fcm2.ReportLayerState(levelIICoords);
+            WriteLayerState(levelIICoords, initial);
+            Console.WriteLine();
+
+            for (int i = 1; i < 4; i++)
+            {
+                // Console.WriteLine($"Step {i}");
+                fcm1.StepWalk();
+                fcm2.StepWalk();
+
+                Console.WriteLine($"Iteration {i} in memory");
+                FCMState state = fcm1.ReportLayerState(levelICoords);
+                WriteLayerState(levelICoords, state);
+                state = fcm1.ReportLayerState(levelIICoords);
+                WriteLayerState(levelIICoords, state);
+
+                Console.WriteLine($"Iteration {i} as read");
+                state = fcm2.ReportLayerState(levelICoords);
+                WriteLayerState(levelICoords, state);
+                state = fcm2.ReportLayerState(levelIICoords);
+                WriteLayerState(levelIICoords, state);
+                Console.WriteLine();
+            }
+
+
+        }
+
+        private static MultilayerFuzzyCognitiveMap BuildBasic()
+        {
+            List<string> indices = new List<string>();
+            indices.Add("I");
+            indices.Add("II");
+            List<Tuple<string, IEnumerable<string>>> dimensions = new List<Tuple<string, IEnumerable<string>>>();
+            dimensions.Add(new Tuple<string, IEnumerable<string>>("levels", indices));
+
+            MultilayerFuzzyCognitiveMap fcm = new MultilayerFuzzyCognitiveMap(dimensions);
+            List<string> layer1 = new List<string>();
+            layer1.Add("I");
+            List<string> layer2 = new List<string>();
+            layer2.Add("II");
+            fcm.AddConcept("A", layer1, 1.0F, 1.0F);
+            fcm.AddConcept("B", layer1, 0.0F, 0.0F);
+            fcm.AddConcept("C", layer1, 0.0F, 0.0F);
+
+            fcm.AddConcept("A", layer2, 1.0F, 1.0F);
+            fcm.AddConcept("D", layer2, 0.0F, 0.0F);
+            fcm.AddConcept("E", layer2, 0.0F, 0.0F);
+
+            fcm.AddInfluence("A", layer1, "B", layer1, 1.0F);
+            fcm.AddInfluence("A", layer1, "C", layer1, 1.0F);
+            fcm.AddInfluence("A", layer2, "D", layer2, 1.0F);
+            fcm.AddInfluence("D", layer2, "E", layer2, 1.0F);
+            fcm.AddInfluence("E", layer2, "A", layer1, 1.0F);
+
+            return fcm;
         }
         private static void WriteStateVector(FuzzyCognitiveMap map)
         {

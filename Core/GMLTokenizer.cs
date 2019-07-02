@@ -63,6 +63,18 @@ namespace Networks.Core
             {
                 EatWhitespace(reader);
                 string value = ReadNextValue(reader);
+                // handle a nested record -- pass the nested record back as a string
+                if (value == "[")
+                {
+                    int ch = reader.Read();
+                    while (ch != -1 && (char)ch != ']')
+                    {
+                        value += (char)ch;
+                        ch = reader.Read();
+                    }
+                    // catch the end bracket
+                    value += (char)ch;
+                }
                 props.Add(key, value);
                 EatWhitespace(reader);
                 key = ReadNextToken(reader);

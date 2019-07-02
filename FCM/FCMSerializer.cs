@@ -73,7 +73,6 @@ namespace Networks.FCM
             string top = GMLTokenizer.ReadNextToken(reader);
             if (top == "graph")
             {
-                fcm = new FuzzyCognitiveMap();
                 GMLTokenizer.EatWhitespace(reader);
                 string start = GMLTokenizer.ReadNextToken(reader);
                 if (start == "[")
@@ -105,7 +104,7 @@ namespace Networks.FCM
                         if (globalState == 1)
                         {
                             GMLTokenizer.EatWhitespace(reader);
-                            // why do I still serialize this?
+                            // directed is serialized so that the graph can be read as such even if the FCM data is not retained/understood
                             GMLTokenizer.ReadNextValue(reader);
                         }
                         else
@@ -137,7 +136,7 @@ namespace Networks.FCM
                         }
                         else
                         {
-                            throw new NetworkSerializationException(EntityType.property, $"Property {token} foound out of order", null);
+                            throw new NetworkSerializationException(EntityType.property, $"Property {token} found out of order", null);
                         }
                         break;
 

@@ -9,8 +9,8 @@ Multilayer graphs are implemented via the MultilayerNetwork class and serialized
 Elementary layers may be flattened to create a supra-adjacency matrix if and only if the multilayer network is node-aligned.  The capability to pad non-node-aligned networks when creating this matrix is planned.
 
 ### Serialization Format
-The supported serialization format is GML. A streaming, tokenized approach is now supported providing some resiliancy in the face of variations in the use of whitespace (e.g., placement of opening and closing brackets). GML arrays are not yet supported, and 
-lists are only supported if they are lists of simple properties, i.e., no nested records. Low level routines are available for extracting all properties of a list including unknown properties, but unknown properties 
+The supported serialization format is GML. A streaming, tokenized approach is now supported providing some resiliancy in the face of variations in the use of whitespace (e.g., placement of opening and closing brackets). GML arrays are not yet supported.
+Low level routines are available for extracting all properties of a list including unknown properties, but unknown properties 
 are not retained in either the Network or MultilayerNetwork classes. These routines exist to support fuzzy cognitive maps, whether monolayer or multilayer.  GML support will be extended as needed by the research project.
 
 Network serialization supports the following deprecated legacy format. Each line of a graph represents an edge adjacency list.  The first uint is the from vertex, followed by the delimiter character, followed by,
