@@ -135,5 +135,14 @@ namespace Networks.Core
             // FormatException, OverflowException caught by caller so that context may be captured in the eventual exception
             return Convert.ToSingle(prop);
         }
+
+        public static void ConsumeUnknownValue(TextReader reader)
+        {
+            // assumes unknown key has been read and we need to advance past either a simple value or a record value
+            EatWhitespace(reader);
+            string value = ReadNextValue(reader);
+            if (value == "[")
+                ReadFlatListProperty(reader);
+        }
     }
 }

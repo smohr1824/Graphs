@@ -154,6 +154,10 @@ namespace Networks.Core
                     case "]":
                         unfinished = false;
                         break;
+
+                    default:
+                        GMLTokenizer.ConsumeUnknownValue(reader);
+                        break;
                 }
 
              }

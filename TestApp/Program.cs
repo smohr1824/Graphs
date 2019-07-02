@@ -51,6 +51,7 @@ namespace TestApp
             //TestNewAdj();
             //WriteGML();
             //ReadGML();
+            ReadGMLWithUnknown();
             //TestWriteMultilayerGML();
             //TestReadMultilayerGML();
             //TestEdgeWeight();
@@ -510,6 +511,20 @@ namespace TestApp
             Network N = GMLNetworkSerializer.ReadNetworkFromFile(@"..\..\work\newadjtest.gml");
             Console.WriteLine($"Input graph has {G.Order} nodes and {G.Size} edges");
             Console.WriteLine($"Read graph has {N.Order} nodes and {N.Size} edges");
+        }
+
+        private static void ReadGMLWithUnknown()
+        {
+            try
+            {
+                Network G = GMLNetworkSerializer.ReadNetworkFromFile(@"..\..\work\basic.fcm");
+            }
+            catch (Exception ex)
+            {
+                string foo = ex.Message;
+                foo = foo + ";";
+            }
+
         }
 
         private static void TestReadMultilayer()

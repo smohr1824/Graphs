@@ -221,8 +221,10 @@ namespace Networks.Core
                                 throw new MLNetworkSerializationException(MLEntityType.interlayerEdge, @"Missing source and/or target node for interlayer edge", null);
                             }
                         }
+                        break;
 
-                        
+                    default:
+                        GMLTokenizer.ConsumeUnknownValue(reader);
                         break;
                 }
             }

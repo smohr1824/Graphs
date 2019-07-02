@@ -190,6 +190,10 @@ namespace Networks.FCM
                     case "]":
                         unfinished = false;
                         break;
+
+                    default:
+                        GMLTokenizer.ConsumeUnknownValue(reader);
+                        break;
                 }
             }
 
