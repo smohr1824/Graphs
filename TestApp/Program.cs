@@ -59,10 +59,10 @@ namespace TestApp
             //TestFCM();
             //PerfTestFCM();
             //TestMLFCMBasic();
-            //TestReadIterateMLFCMBasic();
+            TestReadIterateMLFCMBasic();
             //TestWriteFCM();
             //TestWriteMLFCM();
-            TestReadMLFCM();
+            //TestReadMLFCM();
             Console.ReadLine();
             return;
 

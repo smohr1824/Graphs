@@ -46,7 +46,7 @@ namespace Networks.Core
             return token;
         }
 
-        public static Dictionary<string, string> ReadListProperty(TextReader reader)
+        public static Dictionary<string, string> ReadFlatListProperty(TextReader reader)
         {
             Dictionary<string, string> props = new Dictionary<string, string>();
             EatWhitespace(reader);
@@ -66,19 +66,14 @@ namespace Networks.Core
                 // handle a nested record -- pass the nested record back as a string
                 if (value == "[")
                 {
-                    int nestLevel = 1;
                     int ch = reader.Read();
-
-                    // process (possibly nested) list records
-                    while (ch != -1 && nestLevel > 0)
+                    while (ch != -1 && (char)ch != ']')
                     {
-                        if ((char)ch == '[')
-                            nestLevel++;
-                        if ((char)ch == ']')
-                            nestLevel--;
                         value += (char)ch;
                         ch = reader.Read();
                     }
+                    // catch the end bracket
+                    value += (char)ch;
                 }
                 props.Add(key, value);
                 EatWhitespace(reader);
@@ -159,7 +154,7 @@ namespace Networks.Core
             EatWhitespace(reader);
             string value = ReadNextValue(reader);
             if (value == "[")
-                ReadListProperty(reader);
+                ReadFlatListProperty(reader);
         }
     }
 }

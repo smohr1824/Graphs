@@ -109,7 +109,7 @@ namespace Networks.Core
                         if (globalState < 3)
                         {
                             globalState = 2;
-                            Dictionary<string, string> nodeDictionary = GMLTokenizer.ReadListProperty(reader);
+                            Dictionary<string, string> nodeDictionary = GMLTokenizer.ReadFlatListProperty(reader);
                             if (nodeDictionary.Keys.Contains("id"))
                             {
                                 uint id = ProcessNodeId(nodeDictionary["id"]);
@@ -128,7 +128,7 @@ namespace Networks.Core
                         if (globalState <= 3)
                         {
                             globalState = 3;
-                            Dictionary<string, string> edgeProps = GMLTokenizer.ReadListProperty(reader);
+                            Dictionary<string, string> edgeProps = GMLTokenizer.ReadFlatListProperty(reader);
                             if (edgeProps.Keys.Contains("source") && edgeProps.Keys.Contains("target") && edgeProps.Keys.Contains("weight"))
                             {
                                 uint srcId = ProcessNodeId(edgeProps["source"]);
