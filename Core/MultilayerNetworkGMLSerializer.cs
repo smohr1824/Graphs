@@ -64,7 +64,7 @@ namespace Networks.Core
 
         public static List<Tuple<string, IEnumerable<string>>> ReadAspects(TextReader reader)
         {
-            Dictionary<string, string> aspectDictionary = GMLTokenizer.ReadFlatListProperty(reader);
+            Dictionary<string, string> aspectDictionary = GMLTokenizer.ReadListRecord(reader);
             List<Tuple<string, IEnumerable<string>>> aspects = new List<Tuple<string, IEnumerable<string>>>();
 
             foreach (KeyValuePair<string, string> aspect in aspectDictionary)
@@ -129,7 +129,7 @@ namespace Networks.Core
             float edgeWt = 1.0F;
             StringReader sreader = null;
 
-            Dictionary<string, string> edgeProps = GMLTokenizer.ReadFlatListProperty(reader);
+            Dictionary<string, string> edgeProps = GMLTokenizer.ReadListRecord(reader);
             if (edgeProps.Keys.Contains("source") && edgeProps.Keys.Contains("target"))
             {
                 foreach (KeyValuePair<string, string> kvp in edgeProps)
@@ -179,7 +179,7 @@ namespace Networks.Core
         {
             NodeLayerTuple nodeTuple = null;
 
-            Dictionary<string, string> nodeProps = GMLTokenizer.ReadFlatListProperty(reader);
+            Dictionary<string, string> nodeProps = GMLTokenizer.ReadListRecord(reader);
             if (!nodeProps.Keys.Contains<string>("id"))
                 ThrowInterlayerEdgeError("id", "<missing>");
             if (!nodeProps.Keys.Contains<string>("coordinates"))

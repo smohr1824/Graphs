@@ -152,7 +152,7 @@ namespace Networks.FCM
                         if (globalState >= 2 && globalState <= 3)
                         {
                             globalState = 3;
-                            Dictionary<string, string> nodeDictionary = GMLTokenizer.ReadFlatListProperty(reader);
+                            Dictionary<string, string> nodeDictionary = GMLTokenizer.ReadListRecord(reader);
                             if (nodeDictionary.Keys.Contains("id"))
                             {
                                 MultilayerCognitiveConcept concept = ProcessConcept(nodeDictionary);
@@ -264,7 +264,7 @@ namespace Networks.FCM
             float edgeWt = 1.0F;
             StringReader sreader = null;
 
-            Dictionary<string, string> edgeProps = GMLTokenizer.ReadFlatListProperty(reader);
+            Dictionary<string, string> edgeProps = GMLTokenizer.ReadListRecord(reader);
             if (edgeProps.Keys.Contains("source") && edgeProps.Keys.Contains("target"))
             {
                 foreach (KeyValuePair<string, string> kvp in edgeProps)
@@ -360,7 +360,7 @@ namespace Networks.FCM
 
                         case "levels":
                             TextReader nestedReader = new StringReader(kvp.Value);
-                            layerLevels = GMLTokenizer.ReadFlatListProperty(nestedReader);
+                            layerLevels = GMLTokenizer.ReadListRecord(nestedReader);
 
                             break;
                     }

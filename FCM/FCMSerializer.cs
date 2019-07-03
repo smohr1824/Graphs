@@ -164,7 +164,7 @@ namespace Networks.FCM
                             {
                                 graph = new FuzzyCognitiveMap(type, modified);
                             }
-                            Dictionary<string, string> nodeDictionary = GMLTokenizer.ReadFlatListProperty(reader);
+                            Dictionary<string, string> nodeDictionary = GMLTokenizer.ReadListRecord(reader);
                             ProcessConcept(nodeDictionary, ref graph, ref conceptLookup);
                         }
                         else
@@ -177,7 +177,7 @@ namespace Networks.FCM
                         if (globalState > 1 && globalState <= 3)
                         {
                             globalState = 3;
-                            Dictionary<string, string> edgeDictionary = GMLTokenizer.ReadFlatListProperty(reader);
+                            Dictionary<string, string> edgeDictionary = GMLTokenizer.ReadListRecord(reader);
                             ProcessEdge(edgeDictionary, ref graph, ref conceptLookup);
                         }
                         else
