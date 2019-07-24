@@ -49,20 +49,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Algorithms\Algorithms.csproj">
-      <Project>{de566f79-3d2f-4aa7-9937-a25afefaa12d}</Project>
-      <Name>Algorithms</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Core\Core.csproj">
-      <Project>{39eea71a-ad2b-4b0b-a930-848c3429855b}</Project>
-      <Name>Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FCM\FCM.csproj">
-      <Project>{553b0b08-238c-4308-aa6e-d19bc05faef5}</Project>
-      <Name>FCM</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="GNU Lesser GPL.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="GNU Lesser GPL.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MathNet.Numerics" Version="4.8.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Networks.Core\Networks.Core.csproj" />
+  </ItemGroup>
+
+</Project>
