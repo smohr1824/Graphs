@@ -10,15 +10,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Networks.Core", "Networks.Core\Networks.Core.csproj", "{01FBEBD1-BC89-469E-B1EF-FC6C9405BBC1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Networks.Algorithms", "Networks.Algorithms\Networks.Algorithms.csproj", "{FE64EEC3-932A-443F-A481-B56220AF7B13}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Networks.Algorithms", "Networks.Algorithms\Networks.Algorithms.csproj", "{FE64EEC3-932A-443F-A481-B56220AF7B13}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Algorithms_Tests", "Algorithms_Tests\Algorithms_Tests.csproj", "{B303D034-E385-4C12-813D-DAF167418DE9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Algorithms_Tests", "Algorithms_Tests\Algorithms_Tests.csproj", "{B303D034-E385-4C12-813D-DAF167418DE9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core_Tests", "Core_Tests\Core_Tests.csproj", "{DE6F5D3A-5061-4B1D-9C51-54C93630E54C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core_Tests", "Core_Tests\Core_Tests.csproj", "{DE6F5D3A-5061-4B1D-9C51-54C93630E54C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Networks.FCM", "Networks.FCM\Networks.FCM.csproj", "{DDF902AC-AF0F-46EB-BA73-D2C972EAC1C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Networks.FCM", "Networks.FCM\Networks.FCM.csproj", "{DDF902AC-AF0F-46EB-BA73-D2C972EAC1C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Networks.TestApp", "Networks.TestApp\Networks.TestApp.csproj", "{3475BB07-4DBF-4BCC-8137-90CAA083EB56}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Networks.TestApp", "Networks.TestApp\Networks.TestApp.csproj", "{3475BB07-4DBF-4BCC-8137-90CAA083EB56}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
