@@ -134,10 +134,10 @@ namespace Networks.Core
         /// <summary>
         /// Returns true if the graph is connected, i.e., there are no unreachable vertices
         /// </summary>
-        public bool Connected
+        /*public bool Connected
         {
             get { return IsConnected(); }
-        }
+        }*/
 
         /// <summary>
         /// Order (vertex count) of the graph

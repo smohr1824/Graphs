@@ -91,7 +91,7 @@ namespace CoreTests
             Assert.AreEqual(G.EdgeWeight(4, 3), 0.0, 0.05);
         }
 
-        [TestCategory("Basic")]
+       /* [TestCategory("Basic")]
         [TestMethod]
         public void TestConnectedProperty()
         {
@@ -104,7 +104,7 @@ namespace CoreTests
             G.AddEdge(1, 2, 1);
             G.AddVertex(3); // C is unreachable
             Assert.IsTrue(!G.Connected);
-        }
+        }*/
 
 
         [TestCategory("Basic")]
