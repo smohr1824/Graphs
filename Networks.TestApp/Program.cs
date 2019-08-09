@@ -42,7 +42,7 @@ namespace Networks.TestApp
             //TestLouvain();
             //TestLouvainResolution();
             //TestRemove();
-            //TestCommunityDetection();
+            TestCommunityDetection();
             //TestGephiOutput();
             //TestBig();
             //TestNewAdj();

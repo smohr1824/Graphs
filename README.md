@@ -38,6 +38,7 @@ Louvain is described in Campigotto, R., Céspedes, P. , and Guillaume, JL., A Ge
 arxiv:1406.2518v1, 2014 and Blondel, V., Guillaume JL., Lambiotte, R., and Lefebvre, E, Fast Unfolding of Communities in Large Networks,
 Journal of Statistical Mechanics: Theory and Experiment, Issue 10, pp. 10008, 2008.  The algorithmic code is greatly adapted under the GPL Lesser Public License from https://sourceforge.net/projects/louvain/.
 
+# Other Algorithms
 IsBipartite tests a network for bipartness.  If successful, the two sets of vertices are returned as List&lt;uint&gt; where the uint is the vertex id.
 
 Additional algorithm implementations are planned.
