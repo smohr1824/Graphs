@@ -307,7 +307,7 @@ namespace Networks.Core
 
         }
 
-        public void RemoveEdge(ResolvedNodeLayerTuple from, ResolvedNodeLayerTuple to, bool directed)
+        public void RemoveEdge(ResolvedNodeLayerTuple from, ResolvedNodeLayerTuple to)
         {
             if (!from.coordinates.SequenceEqual(layerCoordinates))
                 throw new ArgumentException($"Trying to remove an edge from the wrong elementary layer. Source vertex is {from.nodeId + ":" + string.Join(",", M.UnaliasCoordinates(from.coordinates))}, layer aspect coordinates are {string.Join(",", M.UnaliasCoordinates(layerCoordinates))}");

@@ -717,7 +717,7 @@ namespace Networks.Core
             ElementaryLayer toLayer = elementaryLayers[rTo.coordinates];
             if (fromLayer.HasEdge(rFrom, rTo))
             {
-                fromLayer.RemoveEdge(rFrom, rTo, directed);
+                fromLayer.RemoveEdge(rFrom, rTo);
                 toLayer.RemoveInEdge(rTo, rFrom);
             }
         }
