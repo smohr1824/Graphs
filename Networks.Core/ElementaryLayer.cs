@@ -147,17 +147,10 @@ namespace Networks.Core
             if (EdgeList.Keys.Contains(vertex))
                retVal = EdgeList[vertex].Keys.Count;
 
-            if (!G.Directed)
-            {
-                return retVal;
-            }
-            else
-            {
-                if (InEdges.Keys.Contains(vertex))
-                    retVal += InEdges[vertex].Keys.Count;
+            if (InEdges.Keys.Contains(vertex))
+                retVal += InEdges[vertex].Keys.Count;
 
-                return retVal;
-            }
+            return retVal;
         }
 
         internal int InDegree(uint vertex)
