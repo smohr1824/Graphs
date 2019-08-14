@@ -657,7 +657,7 @@ namespace Networks.Core
             ResolvedNodeLayerTuple rTo = ResolveNodeLayerTuple(to);
 
             // if the tuple cannot be resolved, one or both elementary layers does not exist
-            if (rFrom == null || rTo == null || !ElementaryLayerExists(rFrom.coordinates) && !ElementaryLayerExists(rTo.coordinates))
+            if (rFrom == null || rTo == null || !ElementaryLayerExists(rFrom.coordinates) || !ElementaryLayerExists(rTo.coordinates))
                 throw new ArgumentException($"The elementary layer for one or more vertices does not exist (vertices passed {from.ToString()}, {to.ToString()}");
 
             // ensure the vertices exist in their respective elementary layers; if not, create

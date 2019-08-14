@@ -138,10 +138,6 @@ namespace Networks.Core
             if (!HasVertex(vertex))
                 throw new ArgumentException($"Vertex {vertex} is not a member of the graph.");
 
-            //ResolvedNodeLayerTuple tuple = new ResolvedNodeLayerTuple();
-            //tuple.nodeId = vertex;
-            //tuple.coordinates = layerCoordinates;
-
             int retVal = 0;
 
             if (EdgeList.Keys.Contains(vertex))
@@ -155,10 +151,6 @@ namespace Networks.Core
 
         internal int InDegree(uint vertex)
         {
-            //ResolvedNodeLayerTuple tuple = new ResolvedNodeLayerTuple();
-            //tuple.nodeId = vertex;
-            //tuple.coordinates = layerCoordinates;
-
             int retVal = 0;
 
             try
@@ -178,10 +170,6 @@ namespace Networks.Core
 
         internal int OutDegree(uint vertex)
         {
-            //ResolvedNodeLayerTuple tuple = new ResolvedNodeLayerTuple();
-            //tuple.nodeId = vertex;
-            //tuple.coordinates = layerCoordinates;
-
             int retVal = 0;
 
             try
@@ -344,7 +332,6 @@ namespace Networks.Core
             }
 
             // add out of layer neighbors, i.e., targets of interlayer edges
-            //ResolvedNodeLayerTuple refTuple = new ResolvedNodeLayerTuple(vertex, layerCoordinates);
 
             if (EdgeList.Keys.Contains(vertex))
             {
@@ -377,7 +364,6 @@ namespace Networks.Core
             }
 
             // add out of layer neighbors, i.e., targets of interlayer edges
-            //ResolvedNodeLayerTuple refTuple = new ResolvedNodeLayerTuple(vertex, layerCoordinates);
 
             if (InEdges.Keys.Contains(vertex))
             {
