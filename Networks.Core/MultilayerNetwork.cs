@@ -664,6 +664,16 @@ namespace Networks.Core
             ElementaryLayer fromLayer = elementaryLayers[rFrom.coordinates];
             ElementaryLayer toLayer = elementaryLayers[rTo.coordinates];
 
+            if (!nodeIdsAndLayers.Keys.Contains(from.nodeId))
+            {
+                nodeIdsAndLayers.Add(from.nodeId, new List<ElementaryLayer>());
+            }
+
+            if (!nodeIdsAndLayers.Keys.Contains(to.nodeId))
+            {
+                nodeIdsAndLayers.Add(to.nodeId, new List<ElementaryLayer>());
+            }
+
             // intralayer add, special case -- network can add vertices and will handle in-edges
             if (fromLayer == toLayer)
             {
@@ -694,8 +704,17 @@ namespace Networks.Core
             else
             {
 
-                if (!fromLayer.HasVertex(from.nodeId) || !toLayer.HasVertex(to.nodeId))
-                    throw new ArgumentException($"Edge cannot be added unless both vertices exist (from: {from}, to: {to}).");
+                if (!fromLayer.HasVertex(from.nodeId))
+                {
+                    fromLayer.AddVertex(from.nodeId);
+                    nodeIdsAndLayers[from.nodeId].Add(fromLayer);
+                }
+
+                if (!toLayer.HasVertex(to.nodeId))
+                {
+                    toLayer.AddVertex(to.nodeId);
+                    nodeIdsAndLayers[to.nodeId].Add(toLayer);
+                }
 
                 elementaryLayers[rFrom.coordinates].AddEdge(rFrom, rTo, wt);
                 elementaryLayers[rTo.coordinates].AddInEdge(rTo, rFrom, wt);
