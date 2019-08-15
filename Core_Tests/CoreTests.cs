@@ -242,6 +242,7 @@ namespace CoreTests
         //    MultilayerNetwork M = MakeRandomMultilayerNetwork(3, 4, 20, 5, 6);
         //}
 
+        [TestCategory("Multilayer")]
         [TestMethod]
         public void TestMultilayerSerialization()
         {
