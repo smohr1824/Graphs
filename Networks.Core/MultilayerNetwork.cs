@@ -123,6 +123,7 @@ namespace Networks.Core
             try
             {
                 retVal = layer.Degree(vertex.nodeId);
+                retVal += layer.InterLayerDegree(vertex.nodeId);
             }
             catch (ArgumentException)
             {
