@@ -117,7 +117,7 @@ namespace Networks.Core
             }
             else
             {
-                throw new MLNetworkSerializationException(MLEntityType.layer, $"Malformed elementary layer for coordinates {coords}", null);
+                throw new MLNetworkSerializationException(MLEntityType.layer, @"Malformed elementary layer", null);
             }
             
         }
