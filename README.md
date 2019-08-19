@@ -18,7 +18,7 @@ the to vertex, followed by the delimiter and the edge weight.  Edge weights are 
 file is loaded with the directed parameter of LoadNetwork set to false. 
 
 Multilayer networks are serialized using extensions of the above formats.  The deprecated, legacy format places interlayer edges within the layer in which the originating node resides. The preferred format is an extension of 
-GML which is consist with the general structure and philosophy of GML for monolayer networks.  A multilayer GML document consists of the directed property, followed by one or more layer records.  Layer records contain the coordinates of the 
+GML which is consistent with the general structure and philosophy of GML for monolayer networks.  A multilayer GML document consists of the directed property, followed by one or more layer records.  Layer records contain the coordinates of the 
 layer followed by the GML serialization of the graph making up the layer.  After all layers are written, zero or more edge records are written to capture explicit interlayer edges.  Each edge contains lists for the source, target, and weight of the edge. 
 Unlike monolayer sources and targets, each node has id and coordinates properties in a list. The weight property is a simple property.
 
