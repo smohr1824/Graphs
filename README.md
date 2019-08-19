@@ -39,7 +39,7 @@ arxiv:1406.2518v1, 2014 and Blondel, V., Guillaume JL., Lambiotte, R., and Lefeb
 Journal of Statistical Mechanics: Theory and Experiment, Issue 10, pp. 10008, 2008.  The algorithmic code is greatly adapted under the GPL Lesser Public License from https://sourceforge.net/projects/louvain/.
 
 # Other Algorithms
-IsBipartite tests a network for bipartness.  If successful, the two sets of vertices are returned as List&lt;uint&gt; where the uint is the vertex id.
+IsBipartite tests a network for biparteness.  If successful, the two sets of vertices are returned as List&lt;uint&gt; where the uint is the vertex id.
 
 Additional algorithm implementations are planned.
 
