@@ -182,7 +182,7 @@ namespace Networks.FCM
                         }
                         else
                         {
-                            throw new NetworkSerializationException(EntityType.edge, @"Edgerecord found out of order", null);
+                            throw new NetworkSerializationException(EntityType.edge, @"Edge record found out of order", null);
                         }
                         break;
 
