@@ -42,7 +42,7 @@ namespace Networks.TestApp
             //TestLouvain();
             //TestLouvainResolution();
             //TestRemove();
-            TestCommunityDetection();
+           //TestCommunityDetection();
             //TestGephiOutput();
             //TestBig();
             //TestNewAdj();
@@ -53,7 +53,7 @@ namespace Networks.TestApp
             //TestReadMultilayerGML();
             //TestEdgeWeight();
             //TestBigBipartite();
-            //TestFCM();
+            TestFCM();
             //PerfTestFCM();
             //TestMLFCMBasic();
             //TestReadIterateMLFCMBasic();
@@ -132,7 +132,6 @@ namespace Networks.TestApp
             fcm.AddInfluence("B", "E", -1.0F);
             fcm.AddInfluence("E", "A", -1.0F);
             fcm.AddInfluence("D", "B", 1.0F);
-            fcm.AddInfluence("E", "F", -1.0F);
 
             return fcm;
         }
@@ -154,6 +153,17 @@ namespace Networks.TestApp
             for (int i = 0; i < 5; i++)
             {
                 fcm.StepWalk();
+                WriteStateVector(fcm);
+            }
+
+            Console.WriteLine("Logistic");
+            fcm.Reset();
+            fcm.SwitchThresholdFunction(thresholdType.LOGISTIC);
+
+            WriteStateVector(fcm);
+            for (int i = 0; i < 5; i++)
+            {
+                fcm.Step();
                 WriteStateVector(fcm);
             }
         }
@@ -397,11 +407,18 @@ namespace Networks.TestApp
         }
         private static void WriteStateVector(FuzzyCognitiveMap map)
         {
-            FCMState state = map.ReportState();
+            /*FCMState state = map.ReportState();
             Console.Write("( ");
             for (int i = 0; i < state.ConceptNames.Length; i++)
             {
                 Console.Write(state.ConceptNames[i] + ": " + state.ActivationValues[i].ToString("F1") + " ");
+            }
+            Console.WriteLine(")");*/
+            Dictionary<string, float> state = map.ReportState();
+            Console.Write("(");
+            foreach (KeyValuePair<string, float> concept in state)
+            {
+                Console.Write(concept.Key + ": " + concept.Value.ToString("F1") + " ");
             }
             Console.WriteLine(")");
         }

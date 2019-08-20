@@ -111,7 +111,13 @@ namespace Networks.FCM
 
         #region public methods
 
-        public thresholdType ThresholdType { get; }
+        public thresholdType ThresholdType { get; private set; }
+
+        public bool ModifiedKosko
+        {
+            get { return modifiedKosko; }
+            set { modifiedKosko = value; }
+        }
         public bool AddConcept(string conceptName, float initial = 0.0F, float level = 0.0F)
         {
             if (!reverseLookup.ContainsKey(conceptName))
@@ -193,7 +199,6 @@ namespace Networks.FCM
         public void StepWalk()
         {
             Dictionary<uint, CognitiveConcept> nextConcepts = new Dictionary<uint, CognitiveConcept>();
-            int dim = Concepts.Keys.Count;
             PrepareKeys();
             foreach (KeyValuePair<uint, CognitiveConcept> kvp in Concepts)
             {
@@ -223,22 +228,13 @@ namespace Networks.FCM
             }
         }
 
-        public FCMState ReportState()
+        public Dictionary<string, float> ReportState()
         {
-            int dim = Concepts.Keys.Count;
-            string[] retConcepts = new string[dim];
-            float[] retValues = new float[dim];
-
-            int i = 0;
+            Dictionary<string, float> retState = new Dictionary<string, float>();
             foreach (KeyValuePair<uint, CognitiveConcept> kvp in Concepts)
             {
-                retConcepts[i] = kvp.Value.Name;
-                retValues[i] = kvp.Value.ActivationLevel;
-                i++;
+                retState.Add(kvp.Value.Name, kvp.Value.ActivationLevel);
             }
-            FCMState retState = new FCMState();
-            retState.ConceptNames = retConcepts;
-            retState.ActivationValues = retValues;
             return retState;
         }
 
@@ -254,30 +250,37 @@ namespace Networks.FCM
         public void SetThresholdFunction(threshold func)
         {
             tfunc = func;
+            ThresholdType = thresholdType.CUSTOM;
         }
 
-        public void SwitchThresholdFunction(thresholdType desiredFunc)
+        public void SwitchThresholdFunction(thresholdType desiredFunc, threshold f = null)
         {
             switch (desiredFunc)
             {
                 case thresholdType.BIVALENT:
                     tfunc = new threshold(bivalent);
+                    ThresholdType = desiredFunc;
                     break;
 
                 case thresholdType.TRIVALENT:
                     tfunc = new threshold(trivalent);
+                    ThresholdType = desiredFunc;
                     break;
 
                 case thresholdType.LOGISTIC:
                     tfunc = new threshold(logistic);
+                    ThresholdType = desiredFunc;
+                    break;
+                case thresholdType.CUSTOM:
+                    if (f != null)
+                    {
+                        tfunc = f;
+                        ThresholdType = desiredFunc;
+                    }
                     break;
             }
         }
 
-        public void SetActivationRule(bool useModifiedKosko)
-        {
-            modifiedKosko = useModifiedKosko;
-        }
 
         public void ListGML(TextWriter writer)
         {
