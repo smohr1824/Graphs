@@ -147,6 +147,20 @@ namespace Networks.FCM
             }
         }
 
+        public CognitiveConcept GetConcept(string name)
+        {
+            uint id;
+            if (reverseLookup.TryGetValue(name, out id))
+            {
+                return Concepts[id];
+            }
+            else
+            {
+                throw new ArgumentException($"Concept {name} not found in map", "name");
+            }
+
+        }
+
         public void AddInfluence(string influences, string influenced, float weight)
         {
             uint from, to;
