@@ -167,7 +167,7 @@ namespace Networks.FCM
         // elementary layers. AggregateLevel is set to initial.If the concept already exists under that name,
         // the initial and aggregate levels are changed to initial.
 
-        public void AddConcept(string conceptName, float initial, bool fast = false)
+        public void AddConcept(string conceptName, float initial)
         {
             if (!reverseLookup.ContainsKey(conceptName))
             {
@@ -193,7 +193,7 @@ namespace Networks.FCM
                 Concepts.Add(id, concept);
                 reverseLookup.Add(concept.Name, id);
                 if (id >= nextNodeId)
-                    nextNodeId = id++;
+                    nextNodeId = id + 1;
                 return true;
             }
             else
