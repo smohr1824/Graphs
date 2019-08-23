@@ -163,26 +163,6 @@ namespace Networks.FCM
             return retVal;
         }
 
-        // Adds a concept with an initial activation level. The concept is not added to any
-        // elementary layers. AggregateLevel is set to initial.If the concept already exists under that name,
-        // the initial and aggregate levels are changed to initial.
-
-        public void AddConcept(string conceptName, float initial)
-        {
-            if (!reverseLookup.ContainsKey(conceptName))
-            {
-                MultilayerCognitiveConcept concept = new MultilayerCognitiveConcept(conceptName, initial, initial);
-                Concepts.Add(nextNodeId, concept);
-                reverseLookup.Add(conceptName, nextNodeId);
-                nextNodeId++;
-            }
-            else
-            {
-                uint existingKey = reverseLookup[conceptName];
-                MultilayerCognitiveConcept concept = Concepts[existingKey];
-                concept.SetInitialLevel(initial);
-            }
-        }
 
         // Support for deserialization
         // node id management is relaxed

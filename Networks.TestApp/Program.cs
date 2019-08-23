@@ -55,7 +55,7 @@ namespace Networks.TestApp
             //TestBigBipartite();
             TestFCM();
             //PerfTestFCM();
-            //TestMLFCMBasic();
+            TestMLFCMBasic();
             //TestReadIterateMLFCMBasic();
             //TestWriteFCM();
             //TestWriteMLFCM();

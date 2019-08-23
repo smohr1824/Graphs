@@ -68,6 +68,10 @@ namespace Networks.FCM
             {
                 layerActivationLevels[layerCoords] = level;
             }
+            else
+            {
+                layerActivationLevels.Add(layerCoords, level);
+            }
         }
     }
 }

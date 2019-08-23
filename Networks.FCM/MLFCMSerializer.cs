@@ -69,7 +69,6 @@ namespace Networks.FCM
             uint globalState = 1;
             bool unfinished = true;
             thresholdType type = thresholdType.BIVALENT;
-            Dictionary<uint, string> conceptLookup = new Dictionary<uint, string>();
             bool modified = false;
 
             while (unfinished && reader.Peek() != -1)
