@@ -53,7 +53,7 @@ namespace Networks.TestApp
             //TestReadMultilayerGML();
             //TestEdgeWeight();
             //TestBigBipartite();
-            TestFCM();
+            //TestFCM();
             //PerfTestFCM();
             TestMLFCMBasic();
             //TestReadIterateMLFCMBasic();
@@ -284,7 +284,8 @@ namespace Networks.TestApp
             List<Tuple<string, IEnumerable<string>>> dimensions = new List<Tuple<string, IEnumerable<string>>>();
             dimensions.Add(new Tuple<string, IEnumerable<string>>("levels", indices));
 
-            MultilayerFuzzyCognitiveMap fcm = new MultilayerFuzzyCognitiveMap(dimensions);
+            MultilayerFuzzyCognitiveMap fcm = new MultilayerFuzzyCognitiveMap(dimensions, thresholdType.LOGISTIC, false);
+            
             List<string> layer1 = new List<string>();
             layer1.Add("I");
             List<string> layer2 = new List<string>();
@@ -310,22 +311,48 @@ namespace Networks.TestApp
             List<string> levelICoords = new List<string>(layerI);
             List<string> levelIICoords = new List<string>(layerII);
             Console.WriteLine("Starting State");
-            FCMState initial = fcm.ReportLayerState(levelICoords);
-            WriteLayerState(levelICoords, initial);
-            
-            initial = fcm.ReportLayerState(levelIICoords);
-            WriteLayerState(levelIICoords, initial);
+            //FCMState initial = fcm.ReportLayerState(levelICoords);
+            //WriteLayerState(levelICoords, initial);
+
+            //initial = fcm.ReportLayerState(levelIICoords);
+            //WriteLayerState(levelIICoords, initial);
+            WriteState(fcm);
             Console.WriteLine();
 
             for (int i = 1; i < 4; i++)
             {
                 fcm.StepWalk();
                 Console.WriteLine($"Iteration {i}");
-                FCMState state = fcm.ReportLayerState(levelICoords);
-                WriteLayerState(levelICoords, state);
-                state = fcm.ReportLayerState(levelIICoords);
-                WriteLayerState(levelIICoords, state);
+                //FCMState state = fcm.ReportLayerState(levelICoords);
+                //WriteLayerState(levelICoords, state);
+                //state = fcm.ReportLayerState(levelIICoords);
+                //WriteLayerState(levelIICoords, state);
+                WriteState(fcm);
                 Console.WriteLine();
+            }
+        }
+
+        private static void WriteState(MultilayerFuzzyCognitiveMap fcm)
+        {
+            List<string> concepts = fcm.ListConcepts();
+            string sMain = string.Empty;
+            foreach (string concept in concepts)
+            {
+                sMain += concept + ": " + fcm.GetActivationLevel(concept).ToString("F1") + " ";
+            }
+            Console.WriteLine(sMain);
+
+            List<List<string>> layers = fcm.ListLayers();
+            foreach (List<string> layer in layers)
+            {
+                Dictionary<string, float> levels = fcm.GetLayerActivationLevels(layer);
+                Console.WriteLine(string.Join(",", layer));
+                string sLevel = string.Empty;
+                foreach (KeyValuePair<string, float> kvp in levels)
+                {
+                    sLevel += kvp.Key + ": " + kvp.Value.ToString("F1") +" ";
+                }
+                Console.WriteLine(sLevel);
             }
         }
 
@@ -339,18 +366,10 @@ namespace Networks.TestApp
             List<string> levelICoords = new List<string>(layerI);
             List<string> levelIICoords = new List<string>(layerII);
             Console.WriteLine("Starting State");
-            FCMState initial = fcm1.ReportLayerState(levelICoords);
-            WriteLayerState(levelICoords, initial);
-
-            initial = fcm1.ReportLayerState(levelIICoords);
-            WriteLayerState(levelIICoords, initial);
+            WriteState(fcm1);
 
             Console.WriteLine("Start State as read");
-            initial = fcm2.ReportLayerState(levelICoords);
-            WriteLayerState(levelIICoords, initial);
-
-            initial = fcm2.ReportLayerState(levelIICoords);
-            WriteLayerState(levelIICoords, initial);
+            WriteState(fcm2);
             Console.WriteLine();
 
             for (int i = 1; i < 4; i++)
@@ -360,16 +379,10 @@ namespace Networks.TestApp
                 fcm2.StepWalk();
 
                 Console.WriteLine($"Iteration {i} in memory");
-                FCMState state = fcm1.ReportLayerState(levelICoords);
-                WriteLayerState(levelICoords, state);
-                state = fcm1.ReportLayerState(levelIICoords);
-                WriteLayerState(levelIICoords, state);
+                WriteState(fcm1);
 
                 Console.WriteLine($"Iteration {i} as read");
-                state = fcm2.ReportLayerState(levelICoords);
-                WriteLayerState(levelICoords, state);
-                state = fcm2.ReportLayerState(levelIICoords);
-                WriteLayerState(levelIICoords, state);
+                WriteState(fcm2);
                 Console.WriteLine();
             }
 
@@ -423,16 +436,6 @@ namespace Networks.TestApp
             Console.WriteLine(")");
         }
 
-        private static void WriteLayerState(List<string> layerCoords, FCMState state)
-        {
-            Console.Write(string.Join(",", layerCoords) + ": ");
-            Console.Write("( ");
-            for (int i = 0; i < state.ConceptNames.Length; i++)
-            {
-                Console.Write(state.ConceptNames[i] + ": " + state.ActivationValues[i].ToString("F1") + " ");
-            }
-            Console.WriteLine(")");
-        }
         private static void TestNewAdj()
         {
             Network G = NetworkSerializer.ReadNetworkFromFile(@"..\..\..\work\newadjtest.dat", false);

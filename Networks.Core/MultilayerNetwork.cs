@@ -62,6 +62,16 @@ namespace Networks.Core
 
         #region public properties
 
+        public List<List<string>> ElementaryLayers()
+        {
+            List<List<string>> layers = new List<List<string>>();
+            foreach (ElementaryLayer layer in elementaryLayers.Values)
+            {
+                layers.Add(layer.AspectCoordinates);
+            }
+            return layers;
+        }
+
         public int Order
         {
             get { return nodeIdsAndLayers.Keys.Count();  }
@@ -184,6 +194,20 @@ namespace Networks.Core
             if (rcoords == null)
                 return false;
             return ElementaryLayerExists(rcoords);
+        }
+
+        public List<uint> VerticesInLayer(List<string> coords)
+        {
+            List<int> rcoords = ResolveCoordinates(coords);
+            if (HasElementaryLayer(coords))
+            {
+                ElementaryLayer layer = elementaryLayers[rcoords];
+                return layer.Vertices;
+            }
+            else
+            {
+                return new List<uint>();
+            }
         }
 
         // indicates whether a vertex appears in a particular elementary layer

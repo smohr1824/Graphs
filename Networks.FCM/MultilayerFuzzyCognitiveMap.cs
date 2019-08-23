@@ -112,57 +112,10 @@ namespace Networks.FCM
             return reverseLookup.Keys.ToList<string>();
         }
 
-        public MLConceptState ReportConceptState(string conceptName)
+        public List<List<string>> ListLayers()
         {
-            uint id;
-            MLConceptState retState = new MLConceptState();
-            if (reverseLookup.TryGetValue(conceptName, out id))
-            {
-                MultilayerCognitiveConcept concept = Concepts[id];
-                int dim = concept.LayerCount;
-                List<string>[] retLayers = new List<string>[dim];
-                float[] retLevels = new float[dim];
-
-                int i = 0;
-                foreach (List<string> layer in concept.GetLayers())
-                {
-                    retLayers[i] = layer;
-                    retLevels[i] = concept.GetLayerActivationLevel(layer);
-                    i++;
-                }
-                retState.AggregateLevel = concept.GetAggregateActivationLevel();
-                retState.LayerLevels = retLevels;
-                retState.Layers = retLayers;
-            }
-            return retState;
+            return model.ElementaryLayers();
         }
-
-        public FCMState ReportLayerState(List<string> layerCoords)
-        {
-            FCMState retVal = new FCMState();
-            List<string> retConcepts = new List<string>();
-            List<float> retLevels = new List<float>();
-
-            foreach (KeyValuePair<uint, MultilayerCognitiveConcept> kvp in Concepts)
-            {
-                // add the activation level if found; if the concept does not participate in the layer, GetLayerActivationLevel throws an exception
-                try
-                {
-                    float level = kvp.Value.GetLayerActivationLevel(layerCoords);
-                    retConcepts.Add(kvp.Value.Name);
-                    retLevels.Add(level);
-                }
-                catch (Exception)
-                {
-                    
-                }
-            }
-
-            retVal.ConceptNames = retConcepts.ToArray();
-            retVal.ActivationValues = retLevels.ToArray();
-            return retVal;
-        }
-
 
         // Support for deserialization
         // node id management is relaxed
@@ -311,6 +264,26 @@ namespace Networks.FCM
             // GetLayerActivationLevel throws an ArgumentException if the concept is not found in that layer
             float retVal = concept.GetLayerActivationLevel(coords);
             return retVal;
+        }
+
+        public Dictionary<string, float> GetLayerActivationLevels(List<string> coords)
+        {
+            if (model.HasElementaryLayer(coords))
+            {
+                List<uint> iVerts = model.VerticesInLayer(coords);
+                Dictionary<string, float> levels = new Dictionary<string, float>();
+                foreach (uint vertId in iVerts)
+                {
+                    MultilayerCognitiveConcept concept = Concepts[vertId];
+                    float layerLevel = GetConceptLayerActivationLevel(concept.Name, coords);
+                    levels.Add(concept.Name, layerLevel);
+                }
+                return levels;
+            }
+            else
+            {
+                throw new ArgumentException($"Layer not found in network");
+            }
         }
 
         public void StepWalk()
