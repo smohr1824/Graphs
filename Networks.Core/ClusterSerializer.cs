@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 
 namespace Networks.Core
 {
+    // specific to community detection
     public class ClusterSerializer
     {
         public static HashSet<HashSet<uint>> ReadClustersFromFile(string filename, char delimiter = '|')
