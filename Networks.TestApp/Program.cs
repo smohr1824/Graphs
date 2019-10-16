@@ -42,7 +42,7 @@ namespace Networks.TestApp
             //TestLouvain();
             //TestLouvainResolution();
             //TestRemove();
-           //TestCommunityDetection();
+            //TestCommunityDetection();
             //TestGephiOutput();
             //TestBig();
             //TestNewAdj();
@@ -55,6 +55,9 @@ namespace Networks.TestApp
             //TestBigBipartite();
             //TestFCM();
             //PerfTestFCM();
+            MultilayerNetwork Q = MultilayerNetworkSerializer.ReadMultilayerNetworkFromFile(@"..\..\..\work\multilayer_three_aspects.dat", true);
+            Q.MakeSupraAdjacencyMatrix();
+            MultilayerNetworkGMLSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\..\work\multilayer_three_aspects.gml");
             TestMLFCMBasic();
             //TestReadIterateMLFCMBasic();
             //TestWriteFCM();
