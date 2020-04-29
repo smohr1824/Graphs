@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Networks.Core;
 
@@ -60,7 +61,17 @@ namespace Networks.FCM
             {
                 throw new ArgumentException($"Concept {Name} not found in layer {string.Join(",", coords)}.");
             }
-                
+
+        }
+
+        public void Reset()
+        {
+            List<string>[] keys = new List<string>[layerActivationLevels.Keys.Count];
+            layerActivationLevels.Keys.CopyTo(keys, 0);
+            foreach(List<string> coords in keys)
+            {
+                SetLayerLevel(coords, InitialValue);
+            }
         }
         internal void SetLayerLevel(List<string> layerCoords, float level)
         {

@@ -286,6 +286,15 @@ namespace Networks.FCM
             }
         }
 
+        public void Reset()
+        {
+            foreach (KeyValuePair<uint, MultilayerCognitiveConcept> kvp in Concepts)
+            {
+                kvp.Value.Reset();
+                RecomputeAggregateActivationLevel(kvp.Key);
+            }
+        }
+
         public void StepWalk()
         {
             Dictionary<uint, MultilayerCognitiveConcept> nextConcepts = new Dictionary<uint, MultilayerCognitiveConcept>();

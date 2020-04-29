@@ -306,7 +306,10 @@ namespace Networks.TestApp
             fcm.AddInfluence("A", layer2, "D", layer2, 1.0F);
             fcm.AddInfluence("D", layer2, "E", layer2, 1.0F);
             fcm.AddInfluence("E", layer2, "A", layer1, 1.0F);
-
+            foreach (KeyValuePair<uint, MultilayerCognitiveConcept> kvp in fcm.Concepts)
+            {
+                fcm.RecomputeAggregateActivationLevel(kvp.Value.Name);
+            }
             List<string> concepts = fcm.ListConcepts();
 
             string[] layerI = { "I" };
@@ -321,6 +324,23 @@ namespace Networks.TestApp
             //WriteLayerState(levelIICoords, initial);
             WriteState(fcm);
             Console.WriteLine();
+
+            for (int i = 1; i < 4; i++)
+            {
+                fcm.StepWalk();
+                Console.WriteLine($"Iteration {i}");
+                //FCMState state = fcm.ReportLayerState(levelICoords);
+                //WriteLayerState(levelICoords, state);
+                //state = fcm.ReportLayerState(levelIICoords);
+                //WriteLayerState(levelIICoords, state);
+                WriteState(fcm);
+                Console.WriteLine();
+            }
+
+            Console.WriteLine("Reset and re-run");
+            fcm.Reset();
+            
+            WriteState(fcm);
 
             for (int i = 1; i < 4; i++)
             {
