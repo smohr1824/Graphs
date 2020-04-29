@@ -135,6 +135,22 @@ namespace Networks.FCM
             }
         }
 
+        public bool HasConcept(string conceptName)
+        {
+            return reverseLookup.ContainsKey(conceptName);
+        }
+
+        public MultilayerCognitiveConcept GetConcept(string conceptName)
+        {
+            if (HasConcept(conceptName))
+            {
+                uint id = reverseLookup[conceptName];
+                return Concepts[id];
+            }
+            else
+                return null;
+        }
+
         // Adds a concept to an elementary layer
         // If it does not currently appear anywhere in the ML FCM, a new concept is added
         public bool AddConcept(string conceptName, List<string> coords, float level = 0.0F, float initial = 0.0F, bool fast = false)
