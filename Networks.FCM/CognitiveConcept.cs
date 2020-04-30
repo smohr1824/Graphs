@@ -26,7 +26,7 @@ using System.Text;
 
 namespace Networks.FCM
 {
-    public class CognitiveConcept
+    public class CognitiveConcept: ICognitiveConcept
     {
         public string Name { get; set; }
         public float InitialValue { get; private set; }

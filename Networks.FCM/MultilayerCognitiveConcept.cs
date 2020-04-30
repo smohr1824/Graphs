@@ -30,7 +30,7 @@ using Networks.Core;
 
 namespace Networks.FCM
 {
-    public class MultilayerCognitiveConcept : CognitiveConcept
+    public class MultilayerCognitiveConcept : CognitiveConcept, IMultilayerCognitiveConcept
     {
         // map of layer coordinates to the activation level of the concept in that elementary layer
         private Dictionary<List<string>, float> layerActivationLevels;
@@ -39,6 +39,20 @@ namespace Networks.FCM
             layerActivationLevels = new Dictionary<List<string>, float>(new UnresolvedCoordinateTupleEqualityComparer());
         }
 
+        public IEnumerable<ILayerActivationLevel> LayerActivationLevels
+        {
+            get
+            {
+                List<ILayerActivationLevel> retVal = new List<ILayerActivationLevel>();
+                foreach (List<string> coords in layerActivationLevels.Keys)
+                {
+                    string layerCoords = string.Join(",", coords.ToArray());
+                    float value = GetLayerActivationLevel(coords);
+                    retVal.Add(new layerActivationLevel(layerCoords, value));
+                }
+                return retVal.ToArray<ILayerActivationLevel>();
+            }
+        }
         public int LayerCount { get { return layerActivationLevels.Keys.Count; } }
         public List<List<string>> GetLayers()
         {
@@ -48,6 +62,13 @@ namespace Networks.FCM
         public float GetAggregateActivationLevel()
         {
             return ActivationLevel;
+        }
+
+        public float GetLayerActivationLevel(string coords)
+        {
+            char[] sep = { ',' };
+            List<string> layerCoords = new List<string>(coords.Split(sep));
+            return GetLayerActivationLevel(layerCoords);
         }
 
         public float GetLayerActivationLevel(List<string> coords)
