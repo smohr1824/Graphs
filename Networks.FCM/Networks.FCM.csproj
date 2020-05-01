@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Stephen T. Mohr</Authors>
+    <Company>Lemur Operations</Company>
+    <Product>C# FCM and ML FCM Libraries</Product>
+    <Copyright>Copyright © Stephen T. Mohr, 2017 - 2020</Copyright>
+    <Version>1.0.1</Version>
+    <Description>Implementation of mono- and multilayer fuzzy cognitive maps</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

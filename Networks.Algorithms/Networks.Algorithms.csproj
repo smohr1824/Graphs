@@ -2,6 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.1</Version>
+    <Authors>Stephen T. Mohr</Authors>
+    <Company>Lemur Operation</Company>
+    <Product>C# graph/network algorithms</Product>
+    <Description>Implements community detection and bipartite testing. Works with the classes defined in Networks.Core.</Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Copyright>Copyright © Stephen T. Mohr, 2017 - 2020</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
