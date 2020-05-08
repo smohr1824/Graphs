@@ -409,7 +409,9 @@ namespace Networks.FCM
             {
                 string[] indices = model.Indices(aspects[i]);
                 writer.Write("\t\t" + aspects[i] + " ");
-                writer.WriteLine(string.Join(",", indices));
+                writer.Write("\"");
+                writer.Write(string.Join(",", indices));
+                writer.WriteLine("\"");
             }
             writer.WriteLine("\t]");
 
@@ -417,7 +419,7 @@ namespace Networks.FCM
             {
                 writer.WriteLine("\tconcept [");
                 writer.WriteLine("\t\tid " + kvp.Key);
-                writer.WriteLine("\t\tlabel " + kvp.Value.Name);
+                writer.WriteLine("\t\tlabel \"" + kvp.Value.Name + "\"");
                 writer.WriteLine("\t\tinitial " + kvp.Value.InitialValue);
                 writer.WriteLine("\t\taggregate " + kvp.Value.ActivationLevel);
                 writer.WriteLine("\t\tlevels [");

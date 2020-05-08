@@ -1,0 +1,222 @@
+multilayer_network [
+	directed 1
+	threshold "bivalent"
+	rule "modified"
+	aspects [
+		Type "Economic,Health,Political"
+	]
+	concept [
+		id 0
+		label "Pandemic spread"
+		initial 1
+		aggregate 1
+		levels [
+			Health 1
+			Political 1
+		]
+	]
+	concept [
+		id 1
+		label "Spontaneous Isolation"
+		initial 0
+		aggregate 0
+		levels [
+			Health 0
+			Political 0
+		]
+	]
+	concept [
+		id 2
+		label "Public Demand Action"
+		initial 0
+		aggregate 0
+		levels [
+			Political 0
+			Economic 0
+		]
+	]
+	concept [
+		id 3
+		label "Govt action"
+		initial 0
+		aggregate 0
+		levels [
+			Political 0
+		]
+	]
+	concept [
+		id 4
+		label "R"
+		initial 1
+		aggregate 1
+		levels [
+			Health 1
+		]
+	]
+	concept [
+		id 5
+		label "Formal Isolation"
+		initial 0
+		aggregate 0
+		levels [
+			Health 0
+			Political 0
+			Economic 0
+		]
+	]
+	concept [
+		id 6
+		label "Economic Activity"
+		initial 1
+		aggregate 1
+		levels [
+			Economic 1
+		]
+	]
+	concept [
+		id 7
+		label "Resilience"
+		initial 1
+		aggregate 1
+		levels [
+			Economic 1
+		]
+	]
+	layer [
+		coordinates "Health"
+		graph [
+			directed 1
+			node [
+				id 0
+			]
+			node [
+				id 1
+			]
+			node [
+				id 4
+			]
+			node [
+				id 5
+			]
+			edge [
+				source 1
+				target 4
+				weight -1.0000
+			]
+			edge [
+				source 5
+				target 4
+				weight -1.0000
+			]
+			edge [
+				source 4
+				target 0
+				weight 1.0000
+			]
+		]
+	]
+	layer [
+		coordinates "Political"
+		graph [
+			directed 1
+			node [
+				id 0
+			]
+			node [
+				id 1
+			]
+			node [
+				id 2
+			]
+			node [
+				id 3
+			]
+			node [
+				id 5
+			]
+			edge [
+				source 0
+				target 2
+				weight 1.0000
+			]
+			edge [
+				source 3
+				target 5
+				weight 1.0000
+			]
+			edge [
+				source 5
+				target 1
+				weight -1.0000
+			]
+			edge [
+				source 5
+				target 0
+				weight -1.0000
+			]
+			edge [
+				source 1
+				target 0
+				weight -1.0000
+			]
+			edge [
+				source 2
+				target 3
+				weight 1.0000
+			]
+			edge [
+				source 2
+				target 1
+				weight 1.0000
+			]
+		]
+	]
+	layer [
+		coordinates "Economic"
+		graph [
+			directed 1
+			node [
+				id 2
+			]
+			node [
+				id 5
+			]
+			node [
+				id 6
+			]
+			node [
+				id 7
+			]
+			edge [
+				source 6
+				target 7
+				weight 1.0000
+			]
+			edge [
+				source 6
+				target 2
+				weight 1.0000
+			]
+			edge [
+				source 7
+				target 2
+				weight 1.0000
+			]
+			edge [
+				source 7
+				target 6
+				weight 1.0000
+			]
+			edge [
+				source 5
+				target 6
+				weight -1.0000
+			]
+			edge [
+				source 5
+				target 7
+				weight -1.0000
+			]
+		]
+	]
+]

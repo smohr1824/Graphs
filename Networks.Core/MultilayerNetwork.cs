@@ -567,7 +567,9 @@ namespace Networks.Core
             for (int i = 0; i < aspects.Count(); i++)
             {
                 writer.Write("\t\t" + aspects[i] + " ");
-                writer.WriteLine(string.Join(",", indices[i]));
+                writer.Write("\"");
+                writer.Write(string.Join(",", indices[i]));
+                writer.WriteLine("\"");
             }
             writer.WriteLine("\t]");
 
@@ -576,7 +578,7 @@ namespace Networks.Core
             {
                 writer.WriteLine("\tlayer [");
                 List<string> aspectCoords = UnaliasCoordinates(layerCoord);
-                writer.WriteLine("\t\tcoordinates " + string.Join(",", aspectCoords));
+                writer.WriteLine("\t\tcoordinates \"" + string.Join(",", aspectCoords) + "\"");
                 elementaryLayers[layerCoord].ListLayerGML(writer, 2);
                 writer.WriteLine("\t]");
             }
@@ -597,7 +599,7 @@ namespace Networks.Core
             {
                 writer.WriteLine("\tlayer [");
                 List<string> aspectCoords = UnaliasCoordinates(kvp.Key);
-                writer.WriteLine("\t\tcoordinates " + string.Join(",", aspectCoords));
+                writer.WriteLine("\t\tcoordinates \"" + string.Join(",", aspectCoords) +"\"");
                 kvp.Value.ListLayerGML(writer, level);
                 writer.WriteLine("\t]");
             }

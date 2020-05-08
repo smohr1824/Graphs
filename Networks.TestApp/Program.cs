@@ -56,13 +56,15 @@ namespace Networks.TestApp
             //TestFCM();
             //PerfTestFCM();
             MultilayerNetwork Q = MultilayerNetworkSerializer.ReadMultilayerNetworkFromFile(@"..\..\..\work\multilayer_three_aspects.dat", true);
-            Q.MakeSupraAdjacencyMatrix();
+            // Q.MakeSupraAdjacencyMatrix();
             MultilayerNetworkGMLSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\..\work\multilayer_three_aspects.gml");
-            TestMLFCMBasic();
+            //TestMLFCMBasic();
             //TestReadIterateMLFCMBasic();
             //TestWriteFCM();
             //TestWriteMLFCM();
             //TestReadMLFCM();
+           // MultilayerFuzzyCognitiveMap Q = MLFCMSerializer.ReadNetworkFromFile(@"..\..\..\work\pandemic.fcm");
+           // MLFCMSerializer.WriteMultiLayerNetworkToFile(Q, @"..\..\..\work\pandemic_out.fcm");
             Console.ReadLine();
             return;
 

@@ -1,12 +1,12 @@
 multilayer_network [
 	directed 1
 	aspects [
-		Roman I,II,III
-		Latin A,B
-		Numeric 1,2
+		Roman "I,II,III"
+		Latin "A,B"
+		Numeric "1,2"
 	]
 	layer [
-		coordinates I,A,1
+		coordinates "I,A,1"
 		graph [
 			directed 1
 			node [
@@ -36,7 +36,7 @@ multilayer_network [
 		]
 	]
 	layer [
-		coordinates I,A,2
+		coordinates "I,A,2"
 		graph [
 			directed 1
 			node [
@@ -61,7 +61,7 @@ multilayer_network [
 		]
 	]
 	layer [
-		coordinates I,B,1
+		coordinates "I,B,1"
 		graph [
 			directed 1
 			node [
@@ -86,7 +86,7 @@ multilayer_network [
 		]
 	]
 	layer [
-		coordinates I,B,2
+		coordinates "I,B,2"
 		graph [
 			directed 1
 			node [
@@ -111,7 +111,7 @@ multilayer_network [
 		]
 	]
 	layer [
-		coordinates II,A,1
+		coordinates "II,A,1"
 		graph [
 			directed 1
 			node [
@@ -136,7 +136,7 @@ multilayer_network [
 		]
 	]
 	layer [
-		coordinates II,A,2
+		coordinates "II,A,2"
 		graph [
 			directed 1
 			node [
@@ -161,7 +161,7 @@ multilayer_network [
 		]
 	]
 	layer [
-		coordinates II,B,1
+		coordinates "II,B,1"
 		graph [
 			directed 1
 			node [
@@ -186,7 +186,7 @@ multilayer_network [
 		]
 	]
 	layer [
-		coordinates II,B,2
+		coordinates "II,B,2"
 		graph [
 			directed 1
 			node [
@@ -216,7 +216,7 @@ multilayer_network [
 		]
 	]
 	layer [
-		coordinates III,A,1
+		coordinates "III,A,1"
 		graph [
 			directed 1
 			node [
@@ -246,7 +246,7 @@ multilayer_network [
 		]
 	]
 	layer [
-		coordinates III,A,2
+		coordinates "III,A,2"
 		graph [
 			directed 1
 			node [
@@ -276,7 +276,7 @@ multilayer_network [
 		]
 	]
 	layer [
-		coordinates III,B,1
+		coordinates "III,B,1"
 		graph [
 			directed 1
 			node [
@@ -306,7 +306,7 @@ multilayer_network [
 		]
 	]
 	layer [
-		coordinates III,B,2
+		coordinates "III,B,2"
 		graph [
 			directed 1
 			node [
